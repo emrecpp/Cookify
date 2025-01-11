@@ -1,18 +1,18 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, Download, Upload } from 'lucide-react'
-import { motion } from 'framer-motion'
-import {CookieData} from "@/types/types.ts";
+import {Button} from "@/components/ui/button"
+import {Download, Github, GithubIcon, Upload} from 'lucide-react'
+import {motion} from 'framer-motion'
+import BackBtn from "@/app/components/BackBtn.tsx";
+import {useGlobalContext} from "@/context/global-context.tsx";
+import React from "react";
+import {exportToFile} from "@/lib/utils.ts";
+import {Card} from "@/components/ui/card.tsx";
 
-interface SettingsProps {
-    cookies: CookieData[]
-    setCookies: React.Dispatch<React.SetStateAction<CookieData[]>>
-    onBack: () => void
-}
 
-export function Settings({ cookies, setCookies, onBack }: SettingsProps) {
+export function Settings() {
+    const {cookies, setCookies, setCurrentView} = useGlobalContext()
+
     const handleExport = () => {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cookies))
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(exportToFile(cookies))
         const downloadAnchorNode = document.createElement('a')
         downloadAnchorNode.setAttribute("href", dataStr)
         downloadAnchorNode.setAttribute("download", "kurabiye_export.json")
@@ -30,50 +30,64 @@ export function Settings({ cookies, setCookies, onBack }: SettingsProps) {
                 if (typeof content === 'string') {
                     try {
                         const importedCookies = JSON.parse(content)
-                        setCookies(importedCookies)
+                        setCookies(importedCookies["cookies"])
                     } catch (error) {
                         console.error('Invalid JSON file', error)
                     }
                 }
             }
             reader.readAsText(file)
+            setCurrentView('list')
         }
     }
 
     return (
         <motion.div
-            initial={{ opacity: 0, x: 100 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -100 }}
-            transition={{ duration: 0.3 }}
+            initial={{opacity: 0, x: 100}}
+            animate={{opacity: 1, x: 0}}
+            exit={{opacity: 0, x: -100}}
+            transition={{duration: 0.3}}
         >
-            <div className="flex items-center mb-6">
-                <Button variant="ghost" onClick={onBack}>
-                    <ArrowLeft className="mr-2 h-4 w-4" /> Geri
-                </Button>
-                <h2 className="text-2xl font-semibold ml-4">Ayarlar</h2>
-            </div>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Veri Yönetimi</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <Button onClick={handleExport} className="w-full">
-                        <Download className="h-4 w-4" /> Dışa Aktar
-                    </Button>
-                    <div>
+            <div className="relative">
+                <BackBtn/>
+
+                <h2 className="text-2xl font-semibold mb-6 text-center">
+                    Settings
+                </h2>
+                <div className="flex flex-col items-center justify-center gap-4 w-full px-4 py-4 select-none relative">
+
+                    <div className="w-full flex gap-4">
                         <input
                             type="file"
                             accept=".json"
                             onChange={handleImport}
-                            style={{ display: 'none' }}
                             id="import-file"
+                            className="hidden"
                         />
-                        <Button onClick={() => document.getElementById('import-file')?.click()} className="w-full">
-                            <Upload className="h-4 w-4" /> İçe Aktar
+                        <Button variant="secondary" onClick={() => document.getElementById('import-file')?.click()}
+                                className="w-full">
+                            <Download className="h-4 w-4"/> Import
+                        </Button>
+
+
+                        <Button
+                            disabled={cookies.length === 0}
+                            variant="outline" onClick={handleExport} className="w-full"
+                        >
+                            <Upload className="h-4 w-4"/> Export
                         </Button>
                     </div>
-                </CardContent>
+                </div>
+            </div>
+            <Card className="flex flex-col items-center justify-center w-min text-nowrap p-8 mx-auto mt-4">
+                <img className="rounded-full aspect-square w-16 h-16" src="https://avatars.githubusercontent.com/u/29755479?v=4" width={128} height={128}/>
+                <p className="text-gray-700 mt-2">Author</p>
+                <strong>Emre Demircan</strong>
+                <Button className="flex items-center mt-4">
+                    <a href="https://github.com/emrecpp" target="_blank" className="flex items-center gap-1">
+                    <GithubIcon className="flex"/>@emrecpp
+                    </a>
+                </Button>
             </Card>
         </motion.div>
     )

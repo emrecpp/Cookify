@@ -1,31 +1,21 @@
-import { CookieItem } from './CookieItem'
-import { motion } from 'framer-motion'
-import {CookieData} from "@/types/types.ts";
+import {CookieItem} from './CookieItem'
+import {motion} from 'framer-motion'
+import {useGlobalContext} from "@/context/global-context.tsx";
 
-interface CookieListProps {
-    cookies: CookieData[]
-    onRemoveCookie: (alias: string) => void
-    onApplyCookie: (cookie: CookieData) => void
-}
 
-export function CookieList({ cookies, onRemoveCookie, onApplyCookie }: CookieListProps) {
+export function CookieList() {
+    const {cookies} = useGlobalContext()
+
     return (
         <div>
-            <motion.h2
-                className="text-2xl font-semibold mb-4"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, delay: 0.1 }}
-            >
-                Kurabiye Listesi
-            </motion.h2>
             {cookies.length === 0 ? (
                 <motion.p
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3, delay: 0.2 }}
+                    initial={{opacity: 0, x: 0, y: -20}}
+                    animate={{opacity: 1, x: 0, y: 0}}
+                    transition={{duration: 0.3, delay: 0.2}}
+                    className="text-gray-500 text-center"
                 >
-                    Henüz kurabiye yok.
+                    No cookies have been added yet...
                 </motion.p>
             ) : (
                 <motion.ul
@@ -33,15 +23,13 @@ export function CookieList({ cookies, onRemoveCookie, onApplyCookie }: CookieLis
                     initial="hidden"
                     animate="visible"
                     variants={{
-                        visible: { transition: { staggerChildren: 0.1 } },
+                        visible: {transition: {staggerChildren: 0.1}},
                     }}
                 >
                     {cookies.map((cookie, index) => (
                         <CookieItem
                             key={cookie.alias}
                             cookie={cookie}
-                            onRemove={onRemoveCookie}
-                            onApply={onApplyCookie}
                             index={index}
                         />
                     ))}
