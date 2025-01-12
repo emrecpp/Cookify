@@ -33,7 +33,7 @@ export function CookieItem({cookie, index}: CookieItemProps) {
                                 className="w-4 h-4"/><strong>Name:</strong> {cookie.name}</div>
                             <div
                                 className="col-span-2 text-sm text-gray-500 flex items-center gap-1 text-wrap w-full break-all max-h-20 overflow-hidden">
-                                <FilePen className="w-4 h-4 mb-auto"/><strong
+                                <FilePen className="!w-6 !h-4 mb-auto"/><strong
                                 className="text-nowrap mb-auto">Value:</strong> {cookie.value.slice(0, 60) + (cookie.value.length > 60 && "...")}
                             </div>
                             <div className="col-span-2 text-sm text-gray-500 flex items-center gap-1"><Globe

@@ -13,7 +13,8 @@ const getTabInfo = async () => {
             resolve({
                 protocol: url.protocol,
                 domain: url.hostname,
-                url: url
+                url: url,
+                tabs
             });
         });
     });
@@ -22,13 +23,17 @@ const getTabInfo = async () => {
 export const createSetCookieConfig = (baseConfig: {
     name: string,
     protocol: string,
-    url: URL,
+    url: URL | string,
     targetDomain: string,
     value: string
 }) => {
     const {name, protocol, targetDomain, url, value,} = baseConfig;
+
+    const isLocalHost = ["localhost", "127.0.0.1"].includes(targetDomain);
+    const schema = isLocalHost ? "http://" : "https://";
+
     return {
-        url: url.origin,
+        url: url instanceof URL ? url.origin : (schema + url),
         // url: `${protocol}//${targetDomain}`,
         domain: targetDomain,
         name,
@@ -55,8 +60,9 @@ export const createRemoveCookieConfig = (baseConfig: {
 
 export const handleApplyCookie = async (cookie: CookieData) => {
     try {
-        const {protocol, domain, url} = await getTabInfo();
+        const {protocol, domain, url, tabs} = await getTabInfo();
         const targetDomain = cookie.domain || domain;
+
 
         const cookieConfig = createSetCookieConfig({
             name: cookie.name,
@@ -75,6 +81,8 @@ export const handleApplyCookie = async (cookie: CookieData) => {
                 toast.error("Failed to set cookie!");
             }
         });
+
+
     } catch (error) {
         console.error("Error in handleApplyCookie:", error);
         toast.error(error.message);
@@ -85,7 +93,6 @@ export const handleRemoveCookie = async (cookie: CookieData) => {
     try {
         const {protocol, domain} = await getTabInfo();
         const targetDomain = cookie.domain || domain;
-
 
 
         const cookieConfig = createRemoveCookieConfig({

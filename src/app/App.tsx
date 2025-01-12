@@ -53,7 +53,7 @@ export default function App() {
     }
 
     return (
-        <div className="min-w-[500px] max-w-[600px] min-h-[350px] mx-auto p-4">
+        <div className="min-w-[600px] max-w-[700px] min-h-[350px] mx-auto p-4">
             <Header
                 onSettingsClick={() => setCurrentView('settings')}
                 onAddClick={() => {

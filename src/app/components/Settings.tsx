@@ -79,11 +79,11 @@ export function Settings() {
                     </div>
                 </div>
             </div>
-            <Card className="flex flex-col items-center justify-center w-min text-nowrap p-8 mx-auto mt-4">
-                <img className="rounded-full aspect-square w-16 h-16" src="https://avatars.githubusercontent.com/u/29755479?v=4" width={128} height={128}/>
-                <p className="text-gray-700 mt-2">Author</p>
-                <strong>Emre Demircan</strong>
-                <Button className="flex items-center mt-4">
+            <Card className="flex flex-col items-center justify-center w-min text-nowrap p-8 mx-auto mt-4 min-w-[250px]">
+                <img className="rounded-full aspect-square w-16 h-16" src="https://avatars.githubusercontent.com/u/29755479?v=4" width={128} height={128} alt="author"/>
+                <p className="text-gray-700 mt-2 select-none">Author</p>
+                <strong className="text-base">Emre Demircan</strong>
+                <Button className="flex items-center mt-4 hover:bg-primary/80">
                     <a href="https://github.com/emrecpp" target="_blank" className="flex items-center gap-1">
                     <GithubIcon className="flex"/>@emrecpp
                     </a>

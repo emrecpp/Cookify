@@ -1,13 +1,35 @@
 import {CookieItem} from './CookieItem'
 import {motion} from 'framer-motion'
 import {useGlobalContext} from "@/context/global-context.tsx";
+import {Button} from "@/components/ui/button.tsx";
 
 
 export function CookieList() {
     const {cookies} = useGlobalContext()
 
+    const handleClick = () => {
+        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+            if (!tabs[0].id)
+                return;
+            chrome.tabs.sendMessage(tabs[0].id, {
+                action: "loginSwagger", params: {
+                    bearerToken: "test"
+                }
+            }, (response) => {
+                if (chrome.runtime.lastError) {
+                    console.error("Error sending message:", chrome.runtime.lastError);
+                    return;
+                }
+                console.log(`Swagger UI detected: ${response?.isSwagger}`);
+            });
+
+        });
+    }
+
+
     return (
         <div>
+            <Button onClick={handleClick}>test</Button>
             {cookies.length === 0 ? (
                 <motion.p
                     initial={{opacity: 0, x: 0, y: -20}}
