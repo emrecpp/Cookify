@@ -1,7 +1,8 @@
 import {CookieItem} from './CookieItem'
 import {motion} from 'framer-motion'
 import {useGlobalContext} from "@/context/global-context.tsx";
-import {Button} from "@/components/ui/button.tsx";
+import {Cookie} from "lucide-react";
+
 
 
 export function CookieList() {
@@ -29,14 +30,16 @@ export function CookieList() {
 
     return (
         <div>
-            <Button onClick={handleClick}>test</Button>
+
+            {/*<Button onClick={handleClick}>test</Button>*/}
             {cookies.length === 0 ? (
                 <motion.p
                     initial={{opacity: 0, x: 0, y: -20}}
                     animate={{opacity: 1, x: 0, y: 0}}
                     transition={{duration: 0.3, delay: 0.2}}
-                    className="text-gray-500 text-center"
+                    className="text-muted-foreground text-center text-sm select-none flex items-center gap-2"
                 >
+                    <Cookie className="w-4 h-4 "/>
                     No cookies have been added yet...
                 </motion.p>
             ) : (
@@ -57,6 +60,8 @@ export function CookieList() {
                     ))}
                 </motion.ul>
             )}
+
+
         </div>
     )
 }

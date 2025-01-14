@@ -7,7 +7,7 @@ const BackBtn = () => {
     const {setCurrentView, setEditingCookie} = useGlobalContext()
 
     const handleClick = () => {
-        setCurrentView('list')
+        setCurrentView('list-cookies')
 
         setTimeout(() => { // Since it slides to the previous form with an animation, if the text changes instantly, the new text becomes visible. To prevent this...
             setEditingCookie(null)

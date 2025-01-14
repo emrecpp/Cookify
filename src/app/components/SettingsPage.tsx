@@ -8,7 +8,7 @@ import {exportToFile} from "@/lib/utils.ts";
 import {Card} from "@/components/ui/card.tsx";
 
 
-export function Settings() {
+export function SettingsPage() {
     const {cookies, setCookies, setCurrentView} = useGlobalContext()
 
     const handleExport = () => {
@@ -37,7 +37,7 @@ export function Settings() {
                 }
             }
             reader.readAsText(file)
-            setCurrentView('list')
+            setCurrentView('list-cookies')
         }
     }
 

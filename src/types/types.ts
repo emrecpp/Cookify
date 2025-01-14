@@ -8,4 +8,4 @@ export interface CookieData {
     domain: string
 }
 
-export type PageViewTypes = "list" | "settings" | "add" | "edit"
+export type PageViewTypes = "list-cookies" | "list-swagger" | "settings" | "add-cookie" | "edit-cookie"

@@ -16,7 +16,7 @@ interface GlobalContextProps {
 }
 
 export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) => {
-    const [currentView, setCurrentView] = useState<PageViewTypes>('list')
+    const [currentView, setCurrentView] = useState<PageViewTypes>('list-cookies')
     const [cookies, setCookies] = useState<CookieData[]>([])
     const [editingCookie, setEditingCookie] = useState<CookieData | null>(null)
 
@@ -32,7 +32,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
         } else {
             setCookies(prevCookies => [...prevCookies, cookie])
         }
-        setCurrentView('list')
+        setCurrentView('list-cookies')
         setEditingCookie(null)
     }
 
