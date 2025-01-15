@@ -1,18 +1,17 @@
-import {Button} from "@/components/ui/button"
-import {Card, CardContent} from "@/components/ui/card"
+import {Button} from "@/components/ui/button.tsx"
+import {Card, CardContent} from "@/components/ui/card.tsx"
 import {motion} from 'framer-motion'
 import {Check, Cookie, FilePen, Globe, GlobeLock} from 'lucide-react'
-import {CookieData} from "@/types/types.ts"
+import {SwaggerData} from "@/types/types.ts"
 import {useGlobalContext} from "@/context/global-context.tsx";
-import OptionsBtn from "@/app/components/OptionsBtn.tsx";
+import CookieOptionsBtn from "@/app/components/cookie/CookieOptionsBtn.tsx";
 import {handleApplyCookie} from "@/hooks/useCookie.ts";
 
-interface CookieItemProps {
-    cookie: CookieData
-    index: number
+interface SwaggerItemProps {
+    swagger: SwaggerData
 }
 
-export function CookieItem({cookie, index}: CookieItemProps) {
+export function SwaggerItem({swagger}: SwaggerItemProps) {
     const {handleEditCookie} = useGlobalContext()
 
 
@@ -27,27 +26,22 @@ export function CookieItem({cookie, index}: CookieItemProps) {
             <Card>
                 <CardContent className="flex items-center justify-between p-4 gap-4 relative min-h-[130px]">
                     <div>
-                        <h3 className="font-bold text-lg mb-2">{cookie.alias}</h3>
+                        <h3 className="font-bold text-lg mb-2">{swagger.alias}</h3>
                         <div className="grid grid-cols-2">
-                            <div className="col-span-2 text-sm text-gray-500 flex items-center gap-1"><Cookie
-                                className="w-4 h-4"/><strong>Name:</strong> {cookie.name}</div>
                             <div
                                 className="col-span-2 text-sm text-gray-500 flex items-center gap-1 text-wrap w-full break-all max-h-20 overflow-hidden">
                                 <FilePen className="!w-6 !h-4 mb-auto"/><strong
-                                className="text-nowrap mb-auto">Value:</strong> {cookie.value.slice(0, 60) + (cookie.value.length > 60 && "...")}
+                                className="text-nowrap mb-auto">Value:</strong> {swagger.bearerToken.slice(0, 60) + (swagger.bearerToken.length > 60 && "...")}
                             </div>
                             <div className="col-span-2 text-sm text-gray-500 flex items-center gap-1"><Globe
-                                className="w-4 h-4"/><strong>URL:</strong> {cookie.url ? cookie.url : "auto (current URL)"}
-                            </div>
-                            <div className="col-span-2 text-sm text-gray-500 flex items-center gap-1"><GlobeLock
-                                className="w-4 h-4"/><strong>Domain:</strong> {cookie.domain ? cookie.domain : "auto (current domain)"}
+                                className="w-4 h-4"/><strong>URL:</strong> {swagger.urls ? swagger.urls[0] : "auto (current URL)"}
                             </div>
                         </div>
 
                     </div>
                     <div className="space-x-2 flex items-center justify-end mt-auto">
                         <div className="w-full flex flex-col gap-2">
-                            <OptionsBtn cookie={cookie}/>
+                            <CookieOptionsBtn cookie={cookie}/>
                             <Button
                                 className="bg-primary/90 text-white hover:bg-primary/70 hover:text-white"
                                 onClick={async () => await handleApplyCookie(cookie)}

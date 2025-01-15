@@ -1,7 +1,8 @@
-import {CookieItem} from './CookieItem'
+import {CookieItem} from './CookieItem.tsx'
 import {motion} from 'framer-motion'
 import {useGlobalContext} from "@/context/global-context.tsx";
 import {Cookie} from "lucide-react";
+import {CookieData} from "@/types/types.ts";
 
 
 
@@ -40,7 +41,7 @@ export function CookieList() {
                     className="text-muted-foreground text-center text-sm select-none flex items-center gap-2"
                 >
                     <Cookie className="w-4 h-4 "/>
-                    No cookies have been added yet...
+                    No Cookies have been added yet...
                 </motion.p>
             ) : (
                 <motion.ul
@@ -51,7 +52,7 @@ export function CookieList() {
                         visible: {transition: {staggerChildren: 0.1}},
                     }}
                 >
-                    {cookies.map((cookie, index) => (
+                    {cookies.map((cookie: CookieData, index: number) => (
                         <CookieItem
                             key={cookie.alias}
                             cookie={cookie}

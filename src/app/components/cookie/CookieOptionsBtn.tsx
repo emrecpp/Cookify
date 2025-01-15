@@ -8,15 +8,15 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu.tsx"
 
 import {useGlobalContext} from "@/context/global-context.tsx";
 
 import {CookieData} from "@/types/types.ts";
-import DeleteBtn from "@/app/components/DeleteBtn.tsx";
-import RemoveCookie from "@/app/components/RemoveCookie.tsx";
+import CookieDeleteBtn from "@/app/components/cookie/CookieDeleteBtn.tsx";
+import RemoveCookie from "@/app/components/cookie/RemoveCookie.tsx";
 
-const OptionsBtn = ({cookie}: { cookie: CookieData }) => {
+const CookieOptionsBtn = ({cookie}: { cookie: CookieData }) => {
     const {handleEditCookie} = useGlobalContext()
 
     return (
@@ -49,7 +49,7 @@ const OptionsBtn = ({cookie}: { cookie: CookieData }) => {
                         e.preventDefault()}
                     className="bg-red-500 hover:bg-red-500/80 focus:bg-red-500/80 active:bg-red-500/70
                 text-white focus:text-white active:text-white cursor-pointer">
-                    <DeleteBtn cookie={cookie}/>
+                    <CookieDeleteBtn cookie={cookie}/>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
@@ -57,4 +57,4 @@ const OptionsBtn = ({cookie}: { cookie: CookieData }) => {
     );
 };
 
-export default OptionsBtn;
+export default CookieOptionsBtn;

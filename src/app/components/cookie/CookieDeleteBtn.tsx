@@ -8,7 +8,7 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog.tsx"
 import {Cookie} from "react-router-dom";
 import {useGlobalContext} from "@/context/global-context.tsx";
 import {CookieData} from "@/types/types.ts";
@@ -19,7 +19,7 @@ interface DeleteBtnProps {
     cookie: CookieData,
 }
 
-const DeleteBtn = ({cookie}: DeleteBtnProps) => {
+const CookieDeleteBtn = ({cookie}: DeleteBtnProps) => {
     const {handleDeleteProfile} = useGlobalContext()
     const [isOpen, setIsOpen]= useState<boolean>(false)
 
@@ -73,4 +73,4 @@ const DeleteBtn = ({cookie}: DeleteBtnProps) => {
     );
 };
 
-export default DeleteBtn;
+export default CookieDeleteBtn;

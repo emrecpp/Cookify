@@ -8,7 +8,6 @@ function App() {
         //         <p>Hello, World!</p>
         //         <p>I'm a Chrome Extension Content Script!</p>
         //
-        //         <button>seri son</button>
         //     </header>
         // </div>
     // );

@@ -3,14 +3,24 @@ import {PlusCircle} from 'lucide-react'
 import {motion} from 'framer-motion'
 import {useGlobalContext} from "@/context/global-context.tsx";
 import React from "react";
+import {activePage} from "@/types/types.ts";
 
 interface HeaderProps {
-    onSettingsClick: () => void
-    onAddClick: () => void
+
 }
 
-export function Header({onSettingsClick, onAddClick}: HeaderProps) {
-    const {currentView, setCurrentView} = useGlobalContext()
+export function Header() {
+    const {currentView, setCurrentView, setEditingCookie, setEditingSwagger} = useGlobalContext()
+
+    const handleAddClick = () => {
+        if (activePage(currentView) === "cookies") {
+            setEditingCookie(null)
+            setCurrentView('add-cookie')
+        } else {
+            setEditingSwagger(null)
+            setCurrentView('add-swagger')
+        }
+    }
     return (
         <div>
             <motion.header
@@ -29,9 +39,10 @@ export function Header({onSettingsClick, onAddClick}: HeaderProps) {
                 </motion.h1>
 
                 <div className="space-x-2">
-                    {!["add", "edit"].includes(currentView) && (
-                        <Button variant="outline" size="sm" onClick={onAddClick}>
-                            <PlusCircle className="h-4 w-4"/> Add New Cookie
+                    {["list-cookies", "list-swaggers"].includes(currentView) && (
+                        <Button variant="outline" size="sm" onClick={handleAddClick}>
+                            <PlusCircle
+                                className="h-4 w-4"/> {activePage(currentView) === "cookies" ? 'Add New Cookie' : 'Add New Swagger'}
                         </Button>
                     )}
                 </div>

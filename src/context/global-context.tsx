@@ -1,12 +1,29 @@
 "use client"
 import React, {createContext, ReactNode, useContext, useState} from 'react';
-import {CookieData, PageViewTypes} from "@/types/types.ts";
+import {CookieData, PageViewTypes, SwaggerData} from "@/types/types.ts";
 import toast from "react-hot-toast";
 
 
 interface GlobalContextState {
     currentView: PageViewTypes;
     setCurrentView: (view: PageViewTypes) => void;
+
+    cookies: CookieData[];
+    setCookies: (cookies: CookieData[]) => void;
+
+    swaggers: SwaggerData[];
+    setSwaggers: (swaggers: SwaggerData[]) => void;
+
+    editingCookie: CookieData | null;
+    setEditingCookie: (cookie: CookieData | null) => void;
+
+    editingSwagger: SwaggerData | null;
+    setEditingSwagger: (swagger: SwaggerData | null) => void;
+
+    handleEditCookie: (cookie: CookieData) => void;
+    handleCookieSubmit: (cookie: CookieData) => void;
+    handleDeleteProfile: (cookie: CookieData) => void;
+    // handleApplyCookie: (cookie: CookieData) => void;
 }
 
 export const GlobalContext = createContext<GlobalContextState | any>(undefined);
@@ -17,13 +34,18 @@ interface GlobalContextProps {
 
 export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) => {
     const [currentView, setCurrentView] = useState<PageViewTypes>('list-cookies')
+
     const [cookies, setCookies] = useState<CookieData[]>([])
+    const [swaggers, setSwaggers] = useState<SwaggerData[]>([])
+
     const [editingCookie, setEditingCookie] = useState<CookieData | null>(null)
+    const [editingSwagger, setEditingSwagger] = useState<SwaggerData | null>(null)
+
 
 
     const handleEditCookie = (cookie: CookieData) => {
         setEditingCookie(cookie);
-        setCurrentView("edit");
+        setCurrentView("edit-cookie");
     };
     const handleCookieSubmit = (cookie: CookieData) => {
 
@@ -80,8 +102,13 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
         <GlobalContext.Provider
             value={{
                 currentView, setCurrentView,
+
                 cookies, setCookies,
+                swaggers, setSwaggers,
+
                 editingCookie, setEditingCookie,
+                editingSwagger, setEditingSwagger,
+
                 handleEditCookie, handleCookieSubmit, handleDeleteProfile
             }}>
             {children}
@@ -91,9 +118,9 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
 
 export const useGlobalContext = () => {
     const context = useContext(GlobalContext);
-    if (!context) {
+    if (!context)
         throw new Error("useGlobalContext must be used within a GlobalContextProvider");
-    }
+
     return context;
 }
 

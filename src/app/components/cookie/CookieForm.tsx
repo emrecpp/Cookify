@@ -1,12 +1,12 @@
 import React from 'react'
-import {Button} from "@/components/ui/button"
-import {Input} from "@/components/ui/input"
-import {Label} from "@/components/ui/label"
-import {Card, CardContent} from "@/components/ui/card"
+import {Button} from "@/components/ui/button.tsx"
+import {Input} from "@/components/ui/input.tsx"
+import {Label} from "@/components/ui/label.tsx"
+import {Card, CardContent} from "@/components/ui/card.tsx"
 import {Cookie, Edit, FilePen, Globe, GlobeLock, Plus, Tag} from 'lucide-react'
 import {motion} from 'framer-motion'
-import {CookieData} from "@/types/types"
-import BackBtn from "@/app/components/BackBtn"
+import {CookieData} from "@/types/types.ts"
+import BackBtn from "@/app/components/BackBtn.tsx"
 import {useGlobalContext} from "@/context/global-context.tsx";
 import {Textarea} from "@/components/ui/textarea.tsx";
 

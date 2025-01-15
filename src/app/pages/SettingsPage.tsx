@@ -1,4 +1,4 @@
-import {Button} from "@/components/ui/button"
+import {Button} from "@/components/ui/button.tsx"
 import {Download, Github, GithubIcon, Upload} from 'lucide-react'
 import {motion} from 'framer-motion'
 import BackBtn from "@/app/components/BackBtn.tsx";
