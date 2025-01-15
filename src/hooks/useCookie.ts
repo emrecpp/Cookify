@@ -1,24 +1,8 @@
 import {CookieData} from "@/types/types.ts";
 import toast from "react-hot-toast";
+import {getTabInfo} from "@/lib/utils.ts";
 
-const getTabInfo = async () => {
-    return new Promise<{ protocol: string, domain: string }>((resolve, reject) => {
-        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-            if (tabs.length === 0) {
-                reject(new Error("No active tab found!"));
-                return;
-            }
 
-            const url = new URL(tabs[0].url);
-            resolve({
-                protocol: url.protocol,
-                domain: url.hostname,
-                url: url,
-                tabs
-            });
-        });
-    });
-};
 
 export const createSetCookieConfig = (baseConfig: {
     name: string,
@@ -58,7 +42,7 @@ export const createRemoveCookieConfig = (baseConfig: {
     };
 };
 
-export const handleApplyCookie = async (cookie: CookieData) => {
+export const useApplyCookie = async (cookie: CookieData) => {
     try {
         const {protocol, domain, url, tabs} = await getTabInfo();
         const targetDomain = cookie.domain || domain;
@@ -72,6 +56,8 @@ export const handleApplyCookie = async (cookie: CookieData) => {
             targetDomain,
         });
 
+        // console.log("cookieConfig: ", cookieConfig)
+
         chrome.cookies.set(cookieConfig, (result) => {
             if (result) {
                 console.log("Cookie set successfully:", result);
@@ -84,12 +70,12 @@ export const handleApplyCookie = async (cookie: CookieData) => {
 
 
     } catch (error) {
-        console.error("Error in handleApplyCookie:", error);
+        console.error("Error in useApplyCookie:", error);
         toast.error(error.message);
     }
 };
 
-export const handleRemoveCookie = async (cookie: CookieData) => {
+export const useDeleteCookie = async (cookie: CookieData) => {
     try {
         const {protocol, domain} = await getTabInfo();
         const targetDomain = cookie.domain || domain;
@@ -103,15 +89,15 @@ export const handleRemoveCookie = async (cookie: CookieData) => {
 
         chrome.cookies.remove(cookieConfig, (details) => {
             if (details) {
-                console.log("Cookie removed successfully:", details);
+                console.log("Cookie delete successfully:", details);
                 toast.success("Cookie removed successfully!");
             } else {
-                console.error("Failed to remove cookie:", chrome.runtime.lastError);
-                toast.error("Failed to remove cookie!");
+                console.error("Failed to delete cookie:", chrome.runtime.lastError);
+                toast.error("Failed to delete cookie!");
             }
         });
     } catch (error) {
-        console.error("Error in handleRemoveCookie:", error);
+        console.error("Error in useDeleteCookie:", error);
         toast.error(error.message);
     }
 };

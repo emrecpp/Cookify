@@ -1,32 +1,70 @@
-import React, {useEffect, useState} from 'react'
+import React, {useEffect} from 'react'
 import {Header} from './components/Header'
 import {useGlobalContext} from "@/context/global-context"
-import {exportToFile} from "@/lib/utils.ts";
+import {exportToFile, getTabInfo, sendMessage} from "@/lib/utils.ts";
 import TabPages from "@/app/pages/TabPages.tsx";
+import {useEffectAfterMount} from "@/hooks/useEffectAfterMount.ts";
+
 
 const STORAGE_KEY = 'kurabiye'
 
 export default function App() {
-    const {currentView, setCurrentView, cookies, setCookies, editingCookie, setEditingCookie} = useGlobalContext()
+    const {cookies, setCookies, swaggers, setSwaggers, setCurrentView} = useGlobalContext()
+
 
     useEffect(() => {
-        const savedCookies = localStorage.getItem(STORAGE_KEY)
-        if (savedCookies) {
-            setCookies(JSON.parse(savedCookies)["cookies"])
+        const handleAutoLogin = async (tabId: number, swagger: any) => {
+            const key = `hasRun_${tabId}`
+            const result = await chrome.storage.local.get([key])
+
+            if (!result[key]) {
+                await chrome.storage.local.set({[key]: true})
+                await sendMessage("loginSwagger", {bearerToken: swagger.bearerToken})
+
+                // Cleanup when tab closes
+                chrome.tabs.onRemoved.addListener((closedTabId) => {
+                    if (closedTabId === tabId) {
+                        chrome.storage.local.remove(key)
+                    }
+                })
+            }
         }
+
+        const initializeExtension = async () => {
+            const savedCookies = localStorage.getItem(STORAGE_KEY)
+            if (!savedCookies) return
+
+            const {tabs} = await getTabInfo()
+            const data = JSON.parse(savedCookies)
+
+            // Update global state
+            setCookies(data.cookies)
+            setSwaggers(data.swaggers)
+
+            // Handle Swagger specific logic
+            const {isSwagger} = await sendMessage("isSwagger", {})
+            setCurrentView(isSwagger ? "list-swaggers" : "list-cookies")
+
+            if (isSwagger && data.swaggers.length > 0) {
+                const autoLoginSwagger = data.swaggers.find(swagger => swagger.autoLogin)
+                if (autoLoginSwagger)
+                    await handleAutoLogin(tabs[0].id, autoLoginSwagger)
+
+            }
+        }
+
+        initializeExtension().catch(console.error)
     }, [])
 
-    useEffect(() => {
-        localStorage.setItem(STORAGE_KEY, exportToFile(cookies))
-    }, [cookies])
-
-
+    useEffectAfterMount(() => {
+        localStorage.setItem(STORAGE_KEY, exportToFile(cookies, swaggers))
+    }, [cookies, swaggers])
 
 
     return (
         <div className="min-w-[600px] max-w-[700px] min-h-[350px] mx-auto p-4 flex flex-col justify-between">
 
-            <Header />
+            <Header/>
 
 
             <TabPages/>

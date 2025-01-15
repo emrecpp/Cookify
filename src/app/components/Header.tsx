@@ -47,7 +47,7 @@ export function Header() {
                     )}
                 </div>
             </motion.header>
-            <div className="w-full bg-gray-300 h-[1px] my-2 mb-6"/>
+            <div className="w-full bg-gray-300 h-[1px] my-2"/>
         </div>
     )
 }

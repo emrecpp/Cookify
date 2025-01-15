@@ -1,29 +1,32 @@
 "use client"
 import React, {createContext, ReactNode, useContext, useState} from 'react';
-import {CookieData, PageViewTypes, SwaggerData} from "@/types/types.ts";
-import toast from "react-hot-toast";
+import {CookieData, isCookieData, PageViewTypes, SwaggerData} from "@/types/types.ts";
+import {useApplyCookie} from "@/hooks/useCookie.ts";
+import {useApplySwagger} from "@/hooks/useSwagger.ts";
 
 
 interface GlobalContextState {
     currentView: PageViewTypes;
-    setCurrentView: (view: PageViewTypes) => void;
+    setCurrentView: React.Dispatch<React.SetStateAction<PageViewTypes>>;
 
     cookies: CookieData[];
-    setCookies: (cookies: CookieData[]) => void;
+    setCookies: React.Dispatch<React.SetStateAction<CookieData[]>>;
 
     swaggers: SwaggerData[];
-    setSwaggers: (swaggers: SwaggerData[]) => void;
+    setSwaggers: React.Dispatch<React.SetStateAction<SwaggerData[]>>;
 
     editingCookie: CookieData | null;
-    setEditingCookie: (cookie: CookieData | null) => void;
+    setEditingCookie: React.Dispatch<React.SetStateAction<CookieData | null>>;
 
     editingSwagger: SwaggerData | null;
-    setEditingSwagger: (swagger: SwaggerData | null) => void;
+    setEditingSwagger: React.Dispatch<React.SetStateAction<SwaggerData | null>>;
 
     handleEditCookie: (cookie: CookieData) => void;
     handleCookieSubmit: (cookie: CookieData) => void;
-    handleDeleteProfile: (cookie: CookieData) => void;
-    // handleApplyCookie: (cookie: CookieData) => void;
+    handleDeleteProfile: (data: CookieData | SwaggerData) => void;
+
+    handleSwaggerSubmit: (swagger: SwaggerData) => void;
+
 }
 
 export const GlobalContext = createContext<GlobalContextState | any>(undefined);
@@ -42,28 +45,51 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
     const [editingSwagger, setEditingSwagger] = useState<SwaggerData | null>(null)
 
 
-
-    const handleEditCookie = (cookie: CookieData) => {
-        setEditingCookie(cookie);
-        setCurrentView("edit-cookie");
+    const handleEdit = (data: CookieData | SwaggerData) => {
+        if (isCookieData(data)) {
+            setCurrentView("edit-cookie");
+            setEditingCookie(data)
+        } else {
+            setEditingSwagger(data)
+            setCurrentView("edit-swagger");
+        }
     };
     const handleCookieSubmit = (cookie: CookieData) => {
-
-        if (editingCookie) {
+        if (editingCookie)
             setCookies(prevCookies => prevCookies.map(c => c.alias === editingCookie.alias ? cookie : c))
-        } else {
+        else
             setCookies(prevCookies => [...prevCookies, cookie])
-        }
+
         setCurrentView('list-cookies')
         setEditingCookie(null)
     }
 
-    const handleDeleteProfile = (cookie: CookieData) => {
-        setCookies(prevCookies => prevCookies.filter(c => c !== cookie))
+    const handleSwaggerSubmit = (swagger: SwaggerData) => {
+        if (editingSwagger)
+            setSwaggers(prevSwaggers => prevSwaggers.map(s => s.alias === editingSwagger.alias ? swagger : s))
+        else
+            setSwaggers(prevSwaggers => [...prevSwaggers, swagger])
+
+        setCurrentView('list-swaggers')
+        setEditingSwagger(null)
+    }
+
+    const handleDeleteProfile = (data: CookieData | SwaggerData) => {
+        if (isCookieData(data))
+            setCookies(prevCookies => prevCookies.filter(c => c !== data))
+        else
+            setSwaggers(prevSwaggers => prevSwaggers.filter(s => s !== data))
+    }
+    const handleApply = async (data: CookieData | SwaggerData) => {
+        if (isCookieData(data))
+            await useApplyCookie(data)
+        else
+            await useApplySwagger(data)
     }
 
 
-    // const handleApplyCookie = (cookie: CookieData) => {
+
+    // const useApplyCookie = (cookie: CookieData) => {
     //     chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
     //         const isDomainDynamic = !cookie.domain
     //
@@ -109,7 +135,10 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
                 editingCookie, setEditingCookie,
                 editingSwagger, setEditingSwagger,
 
-                handleEditCookie, handleCookieSubmit, handleDeleteProfile
+                handleEdit, handleApply,
+
+                handleCookieSubmit, handleDeleteProfile,
+                handleSwaggerSubmit
             }}>
             {children}
         </GlobalContext.Provider>

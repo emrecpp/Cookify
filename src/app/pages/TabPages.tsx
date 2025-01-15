@@ -7,6 +7,7 @@ import {useGlobalContext} from "@/context/global-context.tsx";
 import SwaggerMainPage from "@/app/pages/SwaggerMainPage.tsx";
 import SwaggerSVG from "@/svg/swagger.tsx";
 import {CookieForm} from "@/app/components/cookie/CookieForm.tsx";
+import {SwaggerForm} from "@/app/components/swagger/SwaggerForm.tsx";
 
 
 export default function TabPages() {
@@ -17,7 +18,6 @@ export default function TabPages() {
         <Tabs className="w-full !h-full flex flex-col flex-grow"
               value={currentView}
               onValueChange={(e) => {
-                  console.log("tabs valeu change e: ", e)
                   setCurrentView(e)
               }}>
             <TabsContent className="data-[state=active]:flex justify-center items-center flex-grow w-full" value="list-cookies">
@@ -35,7 +35,12 @@ export default function TabPages() {
             <TabsContent className="data-[state=active]:block" value="edit-cookie">
                 <CookieForm/>
             </TabsContent>
-
+            <TabsContent className="data-[state=active]:block" value="add-swagger">
+                <SwaggerForm/>
+            </TabsContent>
+            <TabsContent className="data-[state=active]:block" value="edit-swagger">
+                <SwaggerForm/>
+            </TabsContent>
 
 
             <TabsList

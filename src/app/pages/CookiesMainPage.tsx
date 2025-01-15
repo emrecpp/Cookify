@@ -1,9 +1,7 @@
 import React from 'react';
 import {useGlobalContext} from "@/context/global-context.tsx";
 import {CookieList} from "@/app/components/cookie/CookieList.tsx";
-import {CookieForm} from "@/app/components/cookie/CookieForm.tsx";
 import {AnimatePresence, motion} from "framer-motion";
-import {SettingsPage} from "@/app/pages/SettingsPage.tsx";
 
 const CookiesMainPage = () => {
     const {currentView, setCurrentView, cookies, setCookies, editingCookie, setEditingCookie} = useGlobalContext()

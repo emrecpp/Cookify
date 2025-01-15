@@ -12,12 +12,15 @@ import {
 
 import {useGlobalContext} from "@/context/global-context.tsx";
 
-import {CookieData} from "@/types/types.ts";
-import CookieDeleteBtn from "@/app/components/cookie/CookieDeleteBtn.tsx";
-import RemoveCookie from "@/app/components/cookie/RemoveCookie.tsx";
+import {CookieData, isCookieData, SwaggerData} from "@/types/types.ts";
+import DeleteBtn from "@/app/components/DeleteBtn.tsx";
+import DropdownItemDeleteCookie from "@/app/components/cookie/DropdownItemDeleteCookie.tsx";
+import DropdownItemLogout from "@/app/components/swagger/DropdownItemLogout.tsx";
 
-const CookieOptionsBtn = ({cookie}: { cookie: CookieData }) => {
-    const {handleEditCookie} = useGlobalContext()
+const OptionsBtn = ({data}: { data: CookieData | SwaggerData }) => {
+    const {handleEdit} = useGlobalContext()
+    const isCookie = isCookieData(data)
+    const isSwagger = !isCookie
 
     return (
 
@@ -25,7 +28,7 @@ const CookieOptionsBtn = ({cookie}: { cookie: CookieData }) => {
             <DropdownMenuTrigger>
                 <Button
                     className="w-full"
-                    onClick={() => handleEditCookie(cookie)}
+                    onClick={() => handleEdit(data)}
                     variant="outline"
                     size="sm"
                 >
@@ -37,19 +40,20 @@ const CookieOptionsBtn = ({cookie}: { cookie: CookieData }) => {
                 <DropdownMenuSeparator/>
                 <DropdownMenuItem
                     className="w-full cursor-pointer"
-                    onClick={() => handleEditCookie(cookie)}
+                    onClick={() => handleEdit(data)}
                     variant="outline"
                     size="sm"
                 >
                     <Edit className="h-4 w-4"/> Edit
                 </DropdownMenuItem>
-              <RemoveCookie cookie={cookie}/>
+                {isCookie && <DropdownItemDeleteCookie data={data as CookieData}/>}
+                {isSwagger && <DropdownItemLogout data={data as SwaggerData}/>}
                 <DropdownMenuItem
                     onClick={(e) =>
                         e.preventDefault()}
                     className="bg-red-500 hover:bg-red-500/80 focus:bg-red-500/80 active:bg-red-500/70
                 text-white focus:text-white active:text-white cursor-pointer">
-                    <CookieDeleteBtn cookie={cookie}/>
+                    <DeleteBtn data={data}/>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
@@ -57,4 +61,4 @@ const CookieOptionsBtn = ({cookie}: { cookie: CookieData }) => {
     );
 };
 
-export default CookieOptionsBtn;
+export default OptionsBtn;

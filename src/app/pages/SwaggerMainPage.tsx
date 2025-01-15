@@ -16,6 +16,7 @@ const SwaggerMainPage = () => {
                 animate={{opacity: 1, x: 0}}
                 exit={{opacity: 0, x: currentView === 'list-swaggers' ? -100 : 200}}
                 transition={{duration: 0.3}}
+                className="w-full"
             >
                 <SwaggerList/>
 

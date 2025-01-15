@@ -9,28 +9,8 @@ import {CookieData} from "@/types/types.ts";
 export function CookieList() {
     const {cookies} = useGlobalContext()
 
-    const handleClick = () => {
-        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-            if (!tabs[0].id)
-                return;
-            chrome.tabs.sendMessage(tabs[0].id, {
-                action: "loginSwagger", params: {
-                    bearerToken: "test"
-                }
-            }, (response) => {
-                if (chrome.runtime.lastError) {
-                    console.error("Error sending message:", chrome.runtime.lastError);
-                    return;
-                }
-                console.log(`Swagger UI detected: ${response?.isSwagger}`);
-            });
-
-        });
-    }
-
-
     return (
-        <div>
+        <div className="">
 
             {/*<Button onClick={handleClick}>test</Button>*/}
             {cookies.length === 0 ? (
@@ -38,14 +18,14 @@ export function CookieList() {
                     initial={{opacity: 0, x: 0, y: -20}}
                     animate={{opacity: 1, x: 0, y: 0}}
                     transition={{duration: 0.3, delay: 0.2}}
-                    className="text-muted-foreground text-center text-sm select-none flex items-center gap-2"
+                    className="text-muted-foreground text-center text-sm select-none flex items-center gap-2 justify-center items-center"
                 >
                     <Cookie className="w-4 h-4 "/>
                     No Cookies have been added yet...
                 </motion.p>
             ) : (
                 <motion.ul
-                    className="space-y-4"
+                    className="space-y-2 w-full"
                     initial="hidden"
                     animate="visible"
                     variants={{

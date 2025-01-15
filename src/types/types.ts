@@ -31,4 +31,10 @@ export interface SwaggerData {
     alias: string
     urls: string[]
     bearerToken: string
+
+    autoLogin?: "true" | "false"
+}
+
+export const isCookieData = (data: CookieData | SwaggerData): data is CookieData => {
+    return (data as CookieData).name !== undefined
 }

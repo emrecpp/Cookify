@@ -31,7 +31,7 @@ export function SwaggerList() {
 
 
     return (
-        <div>
+        <div className="w-full flex justify-center items-center">
 
             {/*<Button onClick={handleClick}>test</Button>*/}
             {swaggers.length === 0 ? (
@@ -46,7 +46,7 @@ export function SwaggerList() {
                 </motion.p>
             ) : (
                 <motion.ul
-                    className="space-y-4"
+                    className="space-y-2 w-full"
                     initial="hidden"
                     animate="visible"
                     variants={{

@@ -4,10 +4,13 @@ import {ArrowLeft} from "lucide-react";
 import {useGlobalContext} from "@/context/global-context.tsx";
 
 const BackBtn = () => {
-    const {setCurrentView, setEditingCookie} = useGlobalContext()
+    const {currentView, setCurrentView, setEditingCookie} = useGlobalContext()
 
     const handleClick = () => {
-        setCurrentView('list-cookies')
+        if (["add-swagger", "edit-swagger"].includes(currentView))
+            setCurrentView('list-swaggers')
+        else
+            setCurrentView('list-cookies')
 
         setTimeout(() => { // Since it slides to the previous form with an animation, if the text changes instantly, the new text becomes visible. To prevent this...
             setEditingCookie(null)

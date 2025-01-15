@@ -7,9 +7,22 @@ export async function swaggerBearerLogin(bearerToken: string) {
 
     clickAuthorizeBtn()
     await new Promise(resolve => setTimeout(resolve, 0))
-    setInputBearerToken(bearerToken, true)
+    setInputBearerToken(bearerToken)
     clickAuthorizeBtnInModal()
-    clickCloseBtn()
+    clickCloseBtnInModal()
+}
+
+export async function swaggerLogout(){
+    if (!isSwagger())
+        return;
+
+    clickAuthorizeBtn()
+    await new Promise(resolve => setTimeout(resolve, 0))
+    const logoutBtn = logoutBtnInModal()
+    if (!logoutBtn)
+        return false;
+    logoutBtn.click()
+    clickCloseBtnInModal()
 }
 
 
@@ -30,13 +43,17 @@ function setInputBearerToken(token: string) {
     return Boolean(input);
 }
 
+function logoutBtnInModal(){
+    return document.querySelector('.btn.modal-btn.auth.button');
+}
+
 function clickAuthorizeBtnInModal() {
     const authBtnInModal = document.querySelector('.btn.modal-btn.auth.authorize.button');
     authBtnInModal?.click();
     return Boolean(authBtnInModal);
 }
 
-function clickCloseBtn() {
+function clickCloseBtnInModal() {
     const authBtnInModal = document.querySelector('.btn.modal-btn.auth.btn-done.button');
     authBtnInModal?.click();
     return Boolean(authBtnInModal);

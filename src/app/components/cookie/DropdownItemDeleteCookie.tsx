@@ -2,20 +2,24 @@ import React from 'react';
 import {DropdownMenuItem} from "@/components/ui/dropdown-menu.tsx";
 import {Cookie} from "lucide-react";
 import {CookieData} from "@/types/types.ts";
-import {handleRemoveCookie} from "@/hooks/useCookie.ts";
+import {useDeleteCookie} from "@/hooks/useCookie.ts";
 
 
-const RemoveCookie = ({cookie}: { cookie: CookieData }) => {
+const DropdownItemDeleteCookie = ({data}: { data: CookieData }) => {
+    const handleClick = async () => {
+        await useDeleteCookie(data)
+    }
+
     return (
         <DropdownMenuItem
             className="w-full cursor-pointer"
-            onClick={async () => await handleRemoveCookie(cookie)}
+            onClick={handleClick}
             variant="outline"
             size="sm"
         >
-            <Cookie className="h-4 w-4"/> Remove Cookie
+            <Cookie className="h-4 w-4"/> Delete Cookie
         </DropdownMenuItem>
     );
 };
 
-export default RemoveCookie;
+export default DropdownItemDeleteCookie;

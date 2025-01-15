@@ -9,10 +9,10 @@ import {Card} from "@/components/ui/card.tsx";
 
 
 export function SettingsPage() {
-    const {cookies, setCookies, setCurrentView} = useGlobalContext()
+    const {cookies, setCookies, setCurrentView, swaggers} = useGlobalContext()
 
     const handleExport = () => {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(exportToFile(cookies))
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(exportToFile(cookies, swaggers))
         const downloadAnchorNode = document.createElement('a')
         downloadAnchorNode.setAttribute("href", dataStr)
         downloadAnchorNode.setAttribute("download", "kurabiye_export.json")
@@ -64,7 +64,7 @@ export function SettingsPage() {
                             id="import-file"
                             className="hidden"
                         />
-                        <Button variant="secondary" onClick={() => document.getElementById('import-file')?.click()}
+                        <Button variant="outline" onClick={() => document.getElementById('import-file')?.click()}
                                 className="w-full">
                             <Download className="h-4 w-4"/> Import
                         </Button>
@@ -72,7 +72,7 @@ export function SettingsPage() {
 
                         <Button
                             disabled={cookies.length === 0}
-                            variant="outline" onClick={handleExport} className="w-full"
+                            onClick={handleExport} className="w-full"
                         >
                             <Upload className="h-4 w-4"/> Export
                         </Button>
