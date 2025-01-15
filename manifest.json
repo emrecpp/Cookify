@@ -6,14 +6,12 @@
         "cookies",
         "activeTab",
         "storage",
-        "scripting"
+        "scripting",
+        "webNavigation"
     ],
     "host_permissions": [
         "<all_urls>"
     ],
-    "cookies": {
-        "permissions": ["<all_urls>"]
-    },
     "action": {
         "default_popup": "index.html",
         "default_icon": {

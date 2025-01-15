@@ -45,15 +45,33 @@ export default function App() {
             const {isSwagger} = await sendMessage("isSwagger", {})
             setCurrentView(isSwagger ? "list-swaggers" : "list-cookies")
 
+
             if (isSwagger && data.swaggers.length > 0) {
                 const autoLoginSwagger = data.swaggers.find(swagger => swagger.autoLogin)
+
                 if (autoLoginSwagger)
                     await handleAutoLogin(tabs[0].id, autoLoginSwagger)
 
             }
         }
 
+        const handlePageLoad = async (details: chrome.webNavigation.NavFrameDetails) => {
+            if (details.frameId === 0) { // Main frame only
+                const {tabs} = await getTabInfo()
+                chrome.storage.local.remove(`hasRun_${tabs[0].id}`)
+                initializeExtension().catch(console.error)
+            }
+        }
+
+        // Set up listeners
+        chrome.webNavigation.onCompleted.addListener(handlePageLoad) // "When the page is refreshed, if the Swagger docs are open, ensure the user can automatically log in again when the extension is clicked."
+
+
         initializeExtension().catch(console.error)
+
+        return () => {
+            chrome.webNavigation.onCompleted.removeListener(handlePageLoad)
+        }
     }, [])
 
     useEffectAfterMount(() => {

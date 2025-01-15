@@ -22,18 +22,16 @@ const OptionsBtn = ({data}: { data: CookieData | SwaggerData }) => {
     const isCookie = isCookieData(data)
     const isSwagger = !isCookie
 
-    return (
 
+    return (
         <DropdownMenu>
             <DropdownMenuTrigger>
-                <Button
-                    className="w-full"
+                <div
+                    className="w-full shadow-sm font-medium text-xs px-3 border-input border rounded-md whitespace-nowrap gap-2 justify-center items-center h-8 inline-flex select-none"
                     onClick={() => handleEdit(data)}
-                    variant="outline"
-                    size="sm"
                 >
                     <Grip className="h-4 w-4"/> Options
-                </Button>
+                </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="select-none">
                 <DropdownMenuLabel>Options</DropdownMenuLabel>
