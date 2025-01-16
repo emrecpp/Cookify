@@ -6,10 +6,11 @@ import {useGlobalContext} from "@/context/global-context.tsx";
 import React from "react";
 import {exportToFile} from "@/lib/utils.ts";
 import {Card} from "@/components/ui/card.tsx";
+import toast from "react-hot-toast";
 
 
 export function SettingsPage() {
-    const {cookies, setCookies, setCurrentView, swaggers} = useGlobalContext()
+    const {cookies, setCookies, setCurrentView, swaggers, setSwaggers} = useGlobalContext()
 
     const handleExport = () => {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(exportToFile(cookies, swaggers))
@@ -23,22 +24,25 @@ export function SettingsPage() {
 
     const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0]
-        if (file) {
-            const reader = new FileReader()
-            reader.onload = (e) => {
-                const content = e.target?.result
-                if (typeof content === 'string') {
-                    try {
-                        const importedCookies = JSON.parse(content)
-                        setCookies(importedCookies["cookies"])
-                    } catch (error) {
-                        console.error('Invalid JSON file', error)
-                    }
+        if (!file)
+            return false;
+
+        const reader = new FileReader()
+        reader.onload = (e) => {
+            const content = e.target?.result
+            if (typeof content === 'string') {
+                try {
+                    const importedCookies = JSON.parse(content)
+                    setCookies(importedCookies["cookies"])
+                    setSwaggers(importedCookies["swaggers"])
+                } catch (error) {
+                    console.error('Invalid JSON file', error)
                 }
             }
-            reader.readAsText(file)
-            setCurrentView('list-cookies')
         }
+        reader.readAsText(file)
+        setCurrentView('list-cookies')
+
     }
 
     return (
@@ -79,13 +83,15 @@ export function SettingsPage() {
                     </div>
                 </div>
             </div>
-            <Card className="flex flex-col items-center justify-center w-min text-nowrap p-8 mx-auto mt-4 min-w-[250px]">
-                <img className="rounded-full aspect-square w-16 h-16" src="https://avatars.githubusercontent.com/u/29755479?v=4" width={128} height={128} alt="author"/>
+            <Card
+                className="flex flex-col items-center justify-center w-min text-nowrap p-8 mx-auto mt-4 min-w-[250px]">
+                <img className="rounded-full aspect-square w-16 h-16"
+                     src="https://avatars.githubusercontent.com/u/29755479?v=4" width={128} height={128} alt="author"/>
                 <p className="text-gray-700 mt-2 select-none">Author</p>
                 <strong className="text-base">Emre Demircan</strong>
                 <Button className="flex items-center mt-4 hover:bg-primary/80">
                     <a href="https://github.com/emrecpp" target="_blank" className="flex items-center gap-1">
-                    <GithubIcon className="flex"/>@emrecpp
+                        <GithubIcon className="flex"/>@emrecpp
                     </a>
                 </Button>
             </Card>
