@@ -36,7 +36,6 @@ export default function App() {
 
             const {tabs} = await getTabInfo()
             const data = JSON.parse(savedCookies)
-            console.log("DATA AHA: ", data)
 
             // Update global state
             setCookies(data.cookies)

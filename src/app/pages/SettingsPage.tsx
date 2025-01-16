@@ -6,7 +6,6 @@ import {useGlobalContext} from "@/context/global-context.tsx";
 import React from "react";
 import {exportToFile} from "@/lib/utils.ts";
 import {Card} from "@/components/ui/card.tsx";
-import toast from "react-hot-toast";
 
 
 export function SettingsPage() {
