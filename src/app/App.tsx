@@ -80,11 +80,8 @@ export default function App() {
 
 
     return (
-        <div className="min-w-[600px] max-w-[700px] min-h-[350px] mx-auto p-4 flex flex-col justify-between">
-
+        <div className="min-w-[600px] max-w-[700px] min-h-[375px] mx-auto p-4 flex flex-col justify-between">
             <Header/>
-
-
             <TabPages/>
         </div>
     )

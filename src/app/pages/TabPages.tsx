@@ -44,7 +44,7 @@ export default function TabPages() {
 
 
             <TabsList
-                className="mt-auto bottom-0 w-full h-full rounded-none border-b border-border bg-transparent p-0 pt-8">
+                className="mt-auto bottom-0 w-full h-full rounded-none border-b border-border bg-transparent p-0">
                 <TabsTrigger
                     value="list-cookies"
                     className="relative flex-col rounded-none px-4 py-2 text-xs after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
