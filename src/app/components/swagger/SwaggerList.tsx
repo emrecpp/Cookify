@@ -10,30 +10,8 @@ import {SwaggerData} from "@/types/types.ts";
 export function SwaggerList() {
     const {swaggers} = useGlobalContext()
 
-    const handleClick = () => {
-        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-            if (!tabs[0].id)
-                return;
-            chrome.tabs.sendMessage(tabs[0].id, {
-                action: "loginSwagger", params: {
-                    bearerToken: "test"
-                }
-            }, (response) => {
-                if (chrome.runtime.lastError) {
-                    console.error("Error sending message:", chrome.runtime.lastError);
-                    return;
-                }
-                console.log(`Swagger UI detected: ${response?.isSwagger}`);
-            });
-
-        });
-    }
-
-
     return (
         <div className="w-full flex justify-center items-center">
-
-            {/*<Button onClick={handleClick}>test</Button>*/}
             {swaggers.length === 0 ? (
                 <motion.p
                     initial={{opacity: 0, x: 0, y: -20}}

@@ -89,8 +89,8 @@ export const useDeleteCookie = async (cookie: CookieData) => {
 
         chrome.cookies.remove(cookieConfig, (details) => {
             if (details) {
-                console.log("Cookie delete successfully:", details);
-                toast.success("Cookie removed successfully!");
+                console.log("Cookie deleted successfully:", details);
+                toast.success("Cookie deleted successfully!");
             } else {
                 console.error("Failed to delete cookie:", chrome.runtime.lastError);
                 toast.error("Failed to delete cookie!");

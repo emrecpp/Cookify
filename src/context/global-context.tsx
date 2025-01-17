@@ -7,26 +7,26 @@ import {useApplySwagger} from "@/hooks/useSwagger.ts";
 
 interface GlobalContextState {
     currentView: PageViewTypes;
-    setCurrentView: React.Dispatch<React.SetStateAction<PageViewTypes>>;
+    setCurrentView: (view: PageViewTypes) => void;
 
     cookies: CookieData[];
-    setCookies: React.Dispatch<React.SetStateAction<CookieData[]>>;
+    setCookies: (cookies: CookieData[]) => void;
 
     swaggers: SwaggerData[];
-    setSwaggers: React.Dispatch<React.SetStateAction<SwaggerData[]>>;
+    setSwaggers: (swaggers: SwaggerData[]) => void;
 
     editingCookie: CookieData | null;
-    setEditingCookie: React.Dispatch<React.SetStateAction<CookieData | null>>;
+    setEditingCookie: (cookie: CookieData | null) => void;
 
     editingSwagger: SwaggerData | null;
-    setEditingSwagger: React.Dispatch<React.SetStateAction<SwaggerData | null>>;
+    setEditingSwagger: (swagger: SwaggerData | null) => void;
 
-    handleEditCookie: (cookie: CookieData) => void;
+    handleEdit: (data: CookieData | SwaggerData) => void;
+    handleApply: (data: CookieData | SwaggerData) => void;
+
     handleCookieSubmit: (cookie: CookieData) => void;
     handleDeleteProfile: (data: CookieData | SwaggerData) => void;
-
     handleSwaggerSubmit: (swagger: SwaggerData) => void;
-
 }
 
 export const GlobalContext = createContext<GlobalContextState | any>(undefined);
@@ -87,42 +87,6 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
             await useApplySwagger(data)
     }
 
-
-
-    // const useApplyCookie = (cookie: CookieData) => {
-    //     chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
-    //         const isDomainDynamic = !cookie.domain
-    //
-    //         if (tabs.length === 0)
-    //             return toast.error("No active tab found!")
-    //
-    //
-    //         const url = new URL(tabs[0].url);
-    //         const protocol = url.protocol; // 'http:' or 'https:'
-    //         const domain = url.hostname;
-    //
-    //
-    //         console.log("protocol: ", protocol, "domain: ", domain, "isDomainDynamic: ", isDomainDynamic)
-    //
-    //         chrome.cookies.set({
-    //             url: isDomainDynamic ? `${protocol}//${domain}` : cookie.domain,
-    //             name: cookie.name,
-    //             value: cookie.value,
-    //             expirationDate: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
-    //             secure: protocol === "https:",
-    //             path: "/",
-    //             sameSite: protocol === 'https:' ? "strict" : "lax"
-    //         }, function (cookie) {
-    //             if (cookie) {
-    //                 console.log("Cookie set successfully:", cookie);
-    //                 toast.success("Cookie applied successfully!")
-    //             } else {
-    //                 toast.error("Failed to set cookie!")
-    //             }
-    //         });
-    //     });
-    //
-    // }
 
     return (
         <GlobalContext.Provider

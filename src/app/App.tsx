@@ -21,11 +21,9 @@ export default function App() {
                 await chrome.storage.local.set({[key]: true})
                 await sendMessage("loginSwagger", {bearerToken: swagger.bearerToken})
 
-                // Cleanup when tab closes
                 chrome.tabs.onRemoved.addListener((closedTabId) => {
-                    if (closedTabId === tabId) {
+                    if (closedTabId === tabId)
                         chrome.storage.local.remove(key)
-                    }
                 })
             }
         }
@@ -48,7 +46,6 @@ export default function App() {
 
             if (isSwagger && data.swaggers.length > 0) {
                 const autoLoginSwagger = data.swaggers.find(swagger => swagger.autoLogin)
-
                 if (autoLoginSwagger)
                     await handleAutoLogin(tabs[0].id, autoLoginSwagger)
 

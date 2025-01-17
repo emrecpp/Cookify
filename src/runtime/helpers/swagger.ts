@@ -2,7 +2,7 @@ export const isSwagger = () => Boolean(document.getElementById("swagger-ui"));
 
 export async function swaggerBearerLogin(bearerToken: string) {
     if (!isSwagger())
-        return;
+        return false;
 
 
     clickAuthorizeBtn()
@@ -14,7 +14,7 @@ export async function swaggerBearerLogin(bearerToken: string) {
 
 export async function swaggerLogout(){
     if (!isSwagger())
-        return;
+        return false;
 
     clickAuthorizeBtn()
     await new Promise(resolve => setTimeout(resolve, 0))

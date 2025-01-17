@@ -3,9 +3,8 @@ import {isSwagger, swaggerBearerLogin, swaggerLogout} from "@/runtime/helpers/sw
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "isSwagger") {
         sendResponse({isSwagger: isSwagger()});
-    }
-    else if (message.action === "loginSwagger") {
-        const {bearerToken} = message.params; // Gönderilen parametreleri alıyoruz
+    } else if (message.action === "loginSwagger") {
+        const {bearerToken} = message.params;
         swaggerBearerLogin(bearerToken);
         sendResponse({isSwagger: isSwagger()});
     } else if (message.action === "logoutSwagger") {
