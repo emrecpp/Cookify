@@ -1,50 +1,85 @@
-# React + TypeScript + Vite
+# Kurabiye - Chrome Extension for Cookie and Bearer Token Management 🍪🔑
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Kurabiye** is a **Chrome extension** that makes managing cookies and JWT tokens easy for developers. It integrates smoothly with Swagger API docs, helping you automate tasks, save time, and boost productivity. Built with React, TypeScript, and Vite, it’s fast, reliable, and perfect for modern web development.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Features
 
-## Expanding the ESLint configuration
+### 🔑 **Cookie Management**
+- **Add Cookies**: Manually add cookies with a user-friendly interface.
+- **Save Cookies**: Store cookies for quick reuse.
+- **Set Cookies with One Click**: Automatically set saved cookies on the target website.
+- **Delete Cookies**: Easily remove cookies when they are no longer needed.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### 🔒 **JWT Token Management**
+- **Save JWT Tokens**: Input and store JWT bearer tokens securely.
+- **Set Tokens in Swagger**: Apply saved tokens to Swagger docs effortlessly.
+- **Auto Login Feature**: Enable auto-login to automatically set your token whenever you open a Swagger page.
 
-- Configure the top-level `parserOptions` property like this:
+### 🔄 **Profile Management**
+- **Export Profiles**: Save all your cookies and tokens into a single exportable file.
+- **Import Profiles**: Import your profiles into the extension on a different machine or browser.
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+### 📜 **Swagger Integration**
+- **Swagger Support**: Streamline your API testing by setting cookies and JWT tokens directly into Swagger documentation.
+- **One-Click Token Application**: Set your bearer token in Swagger docs with a single click.
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+### 🚀 **Optimized for Developers**
+- Built with **React**, **TypeScript**, and **Vite** for blazing-fast performance.
+- Intuitive design with a developer-first approach.
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+---
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+## 🛠️ Technologies
+
+- **React**: For building a dynamic and responsive user interface.
+- **TypeScript**: For type-safe and maintainable code.
+- **Vite**: For a fast and modern development experience.
+
+---
+
+## 🚀 Installation
+
+1. **Clone the Repository**:
+   ```
+   git clone https://github.com/emrecpp/kurabiye.git
+   cd kurabiye
+   ```
+
+2. **Install Dependencies**:
+   ```
+   npm install
+   ```
+
+3. **Run in Development Mode**:
+   ```
+   npm run dev
+   ```
+
+4. **Load the Extension in Chrome**:
+   - Open Chrome and navigate to `chrome://extensions/`.
+   - Enable **Developer Mode**.
+   - Click **Load Unpacked** and select the `dist` folder from the project.
+
+---
+
+
+---
+
+## 🤝 Contributing
+
+If you'd like to contribute, please:
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix.
+3. Submit a pull request with a detailed description of your changes.
+
+---
+
+## 📜 License
+
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for more details.
+
+---
+
+**Kurabiye** is here to make your development workflow faster, smoother, and more efficient. Try it out today and take control of your cookies and tokens like never before! 🚀🍪
