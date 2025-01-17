@@ -34,7 +34,7 @@ export function Header() {
                     whileTap={{scale: 0.95}}
                     onClick={() => setCurrentView('list-cookies')}
                 >
-                    <img src="/icon.png" alt="Kurabiye" width={128} height={128} className="mr-1 h-16 w-16"/>
+                    <img src="/icon.png" alt="Kurabiye" width={32} height={32} className="mr-1 w-8 h-8"/>
                     Kurabiye
                 </motion.h1>
 
