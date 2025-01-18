@@ -31,6 +31,19 @@
 
 ---
 
+## 🎥 Demo Videos
+Check out these short videos to see Kurabiye in action:
+
+- **Cookie Management**
+<video src="https://github.com/user-attachments/assets/4e92c2e6-8750-4e6f-93b9-b8c4aaeb2949" controls width="100%"></video>
+
+
+- **Swagger Integration**
+<video src="https://github.com/user-attachments/assets/f0cfefe2-568d-468b-b851-2c5f46d33a59" controls width="100%"></video>
+
+---
+
+
 ## 🛠️ Technologies
 
 - **React**: For building a dynamic and responsive user interface.
@@ -38,6 +51,7 @@
 - **Vite**: For a fast and modern development experience.
 
 ---
+
 
 ## 🚀 Installation
 
@@ -64,8 +78,6 @@
 
 ---
 
-
----
 
 ## 🤝 Contributing
 
