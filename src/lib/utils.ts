@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function exportToFile(cookies, swaggers) {
     return JSON.stringify({
-        "name": "kurabiye",
+        "name": "cookken",
         "version": 1,
         "cookies": cookies,
         "swaggers": swaggers

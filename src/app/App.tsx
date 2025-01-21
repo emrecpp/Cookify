@@ -6,7 +6,7 @@ import TabPages from "@/app/pages/TabPages.tsx";
 import {useEffectAfterMount} from "@/hooks/useEffectAfterMount.ts";
 
 
-const STORAGE_KEY = 'kurabiye'
+const STORAGE_KEY = 'Cookken'
 
 export default function App() {
     const {cookies, setCookies, swaggers, setSwaggers, setCurrentView} = useGlobalContext()

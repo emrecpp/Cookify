@@ -15,7 +15,7 @@ export function SettingsPage() {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(exportToFile(cookies, swaggers))
         const downloadAnchorNode = document.createElement('a')
         downloadAnchorNode.setAttribute("href", dataStr)
-        downloadAnchorNode.setAttribute("download", "kurabiye_export.json")
+        downloadAnchorNode.setAttribute("download", "cookken_export.json")
         document.body.appendChild(downloadAnchorNode)
         downloadAnchorNode.click()
         downloadAnchorNode.remove()

@@ -1,12 +1,12 @@
 {
     "manifest_version": 3,
-    "name": "Kurabiye",
+    "name": "Cookken",
+    "description": "Simplify cookie and JWT token management with one-click actions. Save time and boost productivity!",
     "version": "1.0",
     "permissions": [
         "cookies",
         "activeTab",
         "storage",
-        "scripting",
         "webNavigation"
     ],
     "host_permissions": [

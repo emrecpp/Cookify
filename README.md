@@ -1,8 +1,15 @@
-# Kurabiye - Chrome Extension for Cookie and Bearer Token Management 🍪🔑
 
-**Kurabiye** is a **Chrome extension** that makes managing cookies and JWT tokens easy for developers. It integrates smoothly with Swagger API docs, helping you automate tasks, save time, and boost productivity. Built with React, TypeScript, and Vite, it’s fast, reliable, and perfect for modern web development.
+
+# Cookken - Chrome Extension for Cookie and Bearer Token Management 🍪🔑
+
+
+**Cookken** is a **Chrome extension** that makes managing cookies and JWT tokens easy for developers. It integrates smoothly with Swagger API docs, helping you automate tasks, save time, and boost productivity. Built with React, TypeScript, and Vite, it’s fast, reliable, and perfect for modern web development.
 
 ---
+
+<p align="center">
+<img width="25%" align="center" src="public/icon/icon.png" alt="Cookken Logo">
+</p>
 
 ## ✨ Features
 
@@ -32,7 +39,7 @@
 ---
 
 ## 🎥 Demo Videos
-Check out these short videos to see Kurabiye in action:
+Check out these short videos to see Cookken in action:
 
 - **Cookie Management**
 <video src="https://github.com/user-attachments/assets/4e92c2e6-8750-4e6f-93b9-b8c4aaeb2949" controls width="100%"></video>
@@ -57,8 +64,8 @@ Check out these short videos to see Kurabiye in action:
 
 1. **Clone the Repository**:
    ```
-   git clone https://github.com/emrecpp/kurabiye.git
-   cd kurabiye
+   git clone https://github.com/emrecpp/Cookken.git
+   cd Cookken
    ```
 
 2. **Install Dependencies**:
@@ -94,4 +101,4 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 
 ---
 
-**Kurabiye** is here to make your development workflow faster, smoother, and more efficient. Try it out today and take control of your cookies and tokens like never before! 🚀🍪
+**Cookken** is here to make your development workflow faster, smoother, and more efficient. Try it out today and take control of your cookies and tokens like never before! 🚀🍪
