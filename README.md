@@ -8,7 +8,7 @@
 ---
 
 <p align="center">
-<img width="25%" align="center" src="public/icon/icon.png" alt="Cookken Logo">
+<img width="25%" align="center" src="public/icon/icon.svg" alt="Cookken Logo">
 </p>
 
 ## ✨ Features
