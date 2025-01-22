@@ -8,7 +8,7 @@
 ---
 
 <p align="center">
-<img width="25%" align="center" src="public/icon/icon.svg" alt="Cookify Logo" style="min-width: 300px">
+<img width="300" height="300" align="center" src="public/icon/icon.svg" alt="Cookify Logo" style="min-width: 300px">
 </p>
 
 ## ✨ Features
@@ -42,11 +42,11 @@
 Check out these short videos to see Cookify in action:
 
 - **Cookie Management**
-<video src="https://github.com/user-attachments/assets/4e92c2e6-8750-4e6f-93b9-b8c4aaeb2949" controls width="100%"></video>
+<video src="https://github.com/user-attachments/assets/169b7ef3-f331-4909-9a72-0687c841bdce" controls width="100%"></video>
 
 
 - **Swagger Integration**
-<video src="https://github.com/user-attachments/assets/f0cfefe2-568d-468b-b851-2c5f46d33a59" controls width="100%"></video>
+<video src="https://github.com/user-attachments/assets/fb64350a-9894-4533-9c41-a8ebe05a878e" controls width="100%"></video>
 
 ---
 
