@@ -29,13 +29,13 @@ export function Header() {
                 animate={{opacity: 1, y: 0}}
                 transition={{duration: 0.5}}>
                 <motion.h1
-                    className="text-lg font-bold flex items-center cursor-pointer"
+                    className="text-lg font-bold flex items-center cursor-pointer text-slate-800"
                     whileHover={{scale: 1.05}}
                     whileTap={{scale: 0.95}}
                     onClick={() => setCurrentView('list-cookies')}
                 >
-                    <img src="/icon/32.png" alt="Cookken Logo" width={32} height={32} className="mr-1 w-8 h-8"/>
-                    Cookken
+                    <img src="/icon/32.png" alt="Cookify Logo" width={32} height={32} className="mr-1 w-8 h-8"/>
+                    Cookify
                 </motion.h1>
 
                 <div className="space-x-2">

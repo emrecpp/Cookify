@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Cookken",
+    "name": "Cookify",
     "description": "Simplify cookie and JWT token management with one-click actions. Save time and boost productivity!",
     "version": "1.0",
     "permissions": [
