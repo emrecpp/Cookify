@@ -5,6 +5,8 @@
 
 **Cookify** is a **Chrome extension** that makes managing cookies and JWT tokens easy for developers. It integrates smoothly with Swagger API docs, helping you automate tasks, save time, and boost productivity. Built with React, TypeScript, and Vite, it’s fast, reliable, and perfect for modern web development.
 
+[⬇️ Download on Chrome Web Store](https://chromewebstore.google.com/detail/cookify/mafdkfnimilggjneibkjfejlnhcecnjd)
+
 ---
 
 <p align="center">
