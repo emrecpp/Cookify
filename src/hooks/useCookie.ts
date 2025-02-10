@@ -3,7 +3,6 @@ import toast from "react-hot-toast";
 import {getTabInfo} from "@/lib/utils.ts";
 
 
-
 export const createSetCookieConfig = (baseConfig: {
     name: string,
     protocol: string,
@@ -63,8 +62,17 @@ export const useApplyCookie = async (cookie: CookieData) => {
                 console.log("Cookie set successfully:", result);
                 toast.success("Cookie applied successfully!");
             } else {
-                console.error("Failed to set cookie:", chrome.runtime.lastError);
-                toast.error("Failed to set cookie!");
+                if (targetDomain !== "localhost") // if failed to set cookie on custom domain, then try in localhost (good for development)
+                {
+                    useApplyCookie({
+                        ...cookie,
+                        domain: "localhost"
+                    })
+                } else {
+                    console.error("Failed to set cookie:", chrome.runtime.lastError);
+                    toast.error("Failed to set cookie!");
+                }
+
             }
         });
 
