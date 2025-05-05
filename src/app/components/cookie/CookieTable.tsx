@@ -5,6 +5,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { ProjectAvatar } from "@/components/ui/project-avatar"
 import {
     Table,
     TableBody,
@@ -17,7 +18,7 @@ import { useGlobalContext } from "@/context/global-context.tsx"
 import { useActiveCookies } from "@/hooks/useActiveCookies"
 import { useApplyCookie } from "@/hooks/useCookie.ts"
 import { CookieData } from "@/types/types"
-import { Check, CheckCircle2, Cookie, Copy, FilePen, FolderGit2, GripVertical, MoreHorizontal, Trash } from 'lucide-react'
+import { Check, CheckCircle2, Copy, FilePen, GripVertical, MoreHorizontal, Search, Trash } from 'lucide-react'
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 import toast from 'react-hot-toast'
 
@@ -29,7 +30,7 @@ interface CookieTableProps {
 }
 
 export function CookieTable({ cookies, onMoveUp, onMoveDown, onReorder }: CookieTableProps) {
-  const { handleEdit, handleDeleteProfile } = useGlobalContext()
+  const { handleEdit, handleDeleteProfile, settings } = useGlobalContext()
   const { isCookieActive } = useActiveCookies(cookies)
 
   const handleCopyValue = (text: string) => {
@@ -44,6 +45,12 @@ export function CookieTable({ cookies, onMoveUp, onMoveDown, onReorder }: Cookie
   const handleDragEnd = (result: any) => {
     if (!result.destination || !onReorder) return
     onReorder(result.source.index, result.destination.index)
+  }
+  
+  const handleRowClick = (cookie: CookieData) => {
+    if (settings.applyOnClick) {
+      applyCookie(cookie);
+    }
   }
 
   return (
@@ -74,8 +81,8 @@ export function CookieTable({ cookies, onMoveUp, onMoveDown, onReorder }: Cookie
                     <TableRow>
                       <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
                         <div className="flex items-center justify-center gap-2">
-                          <Cookie className="w-4 h-4" />
-                          No cookies added yet...
+                          <Search className="w-4 h-4" />
+                          No results found.
                         </div>
                       </TableCell>
                     </TableRow>
@@ -90,8 +97,9 @@ export function CookieTable({ cookies, onMoveUp, onMoveDown, onReorder }: Cookie
                           <TableRow 
                             ref={provided.innerRef}
                             {...provided.draggableProps}
-                            className={`${isCookieActive(cookie.alias) ? "bg-green-50/50" : ""} cursor-pointer transition-colors hover:bg-accent/50`}
-                            onClick={() => applyCookie(cookie)}
+                            className={`${isCookieActive(cookie.alias) ? "bg-green-50/50" : ""} 
+                              ${settings.applyOnClick ? "cursor-pointer" : "cursor-default"} transition-colors hover:bg-accent/50`}
+                            onClick={() => handleRowClick(cookie)}
                           >
                             <TableCell className="w-[60px]">
                               <div className="flex items-center" {...provided.dragHandleProps}>
@@ -108,11 +116,11 @@ export function CookieTable({ cookies, onMoveUp, onMoveDown, onReorder }: Cookie
                             </TableCell>
                             <TableCell>{cookie.name}</TableCell>
                             <TableCell>
-                              <div className="flex items-center gap-1.5">
+                              <div className="flex items-center gap-2">
                                 {cookie.project ? (
                                   <>
-                                    <FolderGit2 className="h-3.5 w-3.5 text-muted-foreground" />
-                                    {cookie.project}
+                                    <ProjectAvatar projectName={cookie.project} size="sm" />
+                                    <span>{cookie.project}</span>
                                   </>
                                 ) : (
                                   <span className="text-muted-foreground text-xs">Not specified</span>

@@ -1,13 +1,13 @@
 import { CookieForm } from "@/app/components/cookie/CookieForm.tsx";
+import { TabItem } from "@/app/components/shared/TabItem.tsx";
 import { SwaggerForm } from "@/app/components/swagger/SwaggerForm.tsx";
 import CookiesMainPage from "@/app/pages/CookiesMainPage.tsx";
 import { SettingsPage } from "@/app/pages/SettingsPage.tsx";
 import SwaggerMainPage from "@/app/pages/SwaggerMainPage.tsx";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs.tsx";
 import { useGlobalContext } from "@/context/global-context.tsx";
 import SwaggerSVG from "@/svg/swagger.tsx";
 import { Cookie, Settings } from "lucide-react";
-
 
 export default function TabPages() {
     const {currentView, setCurrentView} = useGlobalContext()
@@ -19,35 +19,25 @@ export default function TabPages() {
         }
     }
 
+    const renderTabContent = (value: string, component: React.ReactNode) => (
+        <TabsContent className="data-[state=active]:block h-full overflow-auto" value={value}>
+            {component}
+        </TabsContent>
+    );
+
     return (
         <div className="flex flex-col h-full">
             <div className="flex-grow overflow-auto mb-16">
                 <Tabs className="w-full h-full flex flex-col"
                       value={currentView}
-                      onValueChange={(e) => {
-                          setCurrentView(e)
-                      }}>
-                    <TabsContent className="data-[state=active]:block w-full h-full" value="list-cookies">
-                        <CookiesMainPage/>
-                    </TabsContent>
-                    <TabsContent className="data-[state=active]:block w-full h-full" value="list-swaggers">
-                        <SwaggerMainPage/>
-                    </TabsContent>
-                    <TabsContent className="data-[state=active]:block" value="settings">
-                        <SettingsPage/>
-                    </TabsContent>
-                    <TabsContent className="data-[state=active]:block h-full overflow-auto" value="add-cookie">
-                        <CookieForm/>
-                    </TabsContent>
-                    <TabsContent className="data-[state=active]:block h-full overflow-auto" value="edit-cookie">
-                        <CookieForm/>
-                    </TabsContent>
-                    <TabsContent className="data-[state=active]:block h-full overflow-auto" value="add-swagger">
-                        <SwaggerForm/>
-                    </TabsContent>
-                    <TabsContent className="data-[state=active]:block h-full overflow-auto" value="edit-swagger">
-                        <SwaggerForm/>
-                    </TabsContent>
+                      onValueChange={setCurrentView}>
+                    {renderTabContent("list-cookies", <CookiesMainPage />)}
+                    {renderTabContent("list-swaggers", <SwaggerMainPage />)}
+                    {renderTabContent("settings", <SettingsPage />)}
+                    {renderTabContent("add-cookie", <CookieForm />)}
+                    {renderTabContent("edit-cookie", <CookieForm />)}
+                    {renderTabContent("add-swagger", <SwaggerForm />)}
+                    {renderTabContent("edit-swagger", <SwaggerForm />)}
                 </Tabs>
             </div>
 
@@ -56,27 +46,21 @@ export default function TabPages() {
                 <Tabs value={currentView} onValueChange={handleTabChange}>
                     <TabsList className="w-full rounded-none bg-transparent px-6">
                         <div className="flex justify-between w-full max-w-[300px] mx-auto">
-                            <TabsTrigger
+                            <TabItem 
                                 value="list-cookies"
-                                className="relative flex-col rounded-none px-3 py-1.5 text-xs after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
-                            >
-                                <Cookie className="mb-1 opacity-60" size={20} strokeWidth={2} aria-hidden="true"/>
-                                Cookies
-                            </TabsTrigger>
-                            <TabsTrigger
+                                icon={<Cookie size={20} strokeWidth={2} />}
+                                label="Cookies"
+                            />
+                            <TabItem 
                                 value="list-swaggers"
-                                className="relative flex-col rounded-none px-3 py-1.5 text-xs after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
-                            >
-                                <SwaggerSVG className="mb-1 opacity-60" width={24} height={24} aria-hidden="true"/>
-                                Swaggers
-                            </TabsTrigger>
-                            <TabsTrigger
+                                icon={<SwaggerSVG width={24} height={24} />}
+                                label="Swaggers"
+                            />
+                            <TabItem 
                                 value="settings"
-                                className="relative flex-col rounded-none px-3 py-1.5 text-xs after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
-                            >
-                                <Settings className="mb-1 opacity-60" size={20} strokeWidth={2} aria-hidden="true"/>
-                                Settings
-                            </TabsTrigger>
+                                icon={<Settings size={20} strokeWidth={2} />}
+                                label="Settings"
+                            />
                         </div>
                     </TabsList>
                 </Tabs>

@@ -2,9 +2,10 @@
 import { useApplyCookie } from "@/hooks/useCookie.ts";
 import { useApplySwagger } from "@/hooks/useSwagger.ts";
 import { sortByOrder } from "@/lib/utils.ts";
-import { CookieData, isCookieData, PageViewTypes, SwaggerData } from "@/types/types.ts";
-import React, { createContext, ReactNode, useContext, useState } from 'react';
+import { CookieData, DEFAULT_SETTINGS, isCookieData, PageViewTypes, Settings, SwaggerData } from "@/types/types.ts";
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
+const SETTINGS_STORAGE_KEY = 'Cookify_Settings';
 
 interface GlobalContextState {
     currentView: PageViewTypes;
@@ -31,6 +32,11 @@ interface GlobalContextState {
 
     animationDirection: 1 | -1;
     setAnimationDirection: (direction: 1 | -1) => void;
+    
+    getAllProjects: () => string[];
+    
+    settings: Settings;
+    updateSettings: (settings: Partial<Settings>) => void;
 }
 
 export const GlobalContext = createContext<GlobalContextState | any>(undefined);
@@ -49,17 +55,55 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
     const [editingSwagger, setEditingSwagger] = useState<SwaggerData | null>(null)
 
     const [animationDirection, setAnimationDirection] = useState<1 | -1>(1);
+    
+    const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+    
+    // Load settings from localStorage
+    useEffect(() => {
+        const savedSettings = localStorage.getItem(SETTINGS_STORAGE_KEY);
+        if (savedSettings) {
+            try {
+                const parsedSettings = JSON.parse(savedSettings);
+                setSettings(prev => ({...prev, ...parsedSettings}));
+            } catch (error) {
+                console.error('Failed to parse settings from localStorage', error);
+            }
+        }
+    }, []);
+    
+    // Update settings and save to localStorage
+    const updateSettings = (newSettings: Partial<Settings>) => {
+        setSettings(prev => {
+            const updated = {...prev, ...newSettings};
+            localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(updated));
+            return updated;
+        });
+    };
 
-    // Sıralama ile setCookies
+    // Set cookies with sorting
     const setCookies = (newCookies: CookieData[]) => {
         const sortedCookies = sortByOrder(newCookies);
         setCookiesState(sortedCookies);
     };
 
-    // Sıralama ile setSwaggers
+    // Set swaggers with sorting
     const setSwaggers = (newSwaggers: SwaggerData[]) => {
         const sortedSwaggers = sortByOrder(newSwaggers);
         setSwaggersState(sortedSwaggers);
+    };
+    
+    // Get all unique projects from both cookies and swaggers
+    const getAllProjects = () => {
+        const cookieProjects = cookies
+            .filter(cookie => cookie.project)
+            .map(cookie => cookie.project as string);
+            
+        const swaggerProjects = swaggers
+            .filter(swagger => swagger.project)
+            .map(swagger => swagger.project as string);
+            
+        // Combine both arrays and get unique values
+        return [...new Set([...cookieProjects, ...swaggerProjects])];
     };
 
     const handleEdit = (data: CookieData | SwaggerData) => {
@@ -155,7 +199,11 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
                 handleCookieSubmit, handleDeleteProfile,
                 handleSwaggerSubmit,
 
-                animationDirection, setAnimationDirection
+                animationDirection, setAnimationDirection,
+                
+                getAllProjects,
+                
+                settings, updateSettings
             }}>
             {children}
         </GlobalContext.Provider>

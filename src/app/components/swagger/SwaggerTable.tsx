@@ -5,6 +5,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { ProjectAvatar } from "@/components/ui/project-avatar"
 import {
     Table,
     TableBody,
@@ -14,9 +15,8 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { useGlobalContext } from "@/context/global-context.tsx"
-import SwaggerSVG from "@/svg/swagger.tsx"
 import { SwaggerData } from "@/types/types"
-import { Check, Copy, FilePen, FolderGit2, GripVertical, MoreHorizontal, Trash } from 'lucide-react'
+import { Check, Copy, FilePen, GripVertical, MoreHorizontal, Search, Trash } from 'lucide-react'
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 import toast from 'react-hot-toast'
 
@@ -28,7 +28,7 @@ interface SwaggerTableProps {
 }
 
 export function SwaggerTable({ swaggers, onMoveUp, onMoveDown, onReorder }: SwaggerTableProps) {
-  const { handleEdit, handleDeleteProfile, handleApply } = useGlobalContext()
+  const { handleEdit, handleDeleteProfile, handleApply, settings } = useGlobalContext()
 
   const handleCopyToken = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -42,6 +42,12 @@ export function SwaggerTable({ swaggers, onMoveUp, onMoveDown, onReorder }: Swag
   const handleDragEnd = (result: any) => {
     if (!result.destination || !onReorder) return
     onReorder(result.source.index, result.destination.index)
+  }
+  
+  const handleRowClick = (swagger: SwaggerData) => {
+    if (settings.applyOnClick) {
+      applySwagger(swagger);
+    }
   }
 
   return (
@@ -72,8 +78,8 @@ export function SwaggerTable({ swaggers, onMoveUp, onMoveDown, onReorder }: Swag
                     <TableRow>
                       <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
                         <div className="flex items-center justify-center gap-2">
-                          <SwaggerSVG className="w-4 h-4" />
-                          No swagger items added yet...
+                          <Search className="w-4 h-4" />
+                          No results found.
                         </div>
                       </TableCell>
                     </TableRow>
@@ -88,8 +94,8 @@ export function SwaggerTable({ swaggers, onMoveUp, onMoveDown, onReorder }: Swag
                           <TableRow 
                             ref={provided.innerRef}
                             {...provided.draggableProps}
-                            className="cursor-pointer transition-colors hover:bg-accent/50"
-                            onClick={() => applySwagger(swagger)}
+                            className={`${settings.applyOnClick ? "cursor-pointer" : "cursor-default"} transition-colors hover:bg-accent/50`}
+                            onClick={() => handleRowClick(swagger)}
                           >
                             <TableCell className="w-[60px]">
                               <div className="flex items-center" {...provided.dragHandleProps}>
@@ -98,11 +104,11 @@ export function SwaggerTable({ swaggers, onMoveUp, onMoveDown, onReorder }: Swag
                             </TableCell>
                             <TableCell className="font-medium">{swagger.alias}</TableCell>
                             <TableCell>
-                              <div className="flex items-center gap-1.5">
+                              <div className="flex items-center gap-2">
                                 {swagger.project ? (
                                   <>
-                                    <FolderGit2 className="h-3.5 w-3.5 text-muted-foreground" />
-                                    {swagger.project}
+                                    <ProjectAvatar projectName={swagger.project} size="sm" />
+                                    <span>{swagger.project}</span>
                                   </>
                                 ) : (
                                   <span className="text-muted-foreground text-xs">Not specified</span>

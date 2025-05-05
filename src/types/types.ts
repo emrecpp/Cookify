@@ -23,8 +23,8 @@ export interface CookieData {
     value: string
     url: string // left panel in the chrome devtools Application page.
     domain: string
-    project?: string // Projeye göre gruplamak için
-    order?: number // Sıralama için
+    project?: string // For grouping by project
+    order?: number // For ordering
 }
 
 export interface SwaggerData {
@@ -32,8 +32,16 @@ export interface SwaggerData {
     urls: string[]
     bearerToken: string
     autoLogin?: "true" | "false"
-    project?: string // Projeye göre gruplamak için
-    order?: number // Sıralama için
+    project?: string // For grouping by project
+    order?: number // For ordering
+}
+
+export interface Settings {
+    applyOnClick: boolean
+}
+
+export const DEFAULT_SETTINGS: Settings = {
+    applyOnClick: false
 }
 
 export const isCookieData = (data: CookieData | SwaggerData): data is CookieData => {

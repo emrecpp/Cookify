@@ -10,12 +10,12 @@ export function SwaggerList() {
     const { swaggers, setSwaggers } = useGlobalContext()
     const [filteredSwaggers, setFilteredSwaggers] = useState<SwaggerData[]>(swaggers)
 
-    // Swaggers güncellendiğinde filtrelenmiş listeyi de güncelle
+    // Update filtered list when swaggers change
     useEffect(() => {
         setFilteredSwaggers(swaggers)
     }, [swaggers])
 
-    // Öğeyi bir pozisyon yukarı taşı
+    // Move an item up one position
     const moveItemUp = (index: number) => {
         if (index === 0) return;
 
@@ -24,7 +24,7 @@ export function SwaggerList() {
         items.splice(index, 1);
         items.splice(index - 1, 0, itemToMove);
 
-        // Her öğeye order değeri atayalım
+        // Assign order value to each item
         const updatedItems = items.map((item, idx) => ({
             ...item,
             order: idx
@@ -32,11 +32,11 @@ export function SwaggerList() {
 
         setFilteredSwaggers(updatedItems);
 
-        // Global swagger listesini de güncelleyelim
+        // Update global swagger list
         updateGlobalSwaggers(updatedItems);
     };
 
-    // Öğeyi bir pozisyon aşağı taşı
+    // Move an item down one position
     const moveItemDown = (index: number) => {
         if (index === filteredSwaggers.length - 1) return;
 
@@ -45,7 +45,7 @@ export function SwaggerList() {
         items.splice(index, 1);
         items.splice(index + 1, 0, itemToMove);
 
-        // Her öğeye order değeri atayalım
+        // Assign order value to each item
         const updatedItems = items.map((item, idx) => ({
             ...item,
             order: idx
@@ -53,17 +53,17 @@ export function SwaggerList() {
 
         setFilteredSwaggers(updatedItems);
 
-        // Global swagger listesini de güncelleyelim
+        // Update global swagger list
         updateGlobalSwaggers(updatedItems);
     };
 
-    // Sürükle bırak ile sıralama
+    // Reorder using drag and drop
     const handleReorder = (startIndex: number, endIndex: number) => {
         const items = Array.from(filteredSwaggers);
         const [removed] = items.splice(startIndex, 1);
         items.splice(endIndex, 0, removed);
 
-        // Her öğeye order değeri atayalım
+        // Assign order value to each item
         const updatedItems = items.map((item, idx) => ({
             ...item,
             order: idx
@@ -71,11 +71,11 @@ export function SwaggerList() {
 
         setFilteredSwaggers(updatedItems);
 
-        // Global swagger listesini de güncelleyelim
+        // Update global swagger list
         updateGlobalSwaggers(updatedItems);
     };
 
-    // Global swagger listesini güncelle
+    // Update global swagger list
     const updateGlobalSwaggers = (updatedItems: SwaggerData[]) => {
         const newSwaggers = swaggers.map((swagger: SwaggerData) => {
             const updatedSwagger = updatedItems.find(item => 
@@ -97,7 +97,7 @@ export function SwaggerList() {
                     className="text-muted-foreground text-center text-sm select-none flex items-center gap-2 justify-center"
                 >
                     <SwaggerSVG className="w-4 h-4"/>
-                    Henüz hiç swagger eklenmemiş...
+                    No swagger configurations added yet...
                 </motion.p>
             ) : (
                 <>

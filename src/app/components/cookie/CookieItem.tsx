@@ -19,7 +19,7 @@ export function CookieItem({cookie, index}: CookieItemProps) {
 
     const handleCopyValue = () => {
         navigator.clipboard.writeText(cookie.value);
-        toast.success("Değer kopyalandı");
+        toast.success("Value copied");
     }
 
     return (
@@ -62,7 +62,7 @@ export function CookieItem({cookie, index}: CookieItemProps) {
                             variant="outline"
                             size="sm"
                         >
-                            <Copy className="h-4 w-4 mr-1.5"/> Değeri Kopyala
+                            <Copy className="h-4 w-4 mr-1.5"/> Copy Value
                         </Button>
                         
                         <Button
@@ -71,7 +71,7 @@ export function CookieItem({cookie, index}: CookieItemProps) {
                             variant="outline"
                             size="sm"
                         >
-                            <Check className="h-4 w-4 mr-1.5"/> Uygula
+                            <Check className="h-4 w-4 mr-1.5"/> Apply
                         </Button>
                     </div>
                 </CardContent>

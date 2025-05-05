@@ -10,12 +10,12 @@ export function CookieList() {
     const { cookies, setCookies } = useGlobalContext()
     const [filteredCookies, setFilteredCookies] = useState<CookieData[]>(cookies)
 
-    // Cookies güncellendiğinde filtrelenmiş listeyi de güncelle
+    // Update filtered list when cookies change
     useEffect(() => {
         setFilteredCookies(cookies)
     }, [cookies])
 
-    // Öğeyi bir pozisyon yukarı taşı
+    // Move an item up one position
     const moveItemUp = (index: number) => {
         if (index === 0) return;
 
@@ -24,19 +24,17 @@ export function CookieList() {
         items.splice(index, 1);
         items.splice(index - 1, 0, itemToMove);
 
-        // Her öğeye order değeri atayalım
+        // Assign order value to each item
         const updatedItems = items.map((item, idx) => ({
             ...item,
             order: idx
         }));
 
         setFilteredCookies(updatedItems);
-
-        // Global cookie listesini de güncelleyelim
         updateGlobalCookies(updatedItems);
     };
 
-    // Öğeyi bir pozisyon aşağı taşı
+    // Move an item down one position
     const moveItemDown = (index: number) => {
         if (index === filteredCookies.length - 1) return;
 
@@ -45,37 +43,33 @@ export function CookieList() {
         items.splice(index, 1);
         items.splice(index + 1, 0, itemToMove);
 
-        // Her öğeye order değeri atayalım
+        // Assign order value to each item
         const updatedItems = items.map((item, idx) => ({
             ...item,
             order: idx
         }));
 
         setFilteredCookies(updatedItems);
-
-        // Global cookie listesini de güncelleyelim
         updateGlobalCookies(updatedItems);
     };
 
-    // Sürükle bırak ile sıralama
+    // Reorder using drag and drop
     const handleReorder = (startIndex: number, endIndex: number) => {
         const items = Array.from(filteredCookies);
         const [removed] = items.splice(startIndex, 1);
         items.splice(endIndex, 0, removed);
 
-        // Her öğeye order değeri atayalım
+        // Assign order value to each item
         const updatedItems = items.map((item, idx) => ({
             ...item,
             order: idx
         }));
 
         setFilteredCookies(updatedItems);
-
-        // Global cookie listesini de güncelleyelim
         updateGlobalCookies(updatedItems);
     };
 
-    // Global cookie listesini güncelle
+    // Update global cookie list
     const updateGlobalCookies = (updatedItems: CookieData[]) => {
         const newCookies = cookies.map((cookie: CookieData) => {
             const updatedCookie = updatedItems.find(item => 
@@ -98,7 +92,7 @@ export function CookieList() {
                     className="text-muted-foreground text-center text-sm select-none flex items-center gap-2 justify-center"
                 >
                     <Cookie className="w-4 h-4"/>
-                    Henüz hiç cookie eklenmemiş...
+                    No cookies added yet...
                 </motion.p>
             ) : (
                 <>
