@@ -1,12 +1,13 @@
-import {Button} from "@/components/ui/button.tsx"
-import {Card, CardContent} from "@/components/ui/card.tsx"
-import {motion} from 'framer-motion'
-import {Check, Cookie, FilePen, Globe, GlobeLock} from 'lucide-react'
-import {CookieData} from "@/types/types.ts"
-import {useGlobalContext} from "@/context/global-context.tsx";
-import OptionsBtn from "@/app/components/OptionsBtn.tsx";
-import {useApplyCookie} from "@/hooks/useCookie.ts";
-import {Separator} from "@/components/ui/separator.tsx";
+import OptionsBtn from "@/app/components/OptionsBtn.tsx"
+import { Button } from "@/components/ui/button.tsx"
+import { Card, CardContent } from "@/components/ui/card.tsx"
+import { Separator } from "@/components/ui/separator.tsx"
+import { useGlobalContext } from "@/context/global-context.tsx"
+import { useApplyCookie } from "@/hooks/useCookie.ts"
+import { CookieData } from "@/types/types.ts"
+import { motion } from 'framer-motion'
+import { Check, Cookie, Copy, FilePen, Globe, GlobeLock } from 'lucide-react'
+import toast from "react-hot-toast"
 
 interface CookieItemProps {
     cookie: CookieData
@@ -16,6 +17,10 @@ interface CookieItemProps {
 export function CookieItem({cookie, index}: CookieItemProps) {
     const {handleEditCookie} = useGlobalContext()
 
+    const handleCopyValue = () => {
+        navigator.clipboard.writeText(cookie.value);
+        toast.success("Değer kopyalandı");
+    }
 
     return (
         <motion.li
@@ -48,19 +53,26 @@ export function CookieItem({cookie, index}: CookieItemProps) {
                         </div>
 
                     </div>
-                    <div className="space-x-2 flex items-center justify-end mt-auto">
-                        <div className="w-full flex flex-col gap-2">
-                            <OptionsBtn data={cookie}/>
-                            <Button
-                                className="bg-primary/90 text-white hover:bg-primary/70 hover:text-white"
-                                onClick={async () => await useApplyCookie(cookie)}
-                                variant="outline"
-                                size="sm"
-                            >
-                                <Check className="h-4 w-4"/> Apply
-                            </Button>
-                        </div>
-
+                    <div className="flex flex-col gap-3 mt-auto">
+                        <OptionsBtn data={cookie}/>
+                        
+                        <Button
+                            className="bg-blue-500/90 text-white hover:bg-blue-500/70 hover:text-white"
+                            onClick={handleCopyValue}
+                            variant="outline"
+                            size="sm"
+                        >
+                            <Copy className="h-4 w-4 mr-1.5"/> Değeri Kopyala
+                        </Button>
+                        
+                        <Button
+                            className="bg-primary/90 text-white hover:bg-primary/70 hover:text-white"
+                            onClick={async () => await useApplyCookie(cookie)}
+                            variant="outline"
+                            size="sm"
+                        >
+                            <Check className="h-4 w-4 mr-1.5"/> Uygula
+                        </Button>
                     </div>
                 </CardContent>
             </Card>

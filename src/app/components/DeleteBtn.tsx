@@ -1,6 +1,4 @@
-import React, {useState} from 'react';
-import {Trash2} from "lucide-react";
-import {Button} from "@/components/ui/button.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import {
     Dialog,
     DialogContent,
@@ -8,9 +6,11 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-} from "@/components/ui/dialog.tsx"
-import {useGlobalContext} from "@/context/global-context.tsx";
-import {CookieData, SwaggerData} from "@/types/types.ts";
+} from "@/components/ui/dialog.tsx";
+import { useGlobalContext } from "@/context/global-context.tsx";
+import { CookieData, SwaggerData } from "@/types/types.ts";
+import { Trash2 } from "lucide-react";
+import { useState } from 'react';
 import toast from "react-hot-toast";
 
 interface DeleteBtnProps {
@@ -33,7 +33,7 @@ const DeleteBtn = ({data}: DeleteBtnProps) => {
                 <div
                     className="w-full flex items-center gap-2 "
                 >
-                    <Trash2 className="h-4 w-4"/> Delete Profile
+                    <Trash2 className="h-4 w-4 mr-1.5"/> Delete Profile
                 </div>
             </DialogTrigger>
             <DialogContent>
@@ -62,7 +62,7 @@ const DeleteBtn = ({data}: DeleteBtnProps) => {
                             className="bg-red-500 hover:bg-red-500/80"
                             onClick={handleDeleteClick}
                         >
-                            <Trash2 className="h-4 w-4"/>
+                            <Trash2 className="h-4 w-4 mr-1.5"/>
                             Delete
                         </Button>
                     </DialogFooter>

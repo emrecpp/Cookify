@@ -1,6 +1,3 @@
-import React from 'react';
-import {Edit, Grip} from "lucide-react";
-import {Button} from "@/components/ui/button.tsx";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -8,14 +5,15 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu.tsx"
+} from "@/components/ui/dropdown-menu.tsx";
+import { Edit, MoreHorizontal } from "lucide-react";
 
-import {useGlobalContext} from "@/context/global-context.tsx";
+import { useGlobalContext } from "@/context/global-context.tsx";
 
-import {CookieData, isCookieData, SwaggerData} from "@/types/types.ts";
 import DeleteBtn from "@/app/components/DeleteBtn.tsx";
 import DropdownItemDeleteCookie from "@/app/components/cookie/DropdownItemDeleteCookie.tsx";
 import DropdownItemLogout from "@/app/components/swagger/DropdownItemLogout.tsx";
+import { CookieData, isCookieData, SwaggerData } from "@/types/types.ts";
 
 const OptionsBtn = ({data}: { data: CookieData | SwaggerData }) => {
     const {handleEdit} = useGlobalContext()
@@ -30,7 +28,7 @@ const OptionsBtn = ({data}: { data: CookieData | SwaggerData }) => {
                     className="w-full shadow-sm font-medium text-xs px-3 border-input border rounded-md whitespace-nowrap gap-2 justify-center items-center h-8 inline-flex select-none"
                     onClick={() => handleEdit(data)}
                 >
-                    <Grip className="h-4 w-4"/> Options
+                    <MoreHorizontal className="h-4 w-4"/> Options
                 </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="select-none">
@@ -39,10 +37,8 @@ const OptionsBtn = ({data}: { data: CookieData | SwaggerData }) => {
                 <DropdownMenuItem
                     className="w-full cursor-pointer"
                     onClick={() => handleEdit(data)}
-                    variant="outline"
-                    size="sm"
                 >
-                    <Edit className="h-4 w-4"/> Edit
+                    <Edit className="h-4 w-4 mr-1.5"/> Edit
                 </DropdownMenuItem>
                 {isCookie && <DropdownItemDeleteCookie data={data as CookieData}/>}
                 {isSwagger && <DropdownItemLogout data={data as SwaggerData}/>}

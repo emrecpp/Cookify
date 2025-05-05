@@ -1,25 +1,21 @@
-import React from 'react';
-import {useGlobalContext} from "@/context/global-context.tsx";
-import {CookieList} from "@/app/components/cookie/CookieList.tsx";
-import {CookieForm} from "@/app/components/cookie/CookieForm.tsx";
-import {AnimatePresence, motion} from "framer-motion";
-import {SwaggerList} from "@/app/components/swagger/SwaggerList.tsx";
+import { SwaggerList } from "@/app/components/swagger/SwaggerList.tsx";
+import { useGlobalContext } from "@/context/global-context.tsx";
+import { AnimatePresence, motion } from "framer-motion";
 
 const SwaggerMainPage = () => {
-    const {currentView, setCurrentView, swaggers, setSwaggers, editingCookie, setEditingCookie} = useGlobalContext()
+    const {currentView, animationDirection} = useGlobalContext()
 
     return (
         <AnimatePresence mode="wait">
             <motion.div
                 key={currentView}
-                initial={{opacity: 0, x: currentView === 'list-swaggers' ? 0 : 100}}
-                animate={{opacity: 1, x: 0}}
-                exit={{opacity: 0, x: currentView === 'list-swaggers' ? -100 : 200}}
+                initial={{opacity: 0}}
+                animate={{opacity: 1}}
+                exit={{opacity: 0}}
                 transition={{duration: 0.3}}
-                className="w-full"
+                className="w-full overflow-hidden min-h-[300px]"
             >
                 <SwaggerList/>
-
             </motion.div>
         </AnimatePresence>
     );

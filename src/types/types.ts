@@ -21,18 +21,19 @@ export interface CookieData {
     alias: string
     name: string
     value: string
-
-
     url: string // left panel in the chrome devtools Application page.
     domain: string
+    project?: string // Projeye göre gruplamak için
+    order?: number // Sıralama için
 }
 
 export interface SwaggerData {
     alias: string
     urls: string[]
     bearerToken: string
-
     autoLogin?: "true" | "false"
+    project?: string // Projeye göre gruplamak için
+    order?: number // Sıralama için
 }
 
 export const isCookieData = (data: CookieData | SwaggerData): data is CookieData => {

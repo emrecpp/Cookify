@@ -1,19 +1,18 @@
-import React from 'react';
-import {useGlobalContext} from "@/context/global-context.tsx";
-import {CookieList} from "@/app/components/cookie/CookieList.tsx";
-import {AnimatePresence, motion} from "framer-motion";
+import { CookieList } from "@/app/components/cookie/CookieList.tsx";
+import { useGlobalContext } from "@/context/global-context.tsx";
+import { AnimatePresence, motion } from "framer-motion";
 
 const CookiesMainPage = () => {
-    const {currentView, setCurrentView, cookies, setCookies, editingCookie, setEditingCookie} = useGlobalContext()
+    const {currentView, animationDirection} = useGlobalContext()
 
     return (
         <AnimatePresence mode="wait">
             <motion.div
-                className="w-full"
+                className="w-full overflow-hidden min-h-[300px]"
                 key={currentView}
-                initial={{opacity: 0, x: currentView === 'list-cookies' ? 0 : 100}}
-                animate={{opacity: 1, x: 0}}
-                exit={{opacity: 0, x: currentView === 'list-cookies' ? -100 : 200}}
+                initial={{opacity: 0}}
+                animate={{opacity: 1}}
+                exit={{opacity: 0}}
                 transition={{duration: 0.3}}
             >
                 <CookieList/>

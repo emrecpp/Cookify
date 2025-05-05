@@ -1,10 +1,14 @@
-import React, {useEffect} from 'react'
-import {Header} from './components/Header'
-import {useGlobalContext} from "@/context/global-context"
-import {exportToFile, getTabInfo, sendMessage} from "@/lib/utils.ts";
 import TabPages from "@/app/pages/TabPages.tsx";
-import {useEffectAfterMount} from "@/hooks/useEffectAfterMount.ts";
+import { useGlobalContext } from "@/context/global-context";
+import { useEffectAfterMount } from "@/hooks/useEffectAfterMount.ts";
+import { exportToFile, getTabInfo, sendMessage } from "@/lib/utils.ts";
+import { useEffect } from 'react';
+import { Header } from './components/Header';
 
+// React 18 ile react-beautiful-dnd için geçici çözüm
+import React from 'react';
+// @ts-ignore
+window.React = React;
 
 const STORAGE_KEY = 'Cookify'
 
@@ -77,9 +81,13 @@ export default function App() {
 
 
     return (
-        <div className="min-w-[600px] max-w-[700px] min-h-[375px] mx-auto p-4 flex flex-col justify-between">
-            <Header/>
-            <TabPages/>
+        <div className="min-w-[600px] max-w-[700px] h-[600px] mx-auto flex flex-col p-2">
+            <div className="fixed top-0 left-0 right-0 z-50 bg-background max-w-[700px] mx-auto ">
+                <Header/>
+            </div>
+            <div className="flex-grow overflow-auto flex flex-col pt-[56px]">
+                <TabPages/>
+            </div>
         </div>
     )
 }

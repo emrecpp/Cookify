@@ -1,6 +1,6 @@
-import {type ClassValue, clsx} from "clsx"
-import {twMerge} from "tailwind-merge"
+import { type ClassValue, clsx } from "clsx";
 import toast from "react-hot-toast";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs))
@@ -51,4 +51,20 @@ export const sendMessage = async (action, params) => {
         });
     });
 
+}
+
+export function sortByOrder<T extends { order?: number }>(items: T[]): T[] {
+  return [...items].sort((a, b) => {
+    // Eğer order özelliği yoksa veya aynıysa değişiklik yapma
+    if ((a.order === undefined && b.order === undefined) || a.order === b.order) {
+      return 0;
+    }
+    
+    // Undefined order değerlerini en sona koy
+    if (a.order === undefined) return 1;
+    if (b.order === undefined) return -1;
+    
+    // Küçükten büyüğe sırala
+    return a.order - b.order;
+  });
 }
