@@ -8,7 +8,7 @@ const CookiesMainPage = () => {
     return (
         <AnimatePresence mode="wait">
             <motion.div
-                className="w-full overflow-hidden min-h-[300px]"
+                className="w-full overflow-hidden min-h-[300px] h-full"
                 key={currentView}
                 initial={{opacity: 0}}
                 animate={{opacity: 1}}

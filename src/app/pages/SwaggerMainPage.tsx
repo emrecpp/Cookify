@@ -13,7 +13,7 @@ const SwaggerMainPage = () => {
                 animate={{opacity: 1}}
                 exit={{opacity: 0}}
                 transition={{duration: 0.3}}
-                className="w-full overflow-hidden min-h-[300px]"
+                className="w-full overflow-hidden min-h-[300px] h-full"
             >
                 <SwaggerList/>
             </motion.div>

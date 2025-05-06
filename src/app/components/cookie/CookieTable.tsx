@@ -54,23 +54,19 @@ export default function CookieTable({ cookies, onMoveUp, onMoveDown, onReorder }
   }
 
   return (
-    <div className="relative overflow-hidden flex flex-col">
-      <div className="sticky top-0 z-20 bg-background">
-        <Table className="select-none">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[60px]">Order</TableHead>
-              <TableHead className="w-[160px]">Alias</TableHead>
-              <TableHead className="w-[150px]">Cookie Name</TableHead>
-              <TableHead>Project</TableHead>
-              <TableHead className="text-right w-[120px]">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-        </Table>
-      </div>
+    <div className="w-full overflow-hidden">
       <div className="overflow-y-auto" style={{ maxHeight: "350px" }}>
         <DragDropContext onDragEnd={handleDragEnd}>
           <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead style={{ width: '60px', paddingLeft: '16px' }}>Order</TableHead>
+                <TableHead style={{ width: '150px', paddingLeft: '16px' }}>Alias</TableHead>
+                <TableHead style={{ width: '150px', paddingLeft: '16px' }}>Cookie Name</TableHead>
+                <TableHead style={{ paddingLeft: '16px' }}>Project</TableHead>
+                <TableHead style={{ width: '120px', paddingLeft: '16px' }}>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
             <Droppable droppableId="cookies">
               {(provided) => (
                 <TableBody
@@ -101,12 +97,12 @@ export default function CookieTable({ cookies, onMoveUp, onMoveDown, onReorder }
                               ${settings.applyOnClick ? "cursor-pointer" : "cursor-default"} transition-colors hover:bg-accent/50`}
                             onClick={() => handleRowClick(cookie)}
                           >
-                            <TableCell className="w-[60px]">
+                            <TableCell style={{ width: '60px', paddingLeft: '16px' }}>
                               <div className="flex items-center" {...provided.dragHandleProps}>
                                 <GripVertical className="h-4 w-4 text-muted-foreground" />
                               </div>
                             </TableCell>
-                            <TableCell className="font-medium">
+                            <TableCell style={{ width: '150px', paddingLeft: '16px' }} className="font-medium">
                               <div className="flex items-center gap-1.5">
                                 {isCookieActive(cookie.alias) && (
                                   <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
@@ -114,8 +110,8 @@ export default function CookieTable({ cookies, onMoveUp, onMoveDown, onReorder }
                                 {cookie.alias}
                               </div>
                             </TableCell>
-                            <TableCell>{cookie.name}</TableCell>
-                            <TableCell>
+                            <TableCell style={{ width: '150px', paddingLeft: '16px' }}>{cookie.name}</TableCell>
+                            <TableCell style={{ paddingLeft: '16px' }}>
                               <div className="flex items-center gap-2">
                                 {cookie.project ? (
                                   <>
@@ -127,8 +123,8 @@ export default function CookieTable({ cookies, onMoveUp, onMoveDown, onReorder }
                                 )}
                               </div>
                             </TableCell>
-                            <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                              <div className="flex justify-end gap-1">
+                            <TableCell style={{ width: '120px', paddingLeft: '16px' }}>
+                              <div className="flex items-center gap-1">
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" size="icon" className="h-7 w-7">

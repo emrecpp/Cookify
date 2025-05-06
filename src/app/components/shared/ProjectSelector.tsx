@@ -120,6 +120,7 @@ export function ProjectSelector({ projects, selectedProject, onProjectChange }: 
                                     setNewProject(false);
                                 }
                             }}
+                            autoComplete="off"
                         />
                     </div>
                 )}

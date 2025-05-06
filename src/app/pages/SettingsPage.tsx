@@ -103,11 +103,11 @@ export function SettingsPage() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="flex gap-2">
-                            <Button variant="outline" onClick={handleExport} className="w-full">
-                                <Download className="mr-2 h-4 w-4" /> Export
-                            </Button>
                             <Button variant="outline" onClick={handleImport} className="w-full">
                                 <Upload className="mr-2 h-4 w-4" /> Import
+                            </Button>
+                            <Button variant="outline" onClick={handleExport} className="w-full">
+                                <Download className="mr-2 h-4 w-4" /> Export
                             </Button>
                         </CardContent>
                     </Card>

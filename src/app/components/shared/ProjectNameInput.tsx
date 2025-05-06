@@ -18,7 +18,7 @@ export const ProjectNameInput = forwardRef<HTMLInputElement, ProjectNameInputPro
                                                                                          onChange,
                                                                                          onCancel,
                                                                                          onSubmit,
-                                                                                         className = "relative w-[200px]",
+                                                                                         className = "relative w-full max-w-[250px]",
                                                                                          inputClassName = "h-8 pl-2 pr-16"
                                                                                      }, ref) => {
     const handleSubmit = () => {
@@ -47,7 +47,7 @@ export const ProjectNameInput = forwardRef<HTMLInputElement, ProjectNameInputPro
             <Input
                 ref={ref}
                 size={1}
-                placeholder="Proje adı girin"
+                placeholder="Enter project name"
                 value={value}
                 onChange={onChange}
                 className={`!h-10 pb-1.5 ${inputClassName} ${value ? "pl-10" : "pl-10"}`}

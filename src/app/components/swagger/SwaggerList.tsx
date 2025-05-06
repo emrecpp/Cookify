@@ -88,13 +88,13 @@ export function SwaggerList() {
     };
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-4 h-full">
             {swaggers.length === 0 ? (
                 <motion.p
                     initial={{opacity: 0, x: 0, y: -20}}
                     animate={{opacity: 1, x: 0, y: 0}}
                     transition={{duration: 0.3, delay: 0.2}}
-                    className="text-muted-foreground text-center text-sm select-none flex items-center gap-2 justify-center"
+                    className="text-muted-foreground text-center text-sm select-none flex items-center gap-2 justify-center h-full"
                 >
                     <SwaggerSVG className="w-4 h-4"/>
                     No swagger configurations added yet...

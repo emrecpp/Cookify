@@ -98,7 +98,7 @@ export function CookieForm() {
                         value={formData.value}
                         onChange={handleInputChange}
                         multiline
-                        className="font-mono"
+                        className=""
                         required
                         error={errors.value}
                         placeholder="Enter cookie value"
