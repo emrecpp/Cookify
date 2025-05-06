@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { Cookie } from "lucide-react"
 import { useEffect, useState } from 'react'
 import { CookieFilter } from './CookieFilter.tsx'
-import { CookieTable } from './CookieTable.tsx'
+import CookieTable from './CookieTable.tsx'
 
 export function CookieList() {
     const { cookies, setCookies } = useGlobalContext()

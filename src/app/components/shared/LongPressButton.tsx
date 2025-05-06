@@ -1,11 +1,15 @@
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 interface LongPressButtonProps {
   onLongPress: () => void;
   onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
   longPressTime?: number;
+  threshold?: number;
   disabled?: boolean;
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  icon?: React.ReactNode;
+  tooltipText?: string;
   className?: string;
   progressClassName?: string;
   progressPosition?: 'bottom' | 'top';
@@ -15,28 +19,33 @@ export function LongPressButton({
   onLongPress,
   onClick,
   longPressTime = 3000,
+  threshold = 500,
   disabled = false,
   children,
+  icon,
+  tooltipText,
   className = '',
   progressClassName = '',
   progressPosition = 'bottom',
 }: LongPressButtonProps) {
   const [isPressed, setIsPressed] = useState(false);
+  const [isProgressing, setIsProgressing] = useState(false);
   const [progress, setProgress] = useState(0);
   const timerRef = useRef<number | null>(null);
+  const thresholdTimerRef = useRef<number | null>(null);
   const startTimeRef = useRef<number>(0);
   const animationRef = useRef<number | null>(null);
 
   const animateProgress = useCallback(() => {
-    const elapsed = Date.now() - startTimeRef.current;
-    const newProgress = (elapsed / longPressTime) * 100;
+    const elapsed = Date.now() - startTimeRef.current - threshold;
+    const newProgress = Math.max(0, (elapsed / (longPressTime - threshold)) * 100);
     
     if (newProgress >= 100) {
       setProgress(100);
       cancelAnimationFrame(animationRef.current!);
       animationRef.current = null;
       
-      // Tamamlandığında işlemi çalıştır ve sıfırla
+      // Execute the action when completed and reset
       if (timerRef.current !== null) {
         clearTimeout(timerRef.current);
         timerRef.current = null;
@@ -44,6 +53,7 @@ export function LongPressButton({
       onLongPress();
       setTimeout(() => {
         setIsPressed(false);
+        setIsProgressing(false);
         setProgress(0);
       }, 100);
       return;
@@ -51,7 +61,7 @@ export function LongPressButton({
     
     setProgress(newProgress);
     animationRef.current = requestAnimationFrame(animateProgress);
-  }, [longPressTime, onLongPress]);
+  }, [longPressTime, threshold, onLongPress]);
 
   const handlePressStart = useCallback((e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     if (disabled) return;
@@ -60,20 +70,25 @@ export function LongPressButton({
     setProgress(0);
     startTimeRef.current = Date.now();
     
-    // İlerleme animasyonu için requestAnimationFrame kullan
-    animationRef.current = requestAnimationFrame(animateProgress);
+    // Threshold timer - only start progress after threshold time
+    thresholdTimerRef.current = window.setTimeout(() => {
+      setIsProgressing(true);
+      animationRef.current = requestAnimationFrame(animateProgress);
+    }, threshold);
     
-    // Tamamlanma için timer
-    timerRef.current = window.setTimeout(() => {
-      // Timer sonunda sadece onLongPress çağrısını yapmak için requestAnimationFrame kullanıyoruz
-      // onLongPress'i animateProgress içinde çağırıyoruz
-    }, longPressTime);
-  }, [disabled, longPressTime, animateProgress]);
+    // We use requestAnimationFrame to call onLongPress at the end of the timer
+    timerRef.current = window.setTimeout(() => {}, longPressTime);
+  }, [disabled, longPressTime, threshold, animateProgress]);
 
   const handlePressEnd = useCallback((e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     if (timerRef.current !== null) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
+    }
+    
+    if (thresholdTimerRef.current !== null) {
+      clearTimeout(thresholdTimerRef.current);
+      thresholdTimerRef.current = null;
     }
     
     if (animationRef.current !== null) {
@@ -86,20 +101,22 @@ export function LongPressButton({
     
     if (!wasLongPressCompleted) {
       setIsPressed(false);
+      setIsProgressing(false);
       setProgress(0);
       
-      // Uzun basılmadıysa ve normal tıklama varsa onu çalıştır
       if (wasLongPressing && onClick && (Date.now() - startTimeRef.current < longPressTime)) {
         onClick(e as React.MouseEvent<HTMLDivElement>);
       }
     }
   }, [isPressed, onClick, longPressTime, progress]);
 
-  // Component unmount olduğunda intervali temizle
   useEffect(() => {
     return () => {
       if (timerRef.current !== null) {
         clearTimeout(timerRef.current);
+      }
+      if (thresholdTimerRef.current !== null) {
+        clearTimeout(thresholdTimerRef.current);
       }
       if (animationRef.current !== null) {
         cancelAnimationFrame(animationRef.current);
@@ -107,7 +124,7 @@ export function LongPressButton({
     };
   }, []);
 
-  return (
+  const buttonContent = (
     <div
       className={`relative select-none ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
       onMouseDown={handlePressStart}
@@ -118,9 +135,9 @@ export function LongPressButton({
       onClick={(e) => onClick && !isPressed && onClick(e)}
       onContextMenu={(e) => e.preventDefault()}
     >
-      {children}
+      {children || icon}
       
-      {isPressed && (
+      {isPressed && isProgressing && (
         <div className={`absolute left-0 right-0 h-1 overflow-hidden ${progressPosition === 'bottom' ? 'bottom-0' : 'top-0'}`}>
           <div 
             className={`h-full bg-red-500 ${progressClassName}`}
@@ -130,4 +147,21 @@ export function LongPressButton({
       )}
     </div>
   );
-} 
+
+  if (tooltipText) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            {buttonContent}
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{tooltipText}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  return buttonContent;
+}

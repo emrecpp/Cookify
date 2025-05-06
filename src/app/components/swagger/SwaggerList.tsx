@@ -4,7 +4,7 @@ import { SwaggerData } from "@/types/types.ts"
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { SwaggerFilter } from './SwaggerFilter.tsx'
-import { SwaggerTable } from './SwaggerTable.tsx'
+import SwaggerTable from './SwaggerTable.tsx'
 
 export function SwaggerList() {
     const { swaggers, setSwaggers } = useGlobalContext()

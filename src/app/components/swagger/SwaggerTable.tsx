@@ -16,8 +16,8 @@ import {
 } from "@/components/ui/table"
 import { useGlobalContext } from "@/context/global-context.tsx"
 import { SwaggerData } from "@/types/types"
+import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd'
 import { Check, Copy, FilePen, GripVertical, MoreHorizontal, Search, Trash } from 'lucide-react'
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 import toast from 'react-hot-toast'
 
 interface SwaggerTableProps {
@@ -27,7 +27,7 @@ interface SwaggerTableProps {
   onReorder?: (startIndex: number, endIndex: number) => void;
 }
 
-export function SwaggerTable({ swaggers, onMoveUp, onMoveDown, onReorder }: SwaggerTableProps) {
+export default function SwaggerTable({ swaggers, onMoveUp, onMoveDown, onReorder }: SwaggerTableProps) {
   const { handleEdit, handleDeleteProfile, handleApply, settings } = useGlobalContext()
 
   const handleCopyToken = (text: string) => {

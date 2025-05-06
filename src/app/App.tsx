@@ -5,7 +5,7 @@ import { exportToFile, getTabInfo, sendMessage } from "@/lib/utils.ts";
 import { useEffect } from 'react';
 import { Header } from './components/Header';
 
-// React 18 ile react-beautiful-dnd için geçici çözüm
+/* Temporary solution for react-beautiful-dnd with React 18 */
 import React from 'react';
 // @ts-ignore
 window.React = React;
@@ -39,11 +39,9 @@ export default function App() {
             const {tabs} = await getTabInfo()
             const data = JSON.parse(savedCookies)
 
-            // Update global state
             setCookies(data.cookies)
             setSwaggers(data.swaggers)
 
-            // Handle Swagger specific logic
             const {isSwagger} = await sendMessage("isSwagger", {})
             setCurrentView(isSwagger ? "list-swaggers" : "list-cookies")
 
@@ -64,9 +62,8 @@ export default function App() {
             }
         }
 
-        // Set up listeners
-        chrome.webNavigation.onCompleted.addListener(handlePageLoad) // "When the page is refreshed, if the Swagger docs are open, ensure the user can automatically log in again when the extension is clicked."
-
+        /* When the page is refreshed, ensure automatic login on extension click */
+        chrome.webNavigation.onCompleted.addListener(handlePageLoad)
 
         initializeExtension().catch(console.error)
 

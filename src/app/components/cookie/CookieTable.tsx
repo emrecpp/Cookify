@@ -18,8 +18,8 @@ import { useGlobalContext } from "@/context/global-context.tsx"
 import { useActiveCookies } from "@/hooks/useActiveCookies"
 import { useApplyCookie } from "@/hooks/useCookie.ts"
 import { CookieData } from "@/types/types"
+import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd'
 import { Check, CheckCircle2, Copy, FilePen, GripVertical, MoreHorizontal, Search, Trash } from 'lucide-react'
-import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd'
 import toast from 'react-hot-toast'
 
 interface CookieTableProps {
@@ -29,7 +29,7 @@ interface CookieTableProps {
   onReorder?: (startIndex: number, endIndex: number) => void;
 }
 
-export function CookieTable({ cookies, onMoveUp, onMoveDown, onReorder }: CookieTableProps) {
+export default function CookieTable({ cookies, onMoveUp, onMoveDown, onReorder }: CookieTableProps) {
   const { handleEdit, handleDeleteProfile, settings } = useGlobalContext()
   const { isCookieActive } = useActiveCookies(cookies)
 

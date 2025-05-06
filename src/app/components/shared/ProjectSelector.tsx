@@ -1,10 +1,11 @@
-import { Button } from "@/components/ui/button.tsx"
 import { Input } from "@/components/ui/input.tsx"
 import { Label } from "@/components/ui/label.tsx"
 import { ProjectAvatar } from "@/components/ui/project-avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select"
+import { useGlobalContext } from "@/context/global-context.tsx"
 import { FolderGit2, Plus } from 'lucide-react'
-import React from 'react'
+import React, { useRef } from 'react'
+import { ProjectNameInput } from "./ProjectNameInput"
 
 interface ProjectSelectorProps {
     projects: string[]
@@ -14,11 +15,14 @@ interface ProjectSelectorProps {
 
 export function ProjectSelector({ projects, selectedProject, onProjectChange }: ProjectSelectorProps) {
     const [newProject, setNewProject] = React.useState<boolean>(false)
+    const inputRef = useRef<HTMLInputElement>(null)
+    const { addProject } = useGlobalContext();
 
     const handleProjectSelect = (value: string) => {
         if (value === "new") {
             setNewProject(true)
             onProjectChange("")
+            setTimeout(() => inputRef.current?.focus(), 0)
         } else if (value === "none") {
             onProjectChange("")
         } else {
@@ -28,6 +32,14 @@ export function ProjectSelector({ projects, selectedProject, onProjectChange }: 
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         onProjectChange(e.target.value)
+    }
+
+    const handleCreateProject = () => {
+        if (selectedProject && selectedProject.trim()) {
+            // Projeyi global context'e kaydet
+            addProject(selectedProject);
+            setNewProject(false);
+        }
     }
 
     // Render function for selected project display
@@ -48,10 +60,10 @@ export function ProjectSelector({ projects, selectedProject, onProjectChange }: 
         <div className="flex flex-col gap-2 w-full select-none">
             <Label htmlFor="project">Project (optional)</Label>
             <div className="relative">
-                {!selectedProject && !newProject && <FolderGit2 className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4"/>}
+                {!selectedProject && !newProject && <FolderGit2 className="text-muted-foreground absolute top-3 left-2.5 h-4 w-4"/>}
                 {!newProject && projects.length > 0 ? (
                     <Select value={selectedProject || "none"} onValueChange={handleProjectSelect}>
-                        <SelectTrigger className={selectedProject ? "pl-3" : "pl-8"}>
+                        <SelectTrigger className={selectedProject ? "pl-3" : "pl-10"}>
                             {renderSelectedProject()}
                         </SelectTrigger>
                         <SelectContent>
@@ -79,6 +91,16 @@ export function ProjectSelector({ projects, selectedProject, onProjectChange }: 
                             ))}
                         </SelectContent>
                     </Select>
+                ) : newProject ? (
+                    <ProjectNameInput 
+                        ref={inputRef}
+                        value={selectedProject || ""}
+                        onChange={handleInputChange}
+                        onCancel={() => setNewProject(false)}
+                        onSubmit={handleCreateProject}
+                        className="w-full"
+                        inputClassName="pl-10"
+                    />
                 ) : (
                     <div className="relative">
                         {!selectedProject && <FolderGit2 className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4"/>}
@@ -100,17 +122,6 @@ export function ProjectSelector({ projects, selectedProject, onProjectChange }: 
                             }}
                         />
                     </div>
-                )}
-                {newProject && (
-                    <Button 
-                        type="button" 
-                        variant="ghost" 
-                        size="sm" 
-                        className="absolute right-0.5 top-0.5"
-                        onClick={() => setNewProject(false)}
-                    >
-                        Cancel
-                    </Button>
                 )}
             </div>
         </div>

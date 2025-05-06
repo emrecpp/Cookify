@@ -6,11 +6,10 @@ interface FormLayoutProps {
     children: ReactNode;
     onSubmit: (e: React.FormEvent) => void;
     onBack: () => void;
-    isValid: boolean;
     isEditing: boolean;
 }
 
-export function FormLayout({ children, onSubmit, onBack, isValid, isEditing }: FormLayoutProps) {
+export function FormLayout({ children, onSubmit, onBack, isEditing }: FormLayoutProps) {
     return (
         <div className="h-full flex flex-col">
             <div className="flex-1 overflow-auto px-4 py-2">
@@ -32,7 +31,6 @@ export function FormLayout({ children, onSubmit, onBack, isValid, isEditing }: F
                         <ArrowLeft className="mr-2 h-4 w-4"/> Back
                     </Button>
                     <Button 
-                        disabled={!isValid} 
                         onClick={onSubmit} 
                         className="w-2/3 select-none"
                     >

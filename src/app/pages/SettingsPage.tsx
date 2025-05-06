@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useGlobalContext } from "@/context/global-context";
 import { exportToFile } from "@/lib/utils";
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Download, GithubIcon, Upload } from 'lucide-react';
 
 export function SettingsPage() {
@@ -12,14 +12,14 @@ export function SettingsPage() {
         cookies, 
         setCookies, 
         swaggers, 
-        setSwaggers, 
-        animationDirection,
+        setSwaggers,
+        currentView,
         settings, 
         updateSettings 
     } = useGlobalContext();
 
     const handleExport = () => {
-        const dataStr = exportToFile(cookies, swaggers);
+        const dataStr = exportToFile(cookies, swaggers, settings);
         const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
 
         const exportFileDefaultName = 'cookify-export.json';
@@ -43,6 +43,7 @@ export function SettingsPage() {
                         const data = JSON.parse(e.target?.result as string);
                         if (data.cookies) setCookies(data.cookies);
                         if (data.swaggers) setSwaggers(data.swaggers);
+                        if (data.settings) updateSettings(data.settings);
                     } catch (error) {
                         console.error('Error parsing JSON file:', error);
                     }
@@ -58,41 +59,43 @@ export function SettingsPage() {
     };
 
     return (
-        <div className="container mx-auto pt-4 pb-8">
-            <h1 className="text-2xl font-bold mb-6">Settings</h1>
-            
-            <Card className="mb-6">
-                <CardHeader>
-                    <CardTitle>Behavior</CardTitle>
-                    <CardDescription>
-                        Configure how the application behaves
-                    </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <Label htmlFor="apply-on-click" className="text-base">Apply on click</Label>
-                            <p className="text-sm text-muted-foreground">
-                                When enabled, clicking on a row in the table will automatically apply the cookie or swagger
-                            </p>
-                        </div>
-                        <Switch 
-                            id="apply-on-click"
-                            checked={settings.applyOnClick}
-                            onCheckedChange={handleApplyOnClickChange}
-                        />
-                    </div>
-                </CardContent>
-            </Card>
+        <AnimatePresence mode="wait">
+            <motion.div
+                key={currentView}
+                initial={{opacity: 0}}
+                animate={{opacity: 1}}
+                exit={{opacity: 0}}
+                transition={{duration: 0.3}}
+                className="w-full overflow-hidden"
+            >
+                <div className="container mx-auto pt-4 pb-8">
+                    <h1 className="text-2xl font-bold mb-6">Settings</h1>
+                    
+                    <Card className="mb-6">
+                        <CardHeader>
+                            <CardTitle>Behavior</CardTitle>
+                            <CardDescription>
+                                Configure how the application behaves
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <Label htmlFor="apply-on-click" className="text-base">Apply on click</Label>
+                                    <p className="text-sm text-muted-foreground">
+                                        When enabled, clicking on a row in the table will automatically apply the cookie or swagger
+                                    </p>
+                                </div>
+                                <Switch 
+                                    id="apply-on-click"
+                                    checked={settings.applyOnClick}
+                                    onCheckedChange={handleApplyOnClickChange}
+                                />
+                            </div>
+                        </CardContent>
+                    </Card>
 
-            <div className="overflow-x-hidden w-full">
-                <motion.div
-                    initial={{ opacity: 0, x: animationDirection > 0 ? 200 : -200 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: animationDirection > 0 ? -200 : 200 }}
-                    transition={{ duration: 0.3 }}
-                >
-                    <Card className="border">
+                    <Card className="border mb-6">
                         <CardHeader>
                             <CardTitle>Data Management</CardTitle>
                             <CardDescription>
@@ -108,32 +111,32 @@ export function SettingsPage() {
                             </Button>
                         </CardContent>
                     </Card>
-                </motion.div>
-            </div>
-            
-            <div className="mt-8 text-center text-sm text-muted-foreground flex flex-col gap-0.5">
-                <p className="font-semibold">Author</p>
-                <p>Emre Demircan</p>
-                <p className="flex items-center justify-center gap-2">
+                    
+                    <div className="mt-8 text-center text-sm text-muted-foreground flex flex-col gap-0.5">
+                        <p className="font-semibold">Author</p>
+                        <p>Emre Demircan</p>
+                        <p className="flex items-center justify-center gap-2">
 
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="ml-2"
-                        asChild
-                    >
-                        <a
-                            href="https://github.com/emrecpp"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center"
-                        >
-                            <GithubIcon className="h-3.5 w-3.5" /> emrecpp
-                        </a>
-                    </Button>
-                </p>
-            </div>
-        </div>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="ml-2"
+                                asChild
+                            >
+                                <a
+                                    href="https://github.com/emrecpp"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center"
+                                >
+                                    <GithubIcon className="h-3.5 w-3.5" /> emrecpp
+                                </a>
+                            </Button>
+                        </p>
+                    </div>
+                </div>
+            </motion.div>
+        </AnimatePresence>
     );
 }
 

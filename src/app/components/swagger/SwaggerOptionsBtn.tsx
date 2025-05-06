@@ -5,8 +5,7 @@ import { useGlobalContext } from "@/context/global-context.tsx";
 import { OptionsDropdown } from "@/app/components/shared/OptionsDropdown.tsx";
 import { SwaggerData } from "@/types/types.ts";
 
-// Bu bileşenler şu anda derlenmediği için burada bırakıyorum
-// Gerçek uygulamada bunlar import edilmelidir
+/* These components are currently not compiled */
 import { RemoveSwagger } from "./RemoveSwagger.tsx";
 import { SwaggerDeleteBtn } from "./SwaggerDeleteBtn.tsx";
 
