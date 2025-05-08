@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "Cookify",
     "description": "Simplify cookie and JWT token management with one-click actions. Save time and boost productivity!",
-    "version": "1.0",
+    "version": "1.1",
     "permissions": [
         "cookies",
         "activeTab",
@@ -38,6 +38,15 @@
                 "/src/runtime/router.ts"
             ],
             "media": []
+        },
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "content-script/src/main.tsx"
+            ],
+            "run_at": "document_end"
         }
     ]
 }

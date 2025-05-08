@@ -18,13 +18,18 @@
 ### 🔑 **Cookie Management**
 - **Add Cookies**: Manually add cookies with a user-friendly interface.
 - **Save Cookies**: Store cookies for quick reuse.
-- **Set Cookies with One Click**: Automatically set saved cookies on the target website.
+- **Apply Cookies**: Set saved cookies on target websites with one click.
 - **Delete Cookies**: Easily remove cookies when they are no longer needed.
+- **Filter Cookies**: Search and filter cookies by name or value.
 
 ### 🔒 **JWT Token Management**
 - **Save JWT Tokens**: Input and store JWT bearer tokens securely.
-- **Set Tokens in Swagger**: Apply saved tokens to Swagger docs effortlessly.
-- **Auto Login Feature**: Enable auto-login to automatically set your token whenever you open a Swagger page.
+- **Apply to Swagger**: Set tokens in Swagger documentation with one click.
+
+### 🎯 **Project Management**
+- **Organize by Projects**: Group cookies and tokens by project for better organization
+- **Multiple Projects**: Create and manage different projects for various applications
+- **Project Filtering**: Filter cookies and tokens by project
 
 ### 🔄 **Profile Management**
 - **Export Profiles**: Save all your cookies and tokens into a single exportable file.
