@@ -12,7 +12,6 @@ import { Cookie, Settings } from "lucide-react";
 export default function TabPages() {
     const {currentView, setCurrentView} = useGlobalContext()
 
-    // Update page state based on TabBar selection
     const handleTabChange = (value: string) => {
         if (["list-cookies", "list-swaggers", "settings"].includes(value)) {
             setCurrentView(value);
@@ -41,8 +40,7 @@ export default function TabPages() {
                 </Tabs>
             </div>
 
-            {/* Fixed bottom bar */}
-            <div className="fixed bottom-0 left-0 right-0 border-t bg-background pt-3 pb-4 max-w-[700px] mx-auto shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+            <div className="select-none fixed bottom-0 left-0 right-0 border-t bg-background pt-3 pb-4 max-w-[700px] mx-auto shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
                 <Tabs value={currentView} onValueChange={handleTabChange}>
                     <TabsList className="w-full rounded-none bg-transparent px-6">
                         <div className="flex justify-between w-full max-w-[300px] mx-auto">

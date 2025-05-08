@@ -3,7 +3,7 @@ import { useGlobalContext } from "@/context/global-context.tsx";
 import { AnimatePresence, motion } from "framer-motion";
 
 const SwaggerMainPage = () => {
-    const {currentView, animationDirection} = useGlobalContext()
+    const {currentView} = useGlobalContext()
 
     return (
         <AnimatePresence mode="wait">

@@ -21,9 +21,7 @@ export function SwaggerForm() {
     
     const emptyFormData: SwaggerData = {
         alias: "",
-        urls: [],
         bearerToken: "",
-        autoLogin: "false",
         project: ""
     }
     
@@ -91,18 +89,6 @@ export function SwaggerForm() {
                         required
                         error={errors.bearerToken}
                     />
-
-                    <div className="flex flex-col gap-2 w-full select-none">
-                        <label className="flex items-center gap-2 cursor-pointer mr-auto text-sm font-semibold">
-                            <Switch 
-                                checked={formData.autoLogin === "true"}
-                                onCheckedChange={(checked) => 
-                                    handleFieldChange('autoLogin', checked ? "true" : "false")
-                                }
-                            />
-                            <span>Auto Login on Page Refresh</span>
-                        </label>
-                    </div>
                 </FormLayout>
             </motion.div>
         </AnimatePresence>

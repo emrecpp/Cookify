@@ -6,17 +6,6 @@ export type PageViewTypes =
     | "edit-cookie"
     | "add-swagger"
     | "edit-swagger"
-export type ActivePages = "cookies" | "swaggers" | "others"
-
-export function activePage(currentView: PageViewTypes): ActivePages {
-    if (["list-cookies"].includes(currentView))
-        return "cookies"
-    else if (["list-swaggers"].includes(currentView))
-        return "swaggers"
-    else
-        return "others"
-}
-
 export interface CookieData {
     alias: string
     name: string
@@ -29,9 +18,7 @@ export interface CookieData {
 
 export interface SwaggerData {
     alias: string
-    urls: string[]
     bearerToken: string
-    autoLogin?: "true" | "false"
     project?: string // For grouping by project
     order?: number // For ordering
 }

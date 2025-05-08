@@ -41,6 +41,9 @@ interface GlobalContextState {
     
     settings: Settings;
     updateSettings: (settings: Partial<Settings>) => void;
+
+    activeProject: string | null;
+    setActiveProject: (project: string | null) => void;
 }
 
 export const GlobalContext = createContext<GlobalContextState | any>(undefined);
@@ -49,8 +52,6 @@ interface GlobalContextProps {
     children: ReactNode;
 }
 
-// Mevcut DEFAULT_SETTINGS içine projects eklemek için types.ts dosyasını güncellememiz gerekir
-// Bu implementasyonda sadece Settings tipine projects ekleyeceğiz
 interface ExtendedSettings extends Settings {
     projects: string[];
 }
@@ -65,6 +66,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
     const [editingSwagger, setEditingSwagger] = useState<SwaggerData | null>(null)
 
     const [animationDirection, setAnimationDirection] = useState<1 | -1>(1);
+    const [activeProject, setActiveProject] = useState<string | null>(null);
     
     const [settings, setSettings] = useState<ExtendedSettings>({
         ...DEFAULT_SETTINGS,
@@ -82,7 +84,6 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
             }
         }
         
-        // Varsa projeleri yükle
         const savedProjects = localStorage.getItem(PROJECTS_STORAGE_KEY);
         if (savedProjects) {
             try {
@@ -113,7 +114,6 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
     };
     
     useEffect(() => {
-        // Her cookies veya swaggers değişikliğinde projeleri güncelle
         const cookieProjects = cookies
             .filter(cookie => cookie.project && cookie.project.trim() !== '')
             .map(cookie => cookie.project as string);
@@ -122,7 +122,6 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
             .filter(swagger => swagger.project && swagger.project.trim() !== '')
             .map(swagger => swagger.project as string);
         
-        // settings.projects ile mevcut projeleri birleştir
         const allProjects = [...new Set([...settings.projects, ...cookieProjects, ...swaggerProjects])];
         
         if (JSON.stringify(allProjects) !== JSON.stringify(settings.projects)) {
@@ -226,7 +225,6 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
             await useApplySwagger(data)
     }
 
-    // Animation direction control based on page groups
     const pageGroups = {
         main: ["list-cookies", "list-swaggers", "settings"],
         cookieDetail: ["add-cookie", "edit-cookie"],
@@ -261,6 +259,15 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
         toast.success(`"${projectName}" project deleted`);
     };
 
+    const handleImport = (importedData: any) => {
+        if (importedData.cookies) setCookies(importedData.cookies);
+        if (importedData.swaggers) setSwaggers(importedData.swaggers);
+        if (importedData.settings) updateSettings(importedData.settings);
+        
+        setActiveProject(null);
+        localStorage.removeItem("cookify_selected_global_project");
+    };
+
     return (
         <GlobalContext.Provider
             value={{
@@ -283,7 +290,10 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
                 addProject,
                 handleDeleteProject,
                 
-                settings, updateSettings
+                settings, updateSettings,
+                
+                activeProject, setActiveProject,
+                handleImport
             }}>
             {children}
         </GlobalContext.Provider>

@@ -20,9 +20,7 @@ export type CookieSchema = z.infer<typeof cookieSchema>;
  */
 export const swaggerSchema = z.object({
   alias: z.string().min(1, { message: "Alias is required" }),
-  urls: z.array(z.string()),
   bearerToken: z.string().min(1, { message: "Bearer token is required" }),
-  autoLogin: z.enum(["true", "false"]).default("false"),
   project: z.string().optional(),
   order: z.number().optional()
 });

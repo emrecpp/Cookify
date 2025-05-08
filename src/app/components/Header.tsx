@@ -4,7 +4,14 @@ import { motion } from 'framer-motion';
 import { PlusCircle } from 'lucide-react';
 
 export function Header() {
-    const {currentView, setCurrentView, setEditingCookie, setEditingSwagger, editingCookie, editingSwagger} = useGlobalContext()
+    const {
+        currentView, 
+        setCurrentView, 
+        setEditingCookie, 
+        setEditingSwagger, 
+        cookies,
+        swaggers
+    } = useGlobalContext()
 
     const activePage = (view: string) => {
         if (view.includes("cookie")) return "cookies";
@@ -32,6 +39,15 @@ export function Header() {
     
     const showTitle = ["add-cookie", "edit-cookie", "add-swagger", "edit-swagger"].includes(currentView);
     
+    const shouldShowAddButton = () => {
+        if (currentView === "list-cookies") {
+            return cookies.length > 0;
+        } else if (currentView === "list-swaggers") {
+            return swaggers.length > 0;
+        }
+        return false;
+    };
+    
     return (
         <div className="px-2 bg-white shadow-sm">
             <motion.header
@@ -56,7 +72,7 @@ export function Header() {
                 )}
 
                 <div className="space-x-2">
-                    {["list-cookies", "list-swaggers"].includes(currentView) && (
+                    {["list-cookies", "list-swaggers"].includes(currentView) && shouldShowAddButton() && (
                         <Button variant="outline" size="sm" onClick={handleAddClick}>
                             <PlusCircle
                                 className="h-4 w-4 mr-1"/> {activePage(currentView) === "cookies" ? 'Add New Cookie' : 'Add New Swagger'}

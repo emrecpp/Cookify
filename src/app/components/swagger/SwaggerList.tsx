@@ -1,21 +1,19 @@
 import { useGlobalContext } from "@/context/global-context.tsx"
-import SwaggerSVG from "@/svg/swagger.tsx"
 import { SwaggerData } from "@/types/types.ts"
-import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
-import { SwaggerFilter } from './SwaggerFilter.tsx'
+import { useEffect, useState, useRef } from 'react'
+import SwaggerFilter, { SwaggerFilterRef } from './SwaggerFilter.tsx'
 import SwaggerTable from './SwaggerTable.tsx'
 
 export function SwaggerList() {
     const { swaggers, setSwaggers } = useGlobalContext()
     const [filteredSwaggers, setFilteredSwaggers] = useState<SwaggerData[]>(swaggers)
+    const [searchTerm, setSearchTerm] = useState<string>("")
+    const swaggerFilterRef = useRef<SwaggerFilterRef>(null);
 
-    // Update filtered list when swaggers change
     useEffect(() => {
         setFilteredSwaggers(swaggers)
     }, [swaggers])
 
-    // Move an item up one position
     const moveItemUp = (index: number) => {
         if (index === 0) return;
 
@@ -24,7 +22,6 @@ export function SwaggerList() {
         items.splice(index, 1);
         items.splice(index - 1, 0, itemToMove);
 
-        // Assign order value to each item
         const updatedItems = items.map((item, idx) => ({
             ...item,
             order: idx
@@ -32,11 +29,9 @@ export function SwaggerList() {
 
         setFilteredSwaggers(updatedItems);
 
-        // Update global swagger list
         updateGlobalSwaggers(updatedItems);
     };
 
-    // Move an item down one position
     const moveItemDown = (index: number) => {
         if (index === filteredSwaggers.length - 1) return;
 
@@ -45,7 +40,6 @@ export function SwaggerList() {
         items.splice(index, 1);
         items.splice(index + 1, 0, itemToMove);
 
-        // Assign order value to each item
         const updatedItems = items.map((item, idx) => ({
             ...item,
             order: idx
@@ -53,17 +47,14 @@ export function SwaggerList() {
 
         setFilteredSwaggers(updatedItems);
 
-        // Update global swagger list
         updateGlobalSwaggers(updatedItems);
     };
 
-    // Reorder using drag and drop
     const handleReorder = (startIndex: number, endIndex: number) => {
         const items = Array.from(filteredSwaggers);
         const [removed] = items.splice(startIndex, 1);
         items.splice(endIndex, 0, removed);
 
-        // Assign order value to each item
         const updatedItems = items.map((item, idx) => ({
             ...item,
             order: idx
@@ -71,11 +62,9 @@ export function SwaggerList() {
 
         setFilteredSwaggers(updatedItems);
 
-        // Update global swagger list
         updateGlobalSwaggers(updatedItems);
     };
 
-    // Update global swagger list
     const updateGlobalSwaggers = (updatedItems: SwaggerData[]) => {
         const newSwaggers = swaggers.map((swagger: SwaggerData) => {
             const updatedSwagger = updatedItems.find(item => 
@@ -87,34 +76,36 @@ export function SwaggerList() {
         setSwaggers(newSwaggers);
     };
 
+    const handleSearchTermChange = (term: string) => {
+        setSearchTerm(term);
+    };
+
+    const clearSearchTerm = () => {
+        if (swaggerFilterRef.current) {
+            swaggerFilterRef.current.clearSearch();
+        }
+        setSearchTerm("");
+    };
+
     return (
-        <div className="space-y-4 h-full">
-            {swaggers.length === 0 ? (
-                <motion.p
-                    initial={{opacity: 0, x: 0, y: -20}}
-                    animate={{opacity: 1, x: 0, y: 0}}
-                    transition={{duration: 0.3, delay: 0.2}}
-                    className="text-muted-foreground text-center text-sm select-none flex items-center gap-2 justify-center h-full"
-                >
-                    <SwaggerSVG className="w-4 h-4"/>
-                    No swagger configurations added yet...
-                </motion.p>
-            ) : (
-                <>
-                    <SwaggerFilter 
-                        swaggers={swaggers} 
-                        onFilteredSwaggersChange={setFilteredSwaggers} 
-                    />
-                    <div className="rounded-md border">
-                        <SwaggerTable 
-                            swaggers={filteredSwaggers} 
-                            onMoveUp={moveItemUp}
-                            onMoveDown={moveItemDown}
-                            onReorder={handleReorder}
-                        />
-                    </div>
-                </>
-            )}
+        <div className="space-y-4 h-full flex flex-col">
+            <SwaggerFilter 
+                ref={swaggerFilterRef}
+                swaggers={swaggers} 
+                onFilteredSwaggersChange={setFilteredSwaggers}
+                onSearchTermChange={handleSearchTermChange}
+            />
+            <div className="rounded-md border flex-1 overflow-hidden">
+                <SwaggerTable 
+                    swaggers={filteredSwaggers} 
+                    onMoveUp={moveItemUp}
+                    onMoveDown={moveItemDown}
+                    onReorder={handleReorder}
+                    searchTerm={searchTerm}
+                    clearSearchTerm={clearSearchTerm}
+                    originalDataLength={swaggers.length}
+                />
+            </div>
         </div>
     )
 }

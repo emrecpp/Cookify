@@ -6,16 +6,17 @@ import { useGlobalContext } from "@/context/global-context";
 import { exportToFile } from "@/lib/utils";
 import { AnimatePresence, motion } from 'framer-motion';
 import { Download, GithubIcon, Upload } from 'lucide-react';
+import toast from "react-hot-toast";
 
 export function SettingsPage() {
     const { 
         cookies, 
-        setCookies, 
-        swaggers, 
-        setSwaggers,
+        swaggers,
         currentView,
         settings, 
-        updateSettings 
+        updateSettings,
+        setCurrentView,
+        handleImport: globalHandleImport
     } = useGlobalContext();
 
     const handleExport = () => {
@@ -41,11 +42,12 @@ export function SettingsPage() {
                 reader.onload = (e) => {
                     try {
                         const data = JSON.parse(e.target?.result as string);
-                        if (data.cookies) setCookies(data.cookies);
-                        if (data.swaggers) setSwaggers(data.swaggers);
-                        if (data.settings) updateSettings(data.settings);
+                        globalHandleImport(data);
+                        setCurrentView('list-cookies');
+                        toast.success('Import successful!');
                     } catch (error) {
                         console.error('Error parsing JSON file:', error);
+                        toast.error('File import failed!');
                     }
                 };
                 reader.readAsText(file);
@@ -113,7 +115,7 @@ export function SettingsPage() {
                     </Card>
                     
                     <div className="mt-8 text-center text-sm text-muted-foreground flex flex-col gap-0.5">
-                        <p className="font-semibold">Author</p>
+                        <p className="font-semibold select-none">Author</p>
                         <p>Emre Demircan</p>
                         <p className="flex items-center justify-center gap-2">
 
@@ -133,6 +135,7 @@ export function SettingsPage() {
                                 </a>
                             </Button>
                         </p>
+                        <p className="text-xs select-none mt-2">v1.1</p>
                     </div>
                 </div>
             </motion.div>

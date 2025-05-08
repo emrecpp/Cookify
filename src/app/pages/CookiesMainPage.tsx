@@ -1,9 +1,9 @@
-import { CookieList } from "@/app/components/cookie/CookieList.tsx";
-import { useGlobalContext } from "@/context/global-context.tsx";
-import { AnimatePresence, motion } from "framer-motion";
+import {CookieList} from "@/app/components/cookie/CookieList.tsx";
+import {useGlobalContext} from "@/context/global-context.tsx";
+import {AnimatePresence, motion} from "framer-motion";
 
 const CookiesMainPage = () => {
-    const {currentView, animationDirection} = useGlobalContext()
+    const {currentView} = useGlobalContext()
 
     return (
         <AnimatePresence mode="wait">

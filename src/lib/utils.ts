@@ -76,15 +76,25 @@ export function stringToGradient(str: string): { gradient: string; colors: strin
     };
   }
   
-  const firstChar = str.charCodeAt(0);
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
   
-  const hue = firstChar % 360;
+  const hue = hash % 360;
   
-  const color1 = `hsl(${hue}, 80%, 65%)`;
-  const color2 = `hsl(${(hue + 60) % 360}, 80%, 65%)`;
+  const saturation = 70 + (hash % 20);
+  const lightness = 55 + ((hash >> 4) % 10);
+  
+  const hue2 = (hue + 40 + (hash % 80)) % 360;
+  
+  const color1 = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+  const color2 = `hsl(${hue2}, ${saturation}%, ${lightness}%)`;
   
   return {
     gradient: `linear-gradient(120deg, ${color1} 0%, ${color2} 100%)`,
     colors: [color1, color2]
   };
 }
+
+export const getInitials = s => (s = s.trim().split(/\s+/), s.length > 1 ? s[0][0] + s[1][0] : s[0].slice(0,2));

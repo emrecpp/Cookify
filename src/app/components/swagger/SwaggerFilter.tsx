@@ -1,20 +1,40 @@
-import { SwaggerData } from "@/types/types";
-import { ProjectFilter } from "../shared/ProjectFilter";
+import {SwaggerData} from "@/types/types";
+import GlobalFilter, {GlobalFilterRef} from "../shared/GlobalFilter";
+import {forwardRef, useImperativeHandle, useRef} from "react";
 
-interface SwaggerFilterProps {
-  swaggers: SwaggerData[]
-  onFilteredSwaggersChange: (filteredSwaggers: SwaggerData[]) => void
+export interface SwaggerFilterRef {
+    clearSearch: () => void;
 }
 
-const SWAGGER_PROJECT_KEY = "cookify_selected_swagger_project";
+interface SwaggerFilterProps {
+    swaggers: SwaggerData[]
+    onFilteredSwaggersChange: (filteredSwaggers: SwaggerData[]) => void
+    onSearchTermChange?: (searchTerm: string) => void
+}
 
-export function SwaggerFilter({ swaggers, onFilteredSwaggersChange }: SwaggerFilterProps) {
-  return (
-    <ProjectFilter
-      items={swaggers}
-      onFilteredItemsChange={onFilteredSwaggersChange}
-      storageKey={SWAGGER_PROJECT_KEY}
-      longPressTime={2000}
-    />
-  )
-} 
+export const SwaggerFilter = forwardRef<SwaggerFilterRef, SwaggerFilterProps>(function SwaggerFilter(
+    {swaggers, onFilteredSwaggersChange, onSearchTermChange},
+    ref
+) {
+    const globalFilterRef = useRef<GlobalFilterRef>(null);
+
+    useImperativeHandle(ref, () => ({
+        clearSearch: () => {
+            if (globalFilterRef.current) {
+                globalFilterRef.current.clearSearch();
+            }
+        }
+    }));
+
+    return (
+        <GlobalFilter
+            ref={globalFilterRef}
+            items={swaggers}
+            onFilteredItemsChange={onFilteredSwaggersChange}
+            type="swagger"
+            onSearchTermChange={onSearchTermChange}
+        />
+    )
+});
+
+export default SwaggerFilter; 

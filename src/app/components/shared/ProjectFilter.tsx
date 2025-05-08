@@ -10,8 +10,8 @@ import {
 import {Input} from "@/components/ui/input"
 import {ProjectAvatar} from "@/components/ui/project-avatar"
 import {useGlobalContext} from "@/context/global-context"
-import {FolderGit2, Plus, Search, Trash, X} from "lucide-react"
-import {useCallback, useEffect, useRef, useState} from 'react'
+import {AlignCenter, DotSquare, FolderGit2, Plus, Rows3, Search, Trash, X} from "lucide-react"
+import {forwardRef, Ref, useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react'
 import {ProjectNameInput} from "./ProjectNameInput"
 import {cn} from "@/lib/utils.ts";
 
@@ -22,28 +22,37 @@ export interface FilterableItem {
     [key: string]: any;
 }
 
+export interface ProjectFilterRef {
+    clearSearch: () => void;
+}
+
 interface ProjectFilterProps<T extends FilterableItem> {
     items: T[];
     onFilteredItemsChange: (filteredItems: T[]) => void;
     storageKey: string;
     longPressTime?: number;
     additionalSearchFields?: (item: T) => string[];
+    onSearchTermChange?: (searchTerm: string) => void;
 }
 
-export function ProjectFilter<T extends FilterableItem>({
-                                                            items,
-                                                            onFilteredItemsChange,
-                                                            storageKey,
-                                                            longPressTime = 3000,
-                                                            additionalSearchFields = () => []
-                                                        }: ProjectFilterProps<T>) {
+export const ProjectFilter = forwardRef(function ProjectFilter<T extends FilterableItem>(
+    {
+        items,
+        onFilteredItemsChange,
+        storageKey,
+        longPressTime = 2000,
+        additionalSearchFields = () => [],
+        onSearchTermChange
+    }: ProjectFilterProps<T>,
+    ref: Ref<ProjectFilterRef>
+) {
     const [searchTerm, setSearchTerm] = useState("")
-    const [activeProject, setActiveProject] = useState<string | null>(null)
-    const [projects, setProjects] = useState<string[]>([])
     const [isCreatingProject, setIsCreatingProject] = useState(false)
     const [newProjectName, setNewProjectName] = useState("")
     const inputRef = useRef<HTMLInputElement>(null)
-    const {addProject, handleDeleteProject, getAllProjects} = useGlobalContext();
+    const {addProject, handleDeleteProject, getAllProjects, activeProject, setActiveProject} = useGlobalContext();
+    const [projects, setProjects] = useState<string[]>([])
+    const [filteredItems, setFilteredItems] = useState<T[]>([])
 
     useEffect(() => {
         setProjects(getAllProjects());
@@ -54,7 +63,7 @@ export function ProjectFilter<T extends FilterableItem>({
         if (savedProject) {
             setActiveProject(savedProject === "Not specified" ? "Not specified" : savedProject);
         }
-    }, [storageKey]);
+    }, [storageKey, setActiveProject]);
 
     const filterItems = useCallback(() => {
         let filtered = [...items]
@@ -63,12 +72,10 @@ export function ProjectFilter<T extends FilterableItem>({
         if (searchTerm) {
             const searchLower = searchTerm.toLowerCase()
             filtered = filtered.filter(item => {
-                // Check default fields
                 const defaultMatch =
                     item.alias.toLowerCase().includes(searchLower) ||
                     (item.project && item.project.toLowerCase().includes(searchLower));
 
-                // Check additional fields
                 const additionalFields = additionalSearchFields(item);
                 const additionalMatch = additionalFields.some(field =>
                     field && field.toLowerCase().includes(searchLower)
@@ -86,8 +93,12 @@ export function ProjectFilter<T extends FilterableItem>({
             )
         }
 
+        setFilteredItems(filtered);
         onFilteredItemsChange(filtered)
-    }, [items, searchTerm, activeProject, onFilteredItemsChange, additionalSearchFields])
+        if (onSearchTermChange) {
+            onSearchTermChange(searchTerm);
+        }
+    }, [items, searchTerm, activeProject, onFilteredItemsChange, additionalSearchFields, onSearchTermChange])
 
     useEffect(() => {
         filterItems()
@@ -96,6 +107,11 @@ export function ProjectFilter<T extends FilterableItem>({
     const handleClearSearch = () => {
         setSearchTerm("")
     }
+
+    useImperativeHandle(ref, () => ({
+        clearSearch: handleClearSearch
+    }));
+
 
     const handleProjectSelect = (project: string | null) => {
         if (project === "new") {
@@ -137,119 +153,130 @@ export function ProjectFilter<T extends FilterableItem>({
     }
 
     return (
-        <div className={cn("flex items-center gap-2 w-full mb-2",
-            isCreatingProject ? "h-10" : "h-8")}>
-            <div className="relative w-full h-full">
-                <Search className={cn("absolute left-2 w-4 text-muted-foreground",
-                    isCreatingProject ? "top-2" : "top-1")}/>
-                <Input
-                    placeholder="Search..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-8 pr-8 h-full"
-                />
-                {searchTerm && (
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-2 py-0 hover:bg-transparent"
-                        onClick={handleClearSearch}
-                    >
-                        <X className="h-3.5 w-3.5"/>
-                    </Button>
+        <div className={cn("flex flex-col w-full mb-2",
+            isCreatingProject ? "gap-2" : "gap-1")}>
+            <div className={cn("flex items-center gap-2 w-full",
+                isCreatingProject ? "h-10" : "h-8")}>
+                <div className="relative w-full h-full">
+                    <Search className={cn("absolute left-2 w-4 text-muted-foreground",
+                        isCreatingProject ? "top-2" : "top-1")}/>
+                    <Input
+                        placeholder="Search..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-8 pr-8 h-full"
+                    />
+                    {searchTerm && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-0 top-0 h-full px-2 py-0 hover:bg-transparent"
+                            onClick={handleClearSearch}
+                        >
+                            <X className="h-3.5 w-3.5"/>
+                        </Button>
+                    )}
+                </div>
+
+                {isCreatingProject ? (
+                    <ProjectNameInput
+                        ref={inputRef}
+                        value={newProjectName}
+                        onChange={(e) => setNewProjectName(e.target.value)}
+                        onCancel={() => {
+                            setIsCreatingProject(false);
+                            setNewProjectName("");
+                        }}
+                        onSubmit={handleCreateProject}
+                        inputClassName=""
+                    />
+                ) : (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant={activeProject ? "secondary" : "outline"}
+                                size="sm"
+                                className="h-8 gap-2 w-fit border"
+                            >
+                                {activeProject && activeProject !== "Not specified" ? (
+                                    <ProjectAvatar projectName={activeProject} size="sm"/>
+                                ) : (
+                                    <FolderGit2 className="h-3.5 w-3.5"/>
+                                )}
+                                {activeProject ? activeProject.substring(0, 15) + (activeProject.length > 15 ? '...' : '') : "Project"}
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            <DropdownMenuItem
+                                onClick={() => handleProjectSelect("new")}
+                                className="flex items-center gap-2 cursor-pointer hover:bg-slate-100"
+                            >
+                                <Plus className="h-3.5 w-3.5 font-semibold"/>
+                                <span className="font-semibold">Create new project</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator/>
+                            <DropdownMenuItem
+                                onClick={() => handleProjectSelect(null)}
+                                className={cn("cursor-pointer hover:bg-gray-100/80", activeProject === null ? "bg-muted" : "")}
+                            >
+                                <div className="flex items-center gap-2 w-full">
+                                    <div
+                                        className="w-5 h-5 rounded-md flex items-center justify-center bg-muted text-muted-foreground">
+                                        <AlignCenter className="h-3 w-3"/>
+                                    </div>
+                                    <span>Show All</span>
+                                </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() => handleProjectSelect("Not specified")}
+                                className={cn("cursor-pointer hover:bg-gray-100/80",activeProject === "Not specified" ? "bg-muted" : "")}
+                            >
+                                <div className="flex items-center gap-2 w-full">
+                                    <div
+                                        className="w-5 h-5 rounded-md flex items-center justify-center bg-muted text-muted-foreground">
+                                        <FolderGit2 className="h-3 w-3"/>
+                                    </div>
+                                    <span>Not specified</span>
+                                </div>
+                            </DropdownMenuItem>
+
+                            {projects.map(projectName => (
+                                <DropdownMenuItem
+                                    key={projectName}
+                                    className={`${activeProject === projectName ? "bg-slate-200" : "hover:bg-gray-100/80"} px-2 relative p-0 overflow-hidden`}
+                                >
+                                    <LongPressButton
+                                        onLongPress={() => handleProjectDelete(projectName)}
+                                        className="w-full"
+                                        progressClassName="bg-red-600"
+                                        progressPosition="bottom"
+                                        longPressTime={longPressTime}
+                                        threshold={250}
+                                    >
+                                        <div
+                                            className="flex items-center justify-between w-full px-2 py-1.5"
+                                            onClick={() => handleProjectSelect(projectName)}
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <ProjectAvatar projectName={projectName} size="sm" className="w-5 h-5"/>
+                                                <span>{projectName}</span>
+                                            </div>
+                                            <div
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="ml-2 p-1.5 hover:bg-gray-200 active:bg-gray-200/50 transition-colors duration-300 rounded-md"
+                                            >
+                                                <Trash className="h-3.5 w-3.5 text-red-500"/>
+                                            </div>
+                                        </div>
+                                    </LongPressButton>
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 )}
             </div>
-
-            {isCreatingProject ? (
-                <ProjectNameInput
-                    ref={inputRef}
-                    value={newProjectName}
-                    onChange={(e) => setNewProjectName(e.target.value)}
-                    onCancel={() => {
-                        setIsCreatingProject(false);
-                        setNewProjectName("");
-                    }}
-                    onSubmit={handleCreateProject}
-                    inputClassName=""
-                />
-            ) : (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                            variant={activeProject ? "secondary" : "outline"}
-                            size="sm"
-                            className="h-8 gap-1 w-fit"
-                        >
-                            {activeProject && activeProject !== "Not specified" ? (
-                                <ProjectAvatar projectName={activeProject} size="sm" className="w-5 h-5"/>
-                            ) : (
-                                <FolderGit2 className="h-3.5 w-3.5"/>
-                            )}
-                            {activeProject ? activeProject.substring(0, 15) + (activeProject.length > 15 ? '...' : '') : "Project"}
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-[180px]">
-                        <DropdownMenuItem
-                            onClick={() => handleProjectSelect("new")}
-                            className="flex items-center gap-2"
-                        >
-                            <Plus className="h-3.5 w-3.5 text-foreground font-semibold"/>
-                            <span className="font-semibold">Create new project</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator/>
-                        <DropdownMenuItem
-                            onClick={() => handleProjectSelect(null)}
-                            className={activeProject === null ? "bg-muted" : ""}
-                        >
-                            Show All
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            onClick={() => handleProjectSelect("Not specified")}
-                            className={activeProject === "Not specified" ? "bg-muted" : ""}
-                        >
-                            <div className="flex items-center gap-2 w-full">
-                                <div
-                                    className="w-5 h-5 rounded-md flex items-center justify-center bg-muted text-muted-foreground">
-                                    <FolderGit2 className="h-3 w-3"/>
-                                </div>
-                                <span>Not specified</span>
-                            </div>
-                        </DropdownMenuItem>
-
-                        {projects.map(projectName => (
-                            <DropdownMenuItem
-                                key={projectName}
-                                className={`${activeProject === projectName ? "bg-muted" : ""} px-2 relative p-0 overflow-hidden`}
-                            >
-                                <LongPressButton
-                                    onLongPress={() => handleProjectDelete(projectName)}
-                                    className="w-full"
-                                    progressClassName="bg-red-600"
-                                    progressPosition="bottom"
-                                    longPressTime={longPressTime}
-                                    threshold={250}
-                                >
-                                    <div
-                                        className="flex items-center justify-between w-full px-2 py-1.5"
-                                        onClick={() => handleProjectSelect(projectName)}
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <ProjectAvatar projectName={projectName} size="sm" className="w-5 h-5"/>
-                                            <span>{projectName}</span>
-                                        </div>
-                                        <div
-                                            onClick={(e) => e.stopPropagation()}
-                                            className="ml-2 p-1.5 hover:bg-gray-200 active:bg-gray-200/50 transition-colors duration-300 rounded-md"
-                                        >
-                                            <Trash className="h-3.5 w-3.5 text-red-500"/>
-                                        </div>
-                                    </div>
-                                </LongPressButton>
-                            </DropdownMenuItem>
-                        ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            )}
         </div>
     )
-} 
+});
+
+export default ProjectFilter; 

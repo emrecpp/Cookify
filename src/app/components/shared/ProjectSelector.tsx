@@ -36,13 +36,11 @@ export function ProjectSelector({ projects, selectedProject, onProjectChange }: 
 
     const handleCreateProject = () => {
         if (selectedProject && selectedProject.trim()) {
-            // Projeyi global context'e kaydet
             addProject(selectedProject);
             setNewProject(false);
         }
     }
 
-    // Render function for selected project display
     const renderSelectedProject = () => {
         if (!selectedProject) {
             return <span className="text-muted-foreground">Select a project or create new</span>
@@ -68,7 +66,7 @@ export function ProjectSelector({ projects, selectedProject, onProjectChange }: 
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="new" className="flex items-center">
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 cursor-pointer">
                                     <Plus className="h-3.5 w-3.5 text-foreground font-semibold" />
                                     <span className="font-semibold">Create new project</span>
                                 </div>

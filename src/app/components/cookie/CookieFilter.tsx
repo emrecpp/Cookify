@@ -1,26 +1,40 @@
-import { CookieData } from "@/types/types";
-import { ProjectFilter } from "../shared/ProjectFilter";
+import {CookieData} from "@/types/types";
+import GlobalFilter, {GlobalFilterRef} from "../shared/GlobalFilter";
+import {forwardRef, useImperativeHandle, useRef} from "react";
 
-interface CookieFilterProps {
-  cookies: CookieData[]
-  onFilteredCookiesChange: (filteredCookies: CookieData[]) => void
+export interface CookieFilterRef {
+    clearSearch: () => void;
 }
 
-const COOKIE_PROJECT_KEY = "cookify_selected_cookie_project";
+interface CookieFilterProps {
+    cookies: CookieData[]
+    onFilteredCookiesChange: (filteredCookies: CookieData[]) => void
+    onSearchTermChange?: (searchTerm: string) => void
+}
 
-export function CookieFilter({ cookies, onFilteredCookiesChange }: CookieFilterProps) {
-  const additionalSearchFields = (cookie: CookieData) => [
-    cookie.name,
-    cookie.domain || ""
-  ];
+export const CookieFilter = forwardRef<CookieFilterRef, CookieFilterProps>(function CookieFilter(
+    {cookies, onFilteredCookiesChange, onSearchTermChange},
+    ref
+) {
+    const globalFilterRef = useRef<GlobalFilterRef>(null);
 
-  return (
-    <ProjectFilter
-      items={cookies}
-      onFilteredItemsChange={onFilteredCookiesChange}
-      storageKey={COOKIE_PROJECT_KEY}
-      additionalSearchFields={additionalSearchFields}
-      longPressTime={3000}
-    />
-  )
-} 
+    useImperativeHandle(ref, () => ({
+        clearSearch: () => {
+            if (globalFilterRef.current) {
+                globalFilterRef.current.clearSearch();
+            }
+        }
+    }));
+
+    return (
+        <GlobalFilter
+            ref={globalFilterRef}
+            items={cookies}
+            onFilteredItemsChange={onFilteredCookiesChange}
+            type="cookie"
+            onSearchTermChange={onSearchTermChange}
+        />
+    )
+});
+
+export default CookieFilter; 

@@ -55,7 +55,6 @@ export const useApplyCookie = async (cookie: CookieData) => {
             targetDomain,
         });
 
-        // console.log("cookieConfig: ", cookieConfig)
 
         chrome.cookies.set(cookieConfig, (result) => {
             if (result) {

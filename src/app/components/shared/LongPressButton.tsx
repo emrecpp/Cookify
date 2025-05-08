@@ -45,7 +45,6 @@ export function LongPressButton({
       cancelAnimationFrame(animationRef.current!);
       animationRef.current = null;
       
-      // Execute the action when completed and reset
       if (timerRef.current !== null) {
         clearTimeout(timerRef.current);
         timerRef.current = null;
