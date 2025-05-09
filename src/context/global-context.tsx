@@ -15,13 +15,11 @@ interface GlobalContextState {
 
     cookies: CookieData[];
     setCookies: (cookies: CookieData[]) => void;
-
     swaggers: SwaggerData[];
     setSwaggers: (swaggers: SwaggerData[]) => void;
 
     editingCookie: CookieData | null;
     setEditingCookie: (cookie: CookieData | null) => void;
-
     editingSwagger: SwaggerData | null;
     setEditingSwagger: (swagger: SwaggerData | null) => void;
 
@@ -30,7 +28,6 @@ interface GlobalContextState {
 
     handleCookieSubmit: (cookie: CookieData) => void;
     handleDeleteProfile: (data: CookieData | SwaggerData) => void;
-
     handleSwaggerSubmit: (swagger: SwaggerData) => void;
 
     animationDirection: 1 | -1;
@@ -39,21 +36,24 @@ interface GlobalContextState {
     projects: string[];
     setProjects: React.Dispatch<React.SetStateAction<string[]>>;
 
-    getAllProjects: () => string[];
-    addProject: (projectName: string) => void;
+    getAllProjects(): string[];
 
-    handleDeleteProject: (projectName: string) => void;
+    addProject(projectName: string): void;
 
-    settings?: Settings;
-    updateSettings?: (settings?: Partial<Settings>) => void;
+    handleDeleteProject(projectName: string): void;
 
-    activeProject?: string | null;
-    setActiveProject?: React.Dispatch<React.SetStateAction<string | null>>;
+    settings: Settings;
+    updateSettings(newSettings: Partial<Settings>): void;
+
+    activeProject: string | null;
+    setActiveProject(projectName: string | null): void;
 
     searchTerm?: string;
     setSearchTerm?: React.Dispatch<React.SetStateAction<string>>;
 
-    handleImport?: (importedData?: any) => void;
+    clearSearchTerm(): void;
+
+    handleImport(importedData?: any): void;
 }
 
 export const GlobalContext = createContext<GlobalContextState | any>(undefined);

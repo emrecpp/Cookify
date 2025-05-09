@@ -100,7 +100,7 @@ export const ProjectFilter = ({
     }
 
     useEffect(() => {
-        // This hook filters data when
+        // This hook, filters data when search term or active project changes
         setFilteredItems(filterItems())
     }, [searchTerm, activeProject, cookies, swaggers]);
 

@@ -3,11 +3,11 @@ import {useGlobalContext} from "@/context/global-context.tsx"
 import {useApplyCookie} from "@/hooks/useCookie.ts"
 import {CookieData} from "@/types/types"
 import {Button} from "@/components/ui/button"
-import {Check, Copy, FilePen, GripVertical, MoreHorizontal, Trash} from "lucide-react"
-import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu"
+import {GripVertical} from "lucide-react"
 import {ProjectAvatar} from "@/components/ui/project-avatar"
 import {TableCell, TableHead, TableRow} from "@/components/ui/table"
 import toast from "react-hot-toast"
+import ActionButtons from "@/app/components/shared/ActionButtons"
 
 interface CookieTableProps {
     cookies: CookieData[];
@@ -74,50 +74,13 @@ export default function CookieTable({
                     </div>
                 </TableCell>
                 <TableCell style={{width: COLUMN_WIDTHS.actions, paddingLeft: '16px'}}>
-                    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-7 w-7">
-                                    <MoreHorizontal className="h-3.5 w-3.5"/>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleEdit(cookie)} className="cursor-pointer">
-                                    <FilePen className="h-3.5 w-3.5 mr-2"/>
-                                    Edit
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    className="text-destructive focus:text-destructive cursor-pointer"
-                                    onClick={() => handleDeleteProfile(cookie)}
-                                >
-                                    <Trash className="h-3.5 w-3.5 mr-2"/>
-                                    Delete
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
-                            onClick={(e) => {
-                                handleCopy(cookie.value);
-                            }}
-                            title="Copy value"
-                        >
-                            <Copy className="h-3.5 w-3.5"/>
-                        </Button>
-                        <Button
-                            className={`h-7 w-7`}
-                            onClick={async (e) => {
-                                await useApplyCookie(cookie)
-                            }}
-                            variant="secondary"
-                            size="icon"
-                            title="Apply"
-                        >
-                            <Check className="h-3.5 w-3.5"/>
-                        </Button>
-                    </div>
+                    <ActionButtons 
+                        onEdit={() => handleEdit(cookie)}
+                        onDelete={() => handleDeleteProfile(cookie)}
+                        onCopy={() => handleCopy(cookie.value)}
+                        onApply={async () => await useApplyCookie(cookie)}
+                        copyTitle="Copy value"
+                    />
                 </TableCell>
             </>
         )
