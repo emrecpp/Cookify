@@ -26,24 +26,34 @@ interface GlobalContextState {
     setEditingSwagger: (swagger: SwaggerData | null) => void;
 
     handleEdit: (data: CookieData | SwaggerData) => void;
-    handleApply: (data: CookieData | SwaggerData) => void;
+    handleApply: (data: CookieData | SwaggerData) => Promise<void>;
 
     handleCookieSubmit: (cookie: CookieData) => void;
     handleDeleteProfile: (data: CookieData | SwaggerData) => void;
+
     handleSwaggerSubmit: (swagger: SwaggerData) => void;
 
     animationDirection: 1 | -1;
-    setAnimationDirection: (direction: 1 | -1) => void;
-    
+    setAnimationDirection: React.Dispatch<React.SetStateAction<1 | -1>>;
+
+    projects: string[];
+    setProjects: React.Dispatch<React.SetStateAction<string[]>>;
+
     getAllProjects: () => string[];
     addProject: (projectName: string) => void;
-    handleDeleteProject: (projectName: string) => void;
-    
-    settings: Settings;
-    updateSettings: (settings: Partial<Settings>) => void;
 
-    activeProject: string | null;
-    setActiveProject: (project: string | null) => void;
+    handleDeleteProject: (projectName: string) => void;
+
+    settings?: Settings;
+    updateSettings?: (settings?: Partial<Settings>) => void;
+
+    activeProject?: string | null;
+    setActiveProject?: React.Dispatch<React.SetStateAction<string | null>>;
+
+    searchTerm?: string;
+    setSearchTerm?: React.Dispatch<React.SetStateAction<string>>;
+
+    handleImport?: (importedData?: any) => void;
 }
 
 export const GlobalContext = createContext<GlobalContextState | any>(undefined);
@@ -67,7 +77,10 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
 
     const [animationDirection, setAnimationDirection] = useState<1 | -1>(1);
     const [activeProject, setActiveProject] = useState<string | null>(null);
-    
+    const [projects, setProjects] = useState<string[]>([])
+
+    const [searchTerm, setSearchTerm] = useState("")
+
     const [settings, setSettings] = useState<ExtendedSettings>({
         ...DEFAULT_SETTINGS,
         projects: []
@@ -171,6 +184,10 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
         return settings.projects;
     };
 
+    useEffect(() => {
+        setProjects(getAllProjects)
+    }, [getAllProjects]);
+
     const handleEdit = (data: CookieData | SwaggerData) => {
         if (isCookieData(data)) {
             setCurrentView("edit-cookie");
@@ -268,6 +285,9 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
         localStorage.removeItem("cookify_selected_global_project");
     };
 
+    const clearSearchTerm = () => setSearchTerm("")
+
+
     return (
         <GlobalContext.Provider
             value={{
@@ -285,7 +305,8 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
                 handleSwaggerSubmit,
 
                 animationDirection, setAnimationDirection,
-                
+
+                projects, setProjects,
                 getAllProjects,
                 addProject,
                 handleDeleteProject,
@@ -293,7 +314,8 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
                 settings, updateSettings,
                 
                 activeProject, setActiveProject,
-                handleImport
+                searchTerm, setSearchTerm, clearSearchTerm,
+                handleImport,
             }}>
             {children}
         </GlobalContext.Provider>

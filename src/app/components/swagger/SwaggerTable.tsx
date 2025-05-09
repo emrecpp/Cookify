@@ -16,16 +16,12 @@ import toast from "react-hot-toast"
 interface SwaggerTableProps {
     swaggers: SwaggerData[];
     onReorder?: (startIndex: number, endIndex: number) => void;
-    searchTerm?: string;
-    clearSearchTerm?: () => void;
     originalDataLength?: number;
 }
 
 export default function SwaggerTable({
     swaggers, 
     onReorder,
-    searchTerm = "",
-    clearSearchTerm,
     originalDataLength = 0
 }: SwaggerTableProps) {
     const {handleEdit, handleDeleteProfile, handleApply} = useGlobalContext()
@@ -83,12 +79,12 @@ export default function SwaggerTable({
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleEdit(swagger)}>
+                                <DropdownMenuItem onClick={() => handleEdit(swagger)} className="cursor-pointer">
                                     <FilePen className="h-3.5 w-3.5 mr-2"/>
                                     Edit
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                    className="text-destructive focus:text-destructive"
+                                    className="text-destructive focus:text-destructive cursor-pointer"
                                     onClick={() => handleDeleteProfile(swagger)}
                                 >
                                     <Trash className="h-3.5 w-3.5 mr-2"/>
@@ -131,8 +127,6 @@ export default function SwaggerTable({
             onReorder={onReorder}
             renderHeaders={renderHeaders}
             renderCells={renderCells}
-            searchTerm={searchTerm}
-            clearSearchTerm={clearSearchTerm}
             originalDataLength={originalDataLength || 0}
         />
     )

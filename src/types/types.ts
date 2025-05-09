@@ -36,3 +36,5 @@ export const DEFAULT_SETTINGS: Settings = {
 export const isCookieData = (data: CookieData | SwaggerData): data is CookieData => {
     return (data as CookieData).name !== undefined
 }
+
+export const FormType = "cookie" | "swagger"

@@ -4,7 +4,6 @@ import {DragDropContext, Draggable, Droppable} from '@hello-pangea/dnd'
 import {BrushCleaning, PlusCircle, Search} from 'lucide-react'
 import React from "react"
 import {useGlobalContext} from "@/context/global-context.tsx"
-import {useActiveCookies} from "@/hooks/useActiveCookies"
 import {useApplyCookie} from "@/hooks/useCookie.ts"
 import {Button} from "@/components/ui/button"
 
@@ -16,9 +15,7 @@ interface DataTableProps<T extends DataType> {
     onReorder?: (startIndex: number, endIndex: number) => void;
     renderHeaders: () => React.ReactNode;
     renderCells: (item: T, index: number, dragHandleProps: any) => React.ReactNode;
-    searchTerm?: string;
-    clearSearchTerm?: () => void;
-    originalDataLength: number;
+    originalDataLength?: number;
 }
 
 export default function DataTable<T extends DataType>({
@@ -27,12 +24,10 @@ export default function DataTable<T extends DataType>({
                                                           onReorder,
                                                           renderHeaders,
                                                           renderCells,
-                                                          searchTerm,
-                                                          clearSearchTerm,
                                                           originalDataLength
                                                       }: DataTableProps<T>) {
-    const {settings, activeProject, setActiveProject, setCurrentView} = useGlobalContext()
-    const {isCookieActive} = useActiveCookies(type === 'cookie' ? data as CookieData[] : [])
+    const {settings, activeProject, setActiveProject, setCurrentView,
+        searchTerm, clearSearchTerm} = useGlobalContext()
 
     const handleDragEnd = (result: any) => {
         if (!result.destination || !onReorder) return
@@ -130,8 +125,7 @@ export default function DataTable<T extends DataType>({
                                                 <TableRow
                                                     ref={provided.innerRef}
                                                     {...provided.draggableProps}
-                                                    className={`${type === 'cookie' && isCookieActive(item.alias) ? "bg-green-50/50" : ""} 
-                                                        ${settings.applyOnClick ? "cursor-pointer" : "cursor-default"} transition-colors hover:bg-accent/50`}
+                                                    className={`${settings.applyOnClick ? "cursor-pointer" : "cursor-default"} transition-colors hover:bg-accent/50`}
                                                     onClick={() => handleRowClick(item)}
                                                 >
                                                     {renderCells(item, index, provided.dragHandleProps)}

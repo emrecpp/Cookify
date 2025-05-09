@@ -1,30 +1,29 @@
-import { FormLayout } from "@/app/components/shared/FormLayout.tsx"
-import { InputField } from "@/app/components/shared/InputField.tsx"
-import { ProjectSelector } from "@/app/components/shared/ProjectSelector.tsx"
-import { Switch } from "@/components/ui/switch.tsx"
-import { useGlobalContext } from "@/context/global-context.tsx"
-import { useZodForm } from "@/hooks/useZodForm"
-import { swaggerSchema } from "@/lib/schemas"
-import { SwaggerData } from "@/types/types.ts"
-import { AnimatePresence, motion } from "framer-motion"
-import { KeyRound, Tag } from 'lucide-react'
+import {FormLayout} from "@/app/components/shared/FormLayout.tsx"
+import {InputField} from "@/app/components/shared/InputField.tsx"
+import {ProjectSelector} from "@/app/components/shared/ProjectSelector.tsx"
+import {useGlobalContext} from "@/context/global-context.tsx"
+import {useZodForm} from "@/hooks/useZodForm"
+import {swaggerSchema} from "@/lib/schemas"
+import {SwaggerData} from "@/types/types.ts"
+import {AnimatePresence, motion} from "framer-motion"
+import {KeyRound, Tag} from 'lucide-react'
 
 export function SwaggerForm() {
     const {
-        editingSwagger: initialData, 
-        handleSwaggerSubmit, 
-        setCurrentView, 
+        editingSwagger: initialData,
+        handleSwaggerSubmit,
+        setCurrentView,
         setEditingSwagger,
         getAllProjects,
         currentView
     } = useGlobalContext()
-    
+
     const emptyFormData: SwaggerData = {
         alias: "",
         bearerToken: "",
         project: ""
     }
-    
+
     const {
         formData,
         handleSubmit,
@@ -42,7 +41,7 @@ export function SwaggerForm() {
         clearEditing: () => setEditingSwagger(null),
         backView: 'list-swaggers'
     });
-    
+
     const projects = getAllProjects()
 
     return (
@@ -55,7 +54,7 @@ export function SwaggerForm() {
                 transition={{duration: 0.3}}
                 className="w-full h-full"
             >
-                <FormLayout 
+                <FormLayout
                     onSubmit={handleSubmit}
                     onBack={handleBack}
                     isEditing={isEditing}
@@ -71,7 +70,7 @@ export function SwaggerForm() {
                         label="Alias"
                         value={formData.alias}
                         onChange={handleInputChange}
-                        icon={<Tag size={16} />}
+                        icon={<Tag size={16}/>}
                         placeholder="Enter alias"
                         required
                         error={errors.alias}
@@ -82,7 +81,7 @@ export function SwaggerForm() {
                         label="Bearer Token"
                         value={formData.bearerToken}
                         onChange={handleInputChange}
-                        icon={<KeyRound size={16} />}
+                        icon={<KeyRound size={16}/>}
                         placeholder="Enter JWT bearer token (Ex: eyJhbGciOi...)"
                         multiline
                         className=""

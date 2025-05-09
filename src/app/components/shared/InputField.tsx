@@ -6,7 +6,7 @@ import React, { ReactNode } from "react";
 interface InputFieldProps {
     id: string;
     label: string;
-    value: string;
+    value: string | undefined;
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
     placeholder?: string;
     required?: boolean;
@@ -42,7 +42,7 @@ export function InputField({
                 {multiline ? (
                     <Textarea
                         id={id}
-                        value={value}
+                        value={value || ""}
                         onChange={onChange}
                         placeholder={placeholder}
                         className={`${icon ? "pl-9" : ""} ${className} ${error ? "border-red-500" : ""}`}
@@ -51,7 +51,7 @@ export function InputField({
                 ) : (
                     <Input
                         id={id}
-                        value={value}
+                        value={value || ""}
                         onChange={onChange}
                         placeholder={placeholder}
                         className={`${icon ? "pl-9" : ""} ${className} ${error ? "border-red-500" : ""}`}

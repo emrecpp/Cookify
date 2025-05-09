@@ -1,16 +1,10 @@
 import DataTable from "@/app/components/shared/DataTable"
 import {useGlobalContext} from "@/context/global-context.tsx"
-import {useActiveCookies} from "@/hooks/useActiveCookies"
 import {useApplyCookie} from "@/hooks/useCookie.ts"
 import {CookieData} from "@/types/types"
 import {Button} from "@/components/ui/button"
-import {Check, CheckCircle2, Copy, FilePen, GripVertical, MoreHorizontal, Trash} from "lucide-react"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
+import {Check, Copy, FilePen, GripVertical, MoreHorizontal, Trash} from "lucide-react"
+import {DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from "@/components/ui/dropdown-menu"
 import {ProjectAvatar} from "@/components/ui/project-avatar"
 import {TableCell, TableHead, TableRow} from "@/components/ui/table"
 import toast from "react-hot-toast"
@@ -18,21 +12,16 @@ import toast from "react-hot-toast"
 interface CookieTableProps {
     cookies: CookieData[];
     onReorder?: (startIndex: number, endIndex: number) => void;
-    searchTerm?: string;
-    clearSearchTerm?: () => void;
     originalDataLength?: number;
 }
 
 export default function CookieTable({
-    cookies, 
-    onReorder,
-    searchTerm = "",
-    clearSearchTerm,
-    originalDataLength = 0
-}: CookieTableProps) {
+                                        cookies,
+                                        onReorder,
+                                        originalDataLength
+                                    }: CookieTableProps) {
     const {handleEdit, handleDeleteProfile} = useGlobalContext()
-    const {isCookieActive} = useActiveCookies(cookies)
-    
+
     const COLUMN_WIDTHS = {
         order: '60px',
         alias: '180px',
@@ -40,12 +29,12 @@ export default function CookieTable({
         project: '140px',
         actions: '100px'
     }
-    
+
     const handleCopy = (text: string) => {
         navigator.clipboard.writeText(text)
         toast.success('Value copied')
     }
-    
+
     const renderHeaders = () => {
         return (
             <TableRow>
@@ -57,7 +46,7 @@ export default function CookieTable({
             </TableRow>
         )
     }
-    
+
     const renderCells = (cookie: CookieData, index: number, dragHandleProps: any) => {
         return (
             <>
@@ -68,9 +57,6 @@ export default function CookieTable({
                 </TableCell>
                 <TableCell style={{width: COLUMN_WIDTHS.alias}} className="font-medium">
                     <div className="flex items-center gap-1.5">
-                        {isCookieActive(cookie.alias) && (
-                            <CheckCircle2 className="h-3.5 w-3.5 text-green-500"/>
-                        )}
                         {cookie.alias}
                     </div>
                 </TableCell>
@@ -96,12 +82,12 @@ export default function CookieTable({
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => handleEdit(cookie)}>
+                                <DropdownMenuItem onClick={() => handleEdit(cookie)} className="cursor-pointer">
                                     <FilePen className="h-3.5 w-3.5 mr-2"/>
                                     Edit
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                    className="text-destructive focus:text-destructive"
+                                    className="text-destructive focus:text-destructive cursor-pointer"
                                     onClick={() => handleDeleteProfile(cookie)}
                                 >
                                     <Trash className="h-3.5 w-3.5 mr-2"/>
@@ -121,7 +107,7 @@ export default function CookieTable({
                             <Copy className="h-3.5 w-3.5"/>
                         </Button>
                         <Button
-                            className={`h-7 w-7 ${isCookieActive(cookie.alias) ? "bg-green-100 text-green-700 hover:bg-green-200 hover:text-green-800" : ""}`}
+                            className={`h-7 w-7`}
                             onClick={async (e) => {
                                 await useApplyCookie(cookie)
                             }}
@@ -136,17 +122,15 @@ export default function CookieTable({
             </>
         )
     }
-    
+
     return (
-        <DataTable 
+        <DataTable
             data={cookies as any}
             type="cookie"
             onReorder={onReorder}
             renderHeaders={renderHeaders}
             renderCells={renderCells}
-            searchTerm={searchTerm}
-            clearSearchTerm={clearSearchTerm}
-            originalDataLength={originalDataLength || 0}
+            originalDataLength={originalDataLength ||0}
         />
     )
 } 

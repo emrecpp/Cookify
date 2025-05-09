@@ -10,10 +10,11 @@ import {
 import {Input} from "@/components/ui/input"
 import {ProjectAvatar} from "@/components/ui/project-avatar"
 import {useGlobalContext} from "@/context/global-context"
-import {AlignCenter, DotSquare, FolderGit2, Plus, Rows3, Search, Trash, X} from "lucide-react"
-import {forwardRef, Ref, useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react'
+import {AlignCenter, FolderGit2, Plus, Search, Trash, X} from "lucide-react"
+import {useEffect, useRef, useState} from 'react'
 import {ProjectNameInput} from "./ProjectNameInput"
 import {cn} from "@/lib/utils.ts";
+import {CookieData, FormType} from "@/types/types.ts";
 
 export interface FilterableItem {
     project?: string;
@@ -22,41 +23,44 @@ export interface FilterableItem {
     [key: string]: any;
 }
 
-export interface ProjectFilterRef {
-    clearSearch: () => void;
-}
 
 interface ProjectFilterProps<T extends FilterableItem> {
     items: T[];
-    onFilteredItemsChange: (filteredItems: T[]) => void;
+    setFilteredItems: (items: T[]) => void;
+    type: FormType;
     storageKey: string;
     longPressTime?: number;
-    additionalSearchFields?: (item: T) => string[];
-    onSearchTermChange?: (searchTerm: string) => void;
+
 }
 
-export const ProjectFilter = forwardRef(function ProjectFilter<T extends FilterableItem>(
-    {
-        items,
-        onFilteredItemsChange,
-        storageKey,
-        longPressTime = 2000,
-        additionalSearchFields = () => [],
-        onSearchTermChange
-    }: ProjectFilterProps<T>,
-    ref: Ref<ProjectFilterRef>
-) {
-    const [searchTerm, setSearchTerm] = useState("")
+const additionalSearchFields = (item: any, type: string) => {
+    if (type === "cookie") {
+        const cookieItem = item as unknown as CookieData;
+        return [
+            cookieItem.name,
+            cookieItem.domain || ""
+        ];
+    }
+    return [];
+};
+
+
+export const ProjectFilter = ({
+                                  items,
+                                  setFilteredItems,
+                                  type,
+                                  storageKey,
+                                  longPressTime = 2000,
+                              }: ProjectFilterProps<any>) => {
+
     const [isCreatingProject, setIsCreatingProject] = useState(false)
     const [newProjectName, setNewProjectName] = useState("")
-    const inputRef = useRef<HTMLInputElement>(null)
-    const {addProject, handleDeleteProject, getAllProjects, activeProject, setActiveProject} = useGlobalContext();
-    const [projects, setProjects] = useState<string[]>([])
-    const [filteredItems, setFilteredItems] = useState<T[]>([])
 
-    useEffect(() => {
-        setProjects(getAllProjects());
-    }, [getAllProjects]);
+    const inputRef = useRef<HTMLInputElement>(null)
+
+    const {addProject, handleDeleteProject, projects, activeProject, setActiveProject, cookies, swaggers,
+        searchTerm, setSearchTerm} = useGlobalContext();
+
 
     useEffect(() => {
         const savedProject = localStorage.getItem(storageKey);
@@ -65,9 +69,9 @@ export const ProjectFilter = forwardRef(function ProjectFilter<T extends Filtera
         }
     }, [storageKey, setActiveProject]);
 
-    const filterItems = useCallback(() => {
+
+    const filterItems = () => {
         let filtered = [...items]
-        const isSearching = Boolean(searchTerm) || Boolean(activeProject)
 
         if (searchTerm) {
             const searchLower = searchTerm.toLowerCase()
@@ -76,7 +80,7 @@ export const ProjectFilter = forwardRef(function ProjectFilter<T extends Filtera
                     item.alias.toLowerCase().includes(searchLower) ||
                     (item.project && item.project.toLowerCase().includes(searchLower));
 
-                const additionalFields = additionalSearchFields(item);
+                const additionalFields = additionalSearchFields(item, type);
                 const additionalMatch = additionalFields.some(field =>
                     field && field.toLowerCase().includes(searchLower)
                 );
@@ -92,25 +96,16 @@ export const ProjectFilter = forwardRef(function ProjectFilter<T extends Filtera
                     : item.project === activeProject
             )
         }
-
-        setFilteredItems(filtered);
-        onFilteredItemsChange(filtered)
-        if (onSearchTermChange) {
-            onSearchTermChange(searchTerm);
-        }
-    }, [items, searchTerm, activeProject, onFilteredItemsChange, additionalSearchFields, onSearchTermChange])
-
-    useEffect(() => {
-        filterItems()
-    }, [filterItems])
-
-    const handleClearSearch = () => {
-        setSearchTerm("")
+        return filtered
     }
 
-    useImperativeHandle(ref, () => ({
-        clearSearch: handleClearSearch
-    }));
+    useEffect(() => {
+        // This hook filters data when
+        setFilteredItems(filterItems())
+    }, [searchTerm, activeProject, cookies, swaggers]);
+
+
+    const handleClearSearch = () => setSearchTerm("")
 
 
     const handleProjectSelect = (project: string | null) => {
@@ -229,7 +224,7 @@ export const ProjectFilter = forwardRef(function ProjectFilter<T extends Filtera
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => handleProjectSelect("Not specified")}
-                                className={cn("cursor-pointer hover:bg-gray-100/80",activeProject === "Not specified" ? "bg-muted" : "")}
+                                className={cn("cursor-pointer hover:bg-gray-100/80", activeProject === "Not specified" ? "bg-muted" : "")}
                             >
                                 <div className="flex items-center gap-2 w-full">
                                     <div
@@ -277,6 +272,6 @@ export const ProjectFilter = forwardRef(function ProjectFilter<T extends Filtera
             </div>
         </div>
     )
-});
+}
 
 export default ProjectFilter; 

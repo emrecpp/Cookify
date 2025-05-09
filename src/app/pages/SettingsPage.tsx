@@ -70,10 +70,10 @@ export function SettingsPage() {
                 transition={{duration: 0.3}}
                 className="w-full overflow-hidden"
             >
-                <div className="container mx-auto pt-4 pb-8">
-                    <h1 className="text-2xl font-bold mb-6">Settings</h1>
+                <div className="container mx-auto px-2 pt-4 pb-8 flex flex-col gap-3">
+                    <h1 className="text-2xl font-bold mb-2">Settings</h1>
                     
-                    <Card className="mb-6">
+                    <Card className="">
                         <CardHeader>
                             <CardTitle>Behavior</CardTitle>
                             <CardDescription>
@@ -81,10 +81,10 @@ export function SettingsPage() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between gap-1">
                                 <div>
                                     <Label htmlFor="apply-on-click" className="text-base">Apply on click</Label>
-                                    <p className="text-sm text-muted-foreground">
+                                    <p className="text-sm text-muted-foreground ">
                                         When enabled, clicking on a row in the table will automatically apply the cookie or swagger
                                     </p>
                                 </div>
