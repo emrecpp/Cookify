@@ -117,7 +117,7 @@ export default function DataTable<T extends DataType>({
                                 ) : (
                                     data.map((item, index) => (
                                         <Draggable
-                                            key={item.alias}
+                                            key={item.project + "-"+ item.alias}
                                             draggableId={item.alias}
                                             index={index}
                                         >

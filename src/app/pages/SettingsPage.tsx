@@ -114,7 +114,7 @@ export function SettingsPage() {
                         </CardContent>
                     </Card>
                     
-                    <div className="mt-8 text-center text-sm text-muted-foreground flex flex-col gap-0.5">
+                    <div className="-mt-6 text-center text-sm text-muted-foreground flex flex-col gap-0.5">
                         <p className="font-semibold select-none">Author</p>
                         <p>Emre Demircan</p>
                         <p className="flex items-center justify-center gap-2">
