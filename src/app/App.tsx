@@ -13,24 +13,23 @@ export default function App() {
 
     useEffect(() => {
         const initializeExtension = async () => {
-            const savedCookies = localStorage.getItem(STORAGE_KEY)
-            if (!savedCookies) return
+            try {
+                const {isSwagger} = await sendMessage("isSwagger", {})
+                setCurrentView(isSwagger ? "list-swaggers" : "list-cookies")
 
-            const {tabs} = await getTabInfo()
-            const data = JSON.parse(savedCookies)
-
-            setCookies(data.cookies)
-            setSwaggers(data.swaggers)
-
-            const {isSwagger} = await sendMessage("isSwagger", {})
-            setCurrentView(isSwagger ? "list-swaggers" : "list-cookies")
-
+                const savedCookies = localStorage.getItem(STORAGE_KEY)
+                if (savedCookies) {
+                    const data = JSON.parse(savedCookies)
+                    setCookies(data.cookies || [])
+                    setSwaggers(data.swaggers || [])
+                }
+            } catch (error) {
+                console.error('Initialization error:', error)
+                setCurrentView("list-cookies")
+            }
         }
 
-        initializeExtension().catch(console.error)
-
-        return () => {
-        }
+        initializeExtension()
     }, [])
 
     useEffectAfterMount(() => {

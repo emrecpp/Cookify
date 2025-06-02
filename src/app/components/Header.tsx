@@ -54,7 +54,8 @@ export function Header() {
                 className="flex justify-between items-center select-none py-3"
                 initial={{opacity: 0, y: -20}}
                 animate={{opacity: 1, y: 0}}
-                transition={{duration: 0.5}}>
+                transition={{duration: 0}}
+            >
                 <motion.h1
                     className="text-lg font-bold flex items-center cursor-pointer text-slate-800"
                     whileHover={{scale: 1.05}}

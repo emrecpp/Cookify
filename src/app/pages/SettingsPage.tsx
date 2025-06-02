@@ -67,7 +67,7 @@ export function SettingsPage() {
                 initial={{opacity: 0}}
                 animate={{opacity: 1}}
                 exit={{opacity: 0}}
-                transition={{duration: 0.3}}
+                transition={{duration: 0.25}}
                 className="w-full overflow-hidden"
             >
                 <div className="container mx-auto px-2 pt-4 pb-8 flex flex-col gap-3">

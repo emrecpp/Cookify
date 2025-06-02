@@ -54,6 +54,8 @@ interface GlobalContextState {
     clearSearchTerm(): void;
 
     handleImport(importedData?: any): void;
+
+    isInitialized: boolean;
 }
 
 export const GlobalContext = createContext<GlobalContextState | any>(undefined);
@@ -67,7 +69,7 @@ interface ExtendedSettings extends Settings {
 }
 
 export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) => {
-    const [currentView, setCurrentView] = useState<PageViewTypes>('list-cookies')
+    const [currentView, setCurrentView] = useState<PageViewTypes>(null)
 
     const [cookies, setCookiesState] = useState<CookieData[]>([])
     const [swaggers, setSwaggersState] = useState<SwaggerData[]>([])
@@ -256,6 +258,16 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
     };
 
     const changeView = (newView: PageViewTypes) => {
+        if (newView === null) {
+            setCurrentView(null);
+            return;
+        }
+        
+        if (currentView === null) {
+            setCurrentView(newView);
+            return;
+        }
+        
         const currentGroup = getPageGroup(currentView);
         const targetGroup = getPageGroup(newView);
         
@@ -316,6 +328,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
                 activeProject, setActiveProject,
                 searchTerm, setSearchTerm, clearSearchTerm,
                 handleImport,
+                isInitialized: true,
             }}>
             {children}
         </GlobalContext.Provider>

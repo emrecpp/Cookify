@@ -6,6 +6,8 @@ export type PageViewTypes =
     | "edit-cookie"
     | "add-swagger"
     | "edit-swagger"
+    | null
+
 export interface CookieData {
     alias: string
     name: string
@@ -37,4 +39,4 @@ export const isCookieData = (data: CookieData | SwaggerData): data is CookieData
     return (data as CookieData).name !== undefined
 }
 
-export const FormType = "cookie" | "swagger"
+export type FormType = "cookie" | "swagger"
