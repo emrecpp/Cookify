@@ -49,12 +49,16 @@
 Check out these short videos to see Cookify in action:
 
 - **Cookie Management**
-<video src="https://github.com/user-attachments/assets/7a66f547-e6fe-48fa-8b02-711e3f048be8" controls width="100%"></video>
+<video src="https://github.com/user-attachments/assets/bd5238dc-8e9f-4638-9038-1929623f3af3" controls width="100%"></video>
 
 
 
 - **Swagger Integration**
-<video src="https://github.com/user-attachments/assets/16af1a95-f036-42af-9e8d-cd79379d5511" controls width="100%"></video>
+<video src="https://github.com/user-attachments/assets/556fab44-7374-4294-933c-7a982f7d3083" controls width="100%"></video>
+
+
+
+
 
 
 ---
