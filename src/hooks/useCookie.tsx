@@ -73,6 +73,10 @@ export const useApplyCookie = async (cookie: CookieData) => {
                                     chrome.tabs.reload(tab.id);
                                 }
                                 toast.dismiss(t.id);
+
+                                if (window.close) // close Cookify (don't need anymore)
+                                    window.close();
+
                             }}
                             className="text-sm h-8"
                         >
