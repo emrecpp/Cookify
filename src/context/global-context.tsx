@@ -60,7 +60,7 @@ class StorageManager {
             const data = localStorage.getItem(STORAGE_KEY);
             return data ? JSON.parse(data) : {};
         } catch (error) {
-            console.error('Failed to parse data from localStorage:', error);
+            console.error('Failed to parse data from localStorage:', error.message);
             toast.error('Failed to load data!');
             return {};
         }
@@ -72,7 +72,7 @@ class StorageManager {
             const updatedData = { ...currentData, ...data };
             localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
         } catch (error) {
-            console.error('Failed to save data to localStorage:', error);
+            console.error('Failed to save data to localStorage:', error.message);
             toast.error('Failed to save data!');
         }
     }
@@ -367,7 +367,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
                 await useApplySwagger(data);
             }
         } catch (error) {
-            console.error('Apply operation failed:', error);
+            console.error('Apply operation failed:', error.message);
             toast.error('Failed to apply configuration!');
         }
     }, []);
@@ -384,7 +384,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
             
             toast.success('Data imported successfully!');
         } catch (error) {
-            console.error('Import failed:', error);
+            console.error('Import failed:', error.message);
             toast.error('Failed to import data!');
         }
     }, [setCookies, setSwaggers, updateSettings, storageManager]);

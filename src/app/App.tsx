@@ -24,7 +24,7 @@ export default function App() {
                     setSwaggers(data.swaggers || [])
                 }
             } catch (error) {
-                console.error('Initialization error:', error)
+                console.error('Initialization error:', error.message)
                 setCurrentView("list-cookies")
             }
         }

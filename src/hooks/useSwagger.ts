@@ -13,7 +13,7 @@ export const useApplySwagger = async (swagger: SwaggerData) => {
 
         toast.success("Swagger Token applied successfully!");
     } catch (error) {
-        console.error("Error in useApplySwagger:", error);
+        console.error("Error in useApplySwagger:", error.message);
         toast.error(error.message);
     }
 };
@@ -24,7 +24,7 @@ export const useLogoutSwagger = async (showToast: boolean = true) => {
         if (showToast)
             toast.success("Swagger Token removed successfully!");
     } catch (error) {
-        console.error("Error in useLogoutSwagger:", error);
+        console.error("Error in useLogoutSwagger:", error.message);
         toast.error(error.message);
     }
 };

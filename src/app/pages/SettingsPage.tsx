@@ -45,7 +45,7 @@ export function SettingsPage() {
                         globalHandleImport(data);
                         setCurrentView('list-cookies');
                     } catch (error) {
-                        console.error('Error parsing JSON file:', error);
+                        console.error('Error parsing JSON file:', error.message);
                         toast.error('File import failed!');
                     }
                 };

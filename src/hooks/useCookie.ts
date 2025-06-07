@@ -68,7 +68,7 @@ export const useApplyCookie = async (cookie: CookieData) => {
                         domain: "localhost"
                     })
                 } else {
-                    console.error("Failed to set cookie:", chrome.runtime.lastError);
+                    console.error("Failed to set cookie:", JSON.stringify(chrome.runtime.lastError));
                     toast.error("Failed to set cookie!");
                 }
 
@@ -77,7 +77,7 @@ export const useApplyCookie = async (cookie: CookieData) => {
 
 
     } catch (error) {
-        console.error("Error in useApplyCookie:", error);
+        console.error("Error in useApplyCookie:", error.message);
         toast.error(error.message);
     }
 };
@@ -104,7 +104,7 @@ export const useDeleteCookie = async (cookie: CookieData) => {
             }
         });
     } catch (error) {
-        console.error("Error in useDeleteCookie:", error);
+        console.error("Error in useDeleteCookie:", error.message);
         toast.error(error.message);
     }
 };
