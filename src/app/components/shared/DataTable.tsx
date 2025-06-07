@@ -5,7 +5,6 @@ import {BrushCleaning, PlusCircle, Search} from 'lucide-react'
 import React from "react"
 import {useGlobalContext} from "@/context/global-context.tsx"
 import {Button} from "@/components/ui/button"
-import {useApplyCookie} from "@/hooks/useCookie.tsx";
 
 export type DataType = CookieData | SwaggerData;
 
@@ -28,7 +27,7 @@ export default function DataTable<T extends DataType>({
                                                       }: DataTableProps<T>) {
     const {
         settings, activeProject, setActiveProject, setCurrentView,
-        searchTerm, clearSearchTerm
+        searchTerm, clearSearchTerm, handleApply
     } = useGlobalContext()
 
     const hasStoredData = () => {
@@ -51,12 +50,7 @@ export default function DataTable<T extends DataType>({
 
     const handleRowClick = (item: T) => {
         if (settings.applyOnClick) {
-            if (type === 'cookie') {
-                useApplyCookie(item as CookieData)
-            } else {
-                const {handleApply} = useGlobalContext()
-                handleApply(item as SwaggerData)
-            }
+            handleApply(item)
         }
     }
 
