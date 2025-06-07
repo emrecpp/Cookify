@@ -1,5 +1,5 @@
 "use client"
-import { useApplyCookie } from "@/hooks/useCookie.ts";
+import { useApplyCookie } from "@/hooks/useCookie.tsx";
 import { useApplySwagger } from "@/hooks/useSwagger.ts";
 import { sortByOrder } from "@/lib/utils.ts";
 import { CookieData, DEFAULT_SETTINGS, isCookieData, Settings, SwaggerData } from "@/types/types.ts";
@@ -148,7 +148,10 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
     const [editingCookie, setEditingCookie] = useState<CookieData | null>(null);
     const [editingSwagger, setEditingSwagger] = useState<SwaggerData | null>(null);
     const [animationDirection, setAnimationDirection] = useState<1 | -1>(1);
-    const [activeProject, setActiveProject] = useState<string | null>(null);
+    const [activeProject, setActiveProject] = useState<string | null>(() => {
+        const saved = localStorage.getItem(GLOBAL_PROJECT_KEY);
+        return saved === "Not specified" ? "Not specified" : saved;
+    });
     const [projects, setProjects] = useState<string[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [settings, setSettings] = useState<ExtendedSettings>({

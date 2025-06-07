@@ -4,8 +4,8 @@ import {DragDropContext, Draggable, Droppable} from '@hello-pangea/dnd'
 import {BrushCleaning, PlusCircle, Search} from 'lucide-react'
 import React from "react"
 import {useGlobalContext} from "@/context/global-context.tsx"
-import {useApplyCookie} from "@/hooks/useCookie.ts"
 import {Button} from "@/components/ui/button"
+import {useApplyCookie} from "@/hooks/useCookie.tsx";
 
 export type DataType = CookieData | SwaggerData;
 

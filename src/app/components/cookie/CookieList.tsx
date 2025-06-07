@@ -1,12 +1,35 @@
 import { useGlobalContext } from "@/context/global-context.tsx"
 import { CookieData } from "@/types/types.ts"
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import CookieTable from './CookieTable.tsx'
 import GlobalFilter from "@/app/components/shared/GlobalFilter.tsx";
 
 export function CookieList() {
-    const { cookies, setCookies } = useGlobalContext()
-    const [filteredCookies, setFilteredCookies] = useState<CookieData[]>(cookies)
+    const { cookies, setCookies, searchTerm, activeProject } = useGlobalContext()
+    
+    const filteredCookies = useMemo(() => {
+        let filtered = [...cookies]
+        
+        if (searchTerm) {
+            const searchLower = searchTerm.toLowerCase()
+            filtered = filtered.filter(cookie => 
+                cookie.name.toLowerCase().includes(searchLower) ||
+                cookie.domain?.toLowerCase().includes(searchLower) ||
+                cookie.value.toLowerCase().includes(searchLower) ||
+                (cookie.project && cookie.project.toLowerCase().includes(searchLower))
+            )
+        }
+        
+        if (activeProject) {
+            filtered = filtered.filter(cookie =>
+                activeProject === "Not specified"
+                    ? !cookie.project
+                    : cookie.project === activeProject
+            )
+        }
+        
+        return filtered
+    }, [cookies, searchTerm, activeProject])
 
     const handleReorder = (startIndex: number, endIndex: number) => {
         const items = Array.from(filteredCookies);
@@ -18,7 +41,6 @@ export function CookieList() {
             order: idx
         }));
 
-        setFilteredCookies(updatedItems);
         updateGlobalCookies(updatedItems);
     };
 
@@ -40,7 +62,6 @@ export function CookieList() {
         <div className="space-y-4 h-full flex flex-col">
             <GlobalFilter
                 items={cookies}
-                setFilteredItems={setFilteredCookies}
                 type="cookie"
             />
 

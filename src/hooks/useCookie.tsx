@@ -1,6 +1,8 @@
 import {CookieData} from "@/types/types.ts";
 import toast from "react-hot-toast";
 import {getTabInfo} from "@/lib/utils.ts";
+import {Button} from "@/components/ui/button.tsx";
+import {RefreshCw} from "lucide-react";
 
 
 export const createSetCookieConfig = (baseConfig: {
@@ -58,8 +60,29 @@ export const useApplyCookie = async (cookie: CookieData) => {
 
         chrome.cookies.set(cookieConfig, (result) => {
             if (result) {
-                console.log("Cookie set successfully:", result);
-                toast.success("Cookie applied successfully!");
+                // console.log("Cookie set successfully:", result);
+                // toast.success("Cookie applied successfully!");
+
+                toast.success((t) => (
+                    <div className="flex flex-col items-center justify-center gap-1">
+                        <p className="text-gray-800">Cookie applied successfully!</p>
+                        <Button
+                            onClick={() => {
+                                if (tabs.length > 0) {
+                                    const tab = tabs[0];
+                                    chrome.tabs.reload(tab.id);
+                                }
+                                toast.dismiss(t.id);
+                            }}
+                            className="text-sm h-8"
+                        >
+                            <RefreshCw className="w-4 h-4 animate-spin duration-1500" />
+                            Refresh the page
+                        </Button>
+                    </div>
+                ), {
+                    duration: 2500
+                })
             } else {
                 if (targetDomain !== "localhost") // if failed to set cookie on custom domain, then try in localhost (good for development)
                 {

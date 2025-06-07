@@ -1,12 +1,33 @@
 import { useGlobalContext } from "@/context/global-context.tsx"
 import { SwaggerData } from "@/types/types.ts"
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import SwaggerTable from './SwaggerTable.tsx'
 import GlobalFilter from "@/app/components/shared/GlobalFilter.tsx";
 
 export function SwaggerList() {
-    const { swaggers, setSwaggers } = useGlobalContext()
-    const [filteredSwaggers, setFilteredSwaggers] = useState<SwaggerData[]>(swaggers)
+    const { swaggers, setSwaggers, searchTerm, activeProject } = useGlobalContext()
+    
+    const filteredSwaggers = useMemo(() => {
+        let filtered = [...swaggers]
+        
+        if (searchTerm) {
+            const searchLower = searchTerm.toLowerCase()
+            filtered = filtered.filter(swagger => 
+                swagger.alias.toLowerCase().includes(searchLower) ||
+                (swagger.project && swagger.project.toLowerCase().includes(searchLower))
+            )
+        }
+        
+        if (activeProject) {
+            filtered = filtered.filter(swagger =>
+                activeProject === "Not specified"
+                    ? !swagger.project
+                    : swagger.project === activeProject
+            )
+        }
+        
+        return filtered
+    }, [swaggers, searchTerm, activeProject])
 
     const handleReorder = (startIndex: number, endIndex: number) => {
         const items = Array.from(filteredSwaggers);
@@ -17,8 +38,6 @@ export function SwaggerList() {
             ...item,
             order: idx
         }));
-
-        setFilteredSwaggers(updatedItems);
 
         updateGlobalSwaggers(updatedItems);
     };
@@ -34,11 +53,12 @@ export function SwaggerList() {
         setSwaggers(newSwaggers);
     };
 
+
+
     return (
         <div className="space-y-4 h-full flex flex-col">
             <GlobalFilter
                 items={swaggers}
-                setFilteredItems={setFilteredSwaggers}
                 type="swagger"
             />
             <div className="rounded-md border flex-1 overflow-hidden">

@@ -27,7 +27,6 @@ export interface FilterableItem {
 
 interface ProjectFilterProps<T extends FilterableItem> {
     items: T[];
-    setFilteredItems: (items: T[]) => void;
     type: FormType;
     storageKey: string;
     longPressTime?: number;
@@ -48,7 +47,6 @@ const additionalSearchFields = (item: any, type: string) => {
 
 export const ProjectFilter = ({
                                   items,
-                                  setFilteredItems,
                                   type,
                                   storageKey,
                                   longPressTime = 2000,
@@ -63,12 +61,7 @@ export const ProjectFilter = ({
         searchTerm, setSearchTerm} = useGlobalContext();
 
 
-    useEffect(() => {
-        const savedProject = localStorage.getItem(storageKey);
-        if (savedProject) {
-            setActiveProject(savedProject === "Not specified" ? "Not specified" : savedProject);
-        }
-    }, [storageKey, setActiveProject]);
+
 
 
     const filterItems = () => {
@@ -100,10 +93,7 @@ export const ProjectFilter = ({
         return filtered
     }
 
-    useEffect(() => {
-        // This hook, filters data when search term or active project changes
-        setFilteredItems(filterItems())
-    }, [searchTerm, activeProject, cookies, swaggers]);
+
 
 
     const handleClearSearch = () => setSearchTerm("")
@@ -159,7 +149,7 @@ export const ProjectFilter = ({
                     <Input
                         placeholder="Search..."
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={(e) => setSearchTerm?.(e.target.value)}
                         className="pl-8 pr-8 h-full select-none"
                     />
                     {searchTerm && (
