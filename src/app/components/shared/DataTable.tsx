@@ -26,8 +26,10 @@ export default function DataTable<T extends DataType>({
                                                           renderCells,
                                                           originalDataLength
                                                       }: DataTableProps<T>) {
-    const {settings, activeProject, setActiveProject, setCurrentView,
-        searchTerm, clearSearchTerm} = useGlobalContext()
+    const {
+        settings, activeProject, setActiveProject, setCurrentView,
+        searchTerm, clearSearchTerm
+    } = useGlobalContext()
 
     const hasStoredData = () => {
         const stored = localStorage.getItem('Cookify')
@@ -126,7 +128,7 @@ export default function DataTable<T extends DataType>({
                                     ) : (
                                         data.map((item, index) => (
                                             <Draggable
-                                                key={item.project + "-"+ item.alias}
+                                                key={JSON.stringify(item) + "-" + index}
                                                 draggableId={item.alias}
                                                 index={index}
                                             >

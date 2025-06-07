@@ -29,7 +29,7 @@ export default function SwaggerTable({
     
     const handleCopy = (text: string) => {
         navigator.clipboard.writeText(text)
-        toast.success('Token copied')
+        toast.success('Token copied.')
     }
     
     const renderHeaders = () => {

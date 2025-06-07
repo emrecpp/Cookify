@@ -44,7 +44,6 @@ export function SettingsPage() {
                         const data = JSON.parse(e.target?.result as string);
                         globalHandleImport(data);
                         setCurrentView('list-cookies');
-                        toast.success('Import successful!');
                     } catch (error) {
                         console.error('Error parsing JSON file:', error);
                         toast.error('File import failed!');
@@ -68,10 +67,10 @@ export function SettingsPage() {
                 animate={{opacity: 1}}
                 exit={{opacity: 0}}
                 transition={{duration: 0.25}}
-                className="w-full overflow-hidden"
+                className="w-full overflow-hidden select-none"
             >
-                <div className="container mx-auto px-2 pt-4 pb-8 flex flex-col gap-3">
-                    <h1 className="text-2xl font-bold mb-2">Settings</h1>
+                <div className="container mx-auto px-2 pb-4 flex flex-col gap-3">
+                    <h1 className="text-2xl font-bold">Settings</h1>
                     
                     <Card className="">
                         <CardHeader>
@@ -116,7 +115,7 @@ export function SettingsPage() {
                     
                     <div className="-mt-6 text-center text-sm text-muted-foreground flex flex-col gap-0.5">
                         <p className="font-semibold select-none">Author</p>
-                        <p>Emre Demircan</p>
+                        <p className="select-text">Emre Demircan</p>
                         <p className="flex items-center justify-center gap-2">
 
                             <Button
@@ -135,7 +134,7 @@ export function SettingsPage() {
                                 </a>
                             </Button>
                         </p>
-                        <p className="text-xs select-none mt-2">v1.1</p>
+                        <p className="text-xs select-none mt-2">v1.1.1</p>
                     </div>
                 </div>
             </motion.div>

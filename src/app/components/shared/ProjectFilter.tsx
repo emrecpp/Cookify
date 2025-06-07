@@ -15,6 +15,7 @@ import {useEffect, useRef, useState} from 'react'
 import {ProjectNameInput} from "./ProjectNameInput"
 import {cn} from "@/lib/utils.ts";
 import {CookieData, FormType} from "@/types/types.ts";
+import toast from "react-hot-toast";
 
 export interface FilterableItem {
     project?: string;
@@ -159,7 +160,7 @@ export const ProjectFilter = ({
                         placeholder="Search..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-8 pr-8 h-full"
+                        className="pl-8 pr-8 h-full select-none"
                     />
                     {searchTerm && (
                         <Button
@@ -201,7 +202,7 @@ export const ProjectFilter = ({
                                 {activeProject ? activeProject.substring(0, 15) + (activeProject.length > 15 ? '...' : '') : "Project"}
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent>
+                        <DropdownMenuContent className="mr-1">
                             <DropdownMenuItem
                                 onClick={() => handleProjectSelect("new")}
                                 className="flex items-center gap-2 cursor-pointer hover:bg-slate-100"
@@ -240,30 +241,27 @@ export const ProjectFilter = ({
                                     key={projectName}
                                     className={`${activeProject === projectName ? "bg-slate-200" : "hover:bg-gray-100/80"} px-2 relative p-0 overflow-hidden`}
                                 >
-                                    <LongPressButton
-                                        onLongPress={() => handleProjectDelete(projectName)}
-                                        className="w-full"
-                                        progressClassName="bg-red-600"
-                                        progressPosition="bottom"
-                                        longPressTime={longPressTime}
-                                        threshold={250}
-                                    >
                                         <div
-                                            className="flex items-center justify-between w-full px-2 py-1.5"
+                                            className="flex items-center justify-between w-full px-2 py-1.5 cursor-pointer"
                                             onClick={() => handleProjectSelect(projectName)}
                                         >
                                             <div className="flex items-center gap-2">
                                                 <ProjectAvatar projectName={projectName} size="sm" className="w-5 h-5"/>
                                                 <span>{projectName}</span>
                                             </div>
-                                            <div
+                                            <LongPressButton
+                                                onLongPress={() => handleProjectDelete(projectName)}
+                                                onFailed={() => toast.error('Keep holding to delete project.')}
                                                 onClick={(e) => e.stopPropagation()}
                                                 className="ml-2 p-1.5 hover:bg-gray-200 active:bg-gray-200/50 transition-colors duration-300 rounded-md"
+                                                progressClassName="bg-red-600"
+                                                progressPosition="bottom"
+                                                longPressTime={longPressTime}
+                                                threshold={50}
                                             >
                                                 <Trash className="h-3.5 w-3.5 text-red-500"/>
-                                            </div>
-                                        </div>
-                                    </LongPressButton>
+                                            </LongPressButton>
+                                    </div>
                                 </DropdownMenuItem>
                             ))}
                         </DropdownMenuContent>

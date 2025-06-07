@@ -1,13 +1,3 @@
-export type PageViewTypes =
-    "list-cookies"
-    | "list-swaggers"
-    | "settings"
-    | "add-cookie"
-    | "edit-cookie"
-    | "add-swagger"
-    | "edit-swagger"
-    | null
-
 export interface CookieData {
     alias: string
     name: string

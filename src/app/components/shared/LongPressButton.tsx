@@ -4,6 +4,7 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 interface LongPressButtonProps {
     onLongPress: () => void;
     onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
+    onFailed?: () => void;
     longPressTime?: number;
     threshold?: number;
     disabled?: boolean;
@@ -18,6 +19,7 @@ interface LongPressButtonProps {
 export function LongPressButton({
                                     onLongPress,
                                     onClick,
+                                    onFailed,
                                     longPressTime = 3000,
                                     threshold = 500,
                                     disabled = false,
@@ -97,18 +99,25 @@ export function LongPressButton({
         }
 
         const wasLongPressing = isPressed;
+        const wasProgressing = isProgressing;
         const wasLongPressCompleted = progress >= 100;
+        const elapsedTime = Date.now() - startTimeRef.current;
 
         if (!wasLongPressCompleted) {
             setIsPressed(false);
             setIsProgressing(false);
             setProgress(0);
 
-            if (wasLongPressing && onClick && (Date.now() - startTimeRef.current < longPressTime)) {
+            // If user started progressing (passed threshold) but didn't complete, trigger onFailed
+            if (wasProgressing && onFailed) {
+                onFailed();
+            }
+            // If user pressed but didn't pass threshold, trigger onClick (normal click)
+            else if (wasLongPressing && onClick && elapsedTime < threshold) {
                 onClick(e as React.MouseEvent<HTMLDivElement>);
             }
         }
-    }, [isPressed, onClick, longPressTime, progress]);
+    }, [isPressed, isProgressing, onClick, onFailed, longPressTime, progress, threshold]);
 
     useEffect(() => {
         return () => {

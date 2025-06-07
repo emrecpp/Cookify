@@ -2,12 +2,92 @@
 import { useApplyCookie } from "@/hooks/useCookie.ts";
 import { useApplySwagger } from "@/hooks/useSwagger.ts";
 import { sortByOrder } from "@/lib/utils.ts";
-import { CookieData, DEFAULT_SETTINGS, isCookieData, PageViewTypes, Settings, SwaggerData } from "@/types/types.ts";
-import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { CookieData, DEFAULT_SETTINGS, isCookieData, Settings, SwaggerData } from "@/types/types.ts";
+import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 
-const SETTINGS_STORAGE_KEY = 'Cookify_Settings';
-const PROJECTS_STORAGE_KEY = 'Cookify_Projects';
+// Constants
+const STORAGE_KEY = 'Cookify' as const;
+const GLOBAL_PROJECT_KEY = 'cookify_selected_global_project' as const;
+
+// Enums
+export enum PageView {
+    LIST_COOKIES = 'list-cookies',
+    LIST_SWAGGERS = 'list-swaggers',
+    SETTINGS = 'settings',
+    ADD_COOKIE = 'add-cookie',
+    EDIT_COOKIE = 'edit-cookie',
+    ADD_SWAGGER = 'add-swagger',
+    EDIT_SWAGGER = 'edit-swagger',
+}
+
+export enum PageGroup {
+    MAIN = 'main',
+    COOKIE_DETAIL = 'cookieDetail',
+    SWAGGER_DETAIL = 'swaggerDetail',
+}
+
+export type PageViewTypes = PageView | null;
+
+// Type Definitions
+interface ExtendedSettings extends Settings {
+    projects: string[];
+}
+
+interface StorageData {
+    settings?: ExtendedSettings;
+    projects?: string[];
+    cookies?: CookieData[];
+    swaggers?: SwaggerData[];
+}
+
+type DataType = CookieData | SwaggerData;
+type DataArray<T> = T extends CookieData ? CookieData[] : SwaggerData[];
+
+// Storage Utilities
+class StorageManager {
+    private static instance: StorageManager;
+    
+    static getInstance(): StorageManager {
+        if (!StorageManager.instance) {
+            StorageManager.instance = new StorageManager();
+        }
+        return StorageManager.instance;
+    }
+
+    getData(): StorageData {
+        try {
+            const data = localStorage.getItem(STORAGE_KEY);
+            return data ? JSON.parse(data) : {};
+        } catch (error) {
+            console.error('Failed to parse data from localStorage:', error);
+            toast.error('Failed to load data!');
+            return {};
+        }
+    }
+
+    saveData(data: Partial<StorageData>): void {
+        try {
+            const currentData = this.getData();
+            const updatedData = { ...currentData, ...data };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
+        } catch (error) {
+            console.error('Failed to save data to localStorage:', error);
+            toast.error('Failed to save data!');
+        }
+    }
+
+    clearGlobalProject(): void {
+        localStorage.removeItem(GLOBAL_PROJECT_KEY);
+    }
+}
+
+// Page Groups Configuration
+const PAGE_GROUPS: Record<PageGroup, readonly PageView[]> = {
+    [PageGroup.MAIN]: [PageView.LIST_COOKIES, PageView.LIST_SWAGGERS, PageView.SETTINGS],
+    [PageGroup.COOKIE_DETAIL]: [PageView.ADD_COOKIE, PageView.EDIT_COOKIE],
+    [PageGroup.SWAGGER_DETAIL]: [PageView.ADD_SWAGGER, PageView.EDIT_SWAGGER],
+} as const;
 
 interface GlobalContextState {
     currentView: PageViewTypes;
@@ -23,11 +103,11 @@ interface GlobalContextState {
     editingSwagger: SwaggerData | null;
     setEditingSwagger: (swagger: SwaggerData | null) => void;
 
-    handleEdit: (data: CookieData | SwaggerData) => void;
-    handleApply: (data: CookieData | SwaggerData) => Promise<void>;
+    handleEdit: (data: DataType) => void;
+    handleApply: (data: DataType) => Promise<void>;
 
     handleCookieSubmit: (cookie: CookieData) => void;
-    handleDeleteProfile: (data: CookieData | SwaggerData) => void;
+    handleDeleteProfile: (data: DataType) => void;
     handleSwaggerSubmit: (swagger: SwaggerData) => void;
 
     animationDirection: 1 | -1;
@@ -37,9 +117,7 @@ interface GlobalContextState {
     setProjects: React.Dispatch<React.SetStateAction<string[]>>;
 
     getAllProjects(): string[];
-
     addProject(projectName: string): void;
-
     handleDeleteProject(projectName: string): void;
 
     settings: Settings;
@@ -50,214 +128,143 @@ interface GlobalContextState {
 
     searchTerm?: string;
     setSearchTerm?: React.Dispatch<React.SetStateAction<string>>;
-
     clearSearchTerm(): void;
 
     handleImport(importedData?: any): void;
-
     isInitialized: boolean;
 }
 
-export const GlobalContext = createContext<GlobalContextState | any>(undefined);
+export const GlobalContext = createContext<GlobalContextState | null>(null);
 
 interface GlobalContextProps {
     children: ReactNode;
 }
 
-interface ExtendedSettings extends Settings {
-    projects: string[];
-}
-
-export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) => {
-    const [currentView, setCurrentView] = useState<PageViewTypes>(null)
-
-    const [cookies, setCookiesState] = useState<CookieData[]>([])
-    const [swaggers, setSwaggersState] = useState<SwaggerData[]>([])
-
-    const [editingCookie, setEditingCookie] = useState<CookieData | null>(null)
-    const [editingSwagger, setEditingSwagger] = useState<SwaggerData | null>(null)
-
+export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }) => {
+    // State
+    const [currentView, setCurrentView] = useState<PageViewTypes>(null);
+    const [cookies, setCookiesState] = useState<CookieData[]>([]);
+    const [swaggers, setSwaggersState] = useState<SwaggerData[]>([]);
+    const [editingCookie, setEditingCookie] = useState<CookieData | null>(null);
+    const [editingSwagger, setEditingSwagger] = useState<SwaggerData | null>(null);
     const [animationDirection, setAnimationDirection] = useState<1 | -1>(1);
     const [activeProject, setActiveProject] = useState<string | null>(null);
-    const [projects, setProjects] = useState<string[]>([])
-
-    const [searchTerm, setSearchTerm] = useState("")
-
+    const [projects, setProjects] = useState<string[]>([]);
+    const [searchTerm, setSearchTerm] = useState("");
     const [settings, setSettings] = useState<ExtendedSettings>({
         ...DEFAULT_SETTINGS,
         projects: []
     });
-    
+
+    // Storage Manager Instance
+    const storageManager = useMemo(() => StorageManager.getInstance(), []);
+
+    // Initialize data from localStorage
     useEffect(() => {
-        const savedSettings = localStorage.getItem(SETTINGS_STORAGE_KEY);
-        if (savedSettings) {
-            try {
-                const parsedSettings = JSON.parse(savedSettings);
-                setSettings(prev => ({...prev, ...parsedSettings}));
-            } catch (error) {
-                console.error('Failed to parse settings from localStorage', error);
-            }
+        const data = storageManager.getData();
+        
+        if (data.settings) {
+            setSettings(prev => ({ ...prev, ...data.settings }));
         }
         
-        const savedProjects = localStorage.getItem(PROJECTS_STORAGE_KEY);
-        if (savedProjects) {
-            try {
-                const projectsList = JSON.parse(savedProjects);
-                setSettings(prev => ({...prev, projects: projectsList}));
-            } catch (error) {
-                console.error('Failed to parse projects from localStorage', error);
-            }
+        if (data.cookies) {
+            setCookiesState(sortByOrder(data.cookies));
         }
-    }, []);
-    
-    const updateSettings = (newSettings: Partial<ExtendedSettings>) => {
+        
+        if (data.swaggers) {
+            setSwaggersState(sortByOrder(data.swaggers));
+        }
+    }, [storageManager]);
+
+    // Settings Management
+    const updateSettings = useCallback((newSettings: Partial<ExtendedSettings>) => {
         setSettings(prev => {
-            const updated = {...prev, ...newSettings};
-            localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(updated));
+            const updated = { ...prev, ...newSettings };
+            storageManager.saveData({ settings: updated });
             return updated;
         });
-    };
+    }, [storageManager]);
 
-    const setCookies = (newCookies: CookieData[]) => {
+    // Data Management Utilities
+    const setCookies = useCallback((newCookies: CookieData[]) => {
         const sortedCookies = sortByOrder(newCookies);
         setCookiesState(sortedCookies);
-    };
+        storageManager.saveData({ cookies: sortedCookies });
+    }, [storageManager]);
 
-    const setSwaggers = (newSwaggers: SwaggerData[]) => {
+    const setSwaggers = useCallback((newSwaggers: SwaggerData[]) => {
         const sortedSwaggers = sortByOrder(newSwaggers);
         setSwaggersState(sortedSwaggers);
-    };
-    
+        storageManager.saveData({ swaggers: sortedSwaggers });
+    }, [storageManager]);
+
+    // Project Management
+    const addProject = useCallback((projectName: string) => {
+        const trimmedName = projectName.trim();
+        if (!trimmedName || settings.projects.includes(trimmedName)) return;
+        
+        const updatedProjects = [...settings.projects, trimmedName];
+        updateSettings({ projects: updatedProjects });
+    }, [settings.projects, updateSettings]);
+
+    const removeProject = useCallback((projectName: string) => {
+        const trimmedName = projectName.trim();
+        if (!trimmedName || !settings.projects.includes(trimmedName)) return;
+        
+        const updatedProjects = settings.projects.filter(p => p !== trimmedName);
+        updateSettings({ projects: updatedProjects });
+        
+        // Update cookies and swaggers to remove project reference
+        const updatedCookies = cookies.map(cookie => 
+            cookie.project === trimmedName ? { ...cookie, project: "" } : cookie
+        );
+        const updatedSwaggers = swaggers.map(swagger => 
+            swagger.project === trimmedName ? { ...swagger, project: "" } : swagger
+        );
+        
+        setCookies(updatedCookies);
+        setSwaggers(updatedSwaggers);
+    }, [settings.projects, updateSettings, cookies, swaggers, setCookies, setSwaggers]);
+
+    const getAllProjects = useCallback(() => settings.projects, [settings.projects]);
+
+    const handleDeleteProject = useCallback((projectName: string) => {
+        removeProject(projectName);
+        toast.success(`"${projectName}" project deleted successfully.`);
+    }, [removeProject]);
+
+    // Auto-sync projects from data
     useEffect(() => {
         const cookieProjects = cookies
-            .filter(cookie => cookie.project && cookie.project.trim() !== '')
+            .filter(cookie => cookie.project?.trim())
             .map(cookie => cookie.project as string);
             
         const swaggerProjects = swaggers
-            .filter(swagger => swagger.project && swagger.project.trim() !== '')
+            .filter(swagger => swagger.project?.trim())
             .map(swagger => swagger.project as string);
         
         const allProjects = [...new Set([...settings.projects, ...cookieProjects, ...swaggerProjects])];
         
-        if (JSON.stringify(allProjects) !== JSON.stringify(settings.projects)) {
+        if (JSON.stringify(allProjects.sort()) !== JSON.stringify(settings.projects.sort())) {
             updateSettings({ projects: allProjects });
-            localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(allProjects));
         }
-    }, [cookies, swaggers]);
-    
-    const addProject = (projectName: string) => {
-        if (!projectName.trim() || settings.projects.includes(projectName)) {
-            return;
-        }
-        
-        const updatedProjects = [...settings.projects, projectName];
-        updateSettings({ projects: updatedProjects });
-        localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(updatedProjects));
-    };
-    
-    const removeProject = (projectName: string) => {
-        if (!projectName.trim() || !settings.projects.includes(projectName)) {
-            return;
-        }
-        
-        const updatedProjects = settings.projects.filter(p => p !== projectName);
-        updateSettings({ projects: updatedProjects });
-        localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(updatedProjects));
-        
-        const updatedCookies = cookies.map(cookie => {
-            if (cookie.project === projectName) {
-                return { ...cookie, project: "" };
-            }
-            return cookie;
-        });
-        
-        const updatedSwaggers = swaggers.map(swagger => {
-            if (swagger.project === projectName) {
-                return { ...swagger, project: "" };
-            }
-            return swagger;
-        });
-        
-        setCookies(updatedCookies);
-        setSwaggers(updatedSwaggers);
-    };
-    
-    const getAllProjects = () => {
-        return settings.projects;
-    };
+    }, [cookies, swaggers, settings.projects, updateSettings]);
 
     useEffect(() => {
-        setProjects(getAllProjects)
+        setProjects(getAllProjects());
     }, [getAllProjects]);
 
-    const handleEdit = (data: CookieData | SwaggerData) => {
-        if (isCookieData(data)) {
-            setCurrentView("edit-cookie");
-            setEditingCookie(data)
-        } else {
-            setEditingSwagger(data)
-            setCurrentView("edit-swagger");
+    // Navigation Management
+    const getPageGroup = useCallback((view: PageView): PageGroup => {
+        for (const [group, pages] of Object.entries(PAGE_GROUPS)) {
+            if (pages.includes(view)) {
+                return group as PageGroup;
+            }
         }
-    };
+        return PageGroup.MAIN;
+    }, []);
 
-    const handleCookieSubmit = (cookie: CookieData) => {
-        if (cookie.project) {
-            addProject(cookie.project);
-        }
-        
-        if (editingCookie)
-            setCookies(cookies.map(c => c.alias === editingCookie.alias ? cookie : c))
-        else
-            setCookies([...cookies, cookie])
-
-        setCurrentView('list-cookies')
-        setEditingCookie(null)
-    }
-
-    const handleSwaggerSubmit = (swagger: SwaggerData) => {
-        if (swagger.project) {
-            addProject(swagger.project);
-        }
-        
-        if (editingSwagger) {
-            setSwaggers(swaggers.map(
-                s => s.alias === editingSwagger.alias ? swagger : s
-            ))
-            setEditingSwagger(null)
-        } else
-            setSwaggers([...swaggers, swagger])
-
-        setCurrentView('list-swaggers')
-    }
-
-    const handleDeleteProfile = (data: CookieData | SwaggerData) => {
-        if (isCookieData(data))
-            setCookies(cookies.filter(c => c !== data))
-        else
-            setSwaggers(swaggers.filter(s => s !== data))
-    }
-
-    const handleApply = async (data: CookieData | SwaggerData) => {
-        if (isCookieData(data))
-            await useApplyCookie(data)
-        else
-            await useApplySwagger(data)
-    }
-
-    const pageGroups = {
-        main: ["list-cookies", "list-swaggers", "settings"],
-        cookieDetail: ["add-cookie", "edit-cookie"],
-        swaggerDetail: ["add-swagger", "edit-swagger"]
-    };
-
-    const getPageGroup = (view: string) => {
-        for (const [group, pages] of Object.entries(pageGroups)) {
-            if (pages.includes(view)) return group;
-        }
-        return "main";
-    };
-
-    const changeView = (newView: PageViewTypes) => {
+    const changeView = useCallback((newView: PageViewTypes) => {
         if (newView === null) {
             setCurrentView(null);
             return;
@@ -271,65 +278,171 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
         const currentGroup = getPageGroup(currentView);
         const targetGroup = getPageGroup(newView);
         
-        if (
-            (currentGroup === "main" && targetGroup !== "main") || 
-            currentGroup === targetGroup
-        ) {
-            setAnimationDirection(1); // Forward
-        } else {
-            setAnimationDirection(-1); // Backward
-        }
+        setAnimationDirection(
+            (currentGroup === PageGroup.MAIN && targetGroup !== PageGroup.MAIN) || 
+            currentGroup === targetGroup ? 1 : -1
+        );
         
         setCurrentView(newView);
-    };
+    }, [currentView, getPageGroup]);
 
-    const handleDeleteProject = (projectName: string) => {
-        removeProject(projectName);
-        toast.success(`"${projectName}" project deleted`);
-    };
-
-    const handleImport = (importedData: any) => {
-        if (importedData.cookies) setCookies(importedData.cookies);
-        if (importedData.swaggers) setSwaggers(importedData.swaggers);
-        if (importedData.settings) updateSettings(importedData.settings);
+    // Generic Submit Handler
+    const handleSubmit = useCallback(<T extends DataType>(
+        data: T,
+        editingData: T | null,
+        setEditingData: (data: T | null) => void,
+        setDataArray: (dataArray: DataArray<T>) => void,
+        dataArray: DataArray<T>,
+        targetView: PageViewTypes
+    ) => {
+        if (data.project) {
+            addProject(data.project);
+        }
         
-        setActiveProject(null);
-        localStorage.removeItem("cookify_selected_global_project");
-    };
+        if (editingData) {
+            // Update existing item
+            const updatedArray = (dataArray as T[]).map(item => 
+                item === editingData ? data : item
+            ) as DataArray<T>;
+            setDataArray(updatedArray);
+            setEditingData(null);
+        } else {
+            // Create new item
+            const updatedArray = [...dataArray as T[], data] as DataArray<T>;
+            setDataArray(updatedArray);
+        }
 
-    const clearSearchTerm = () => setSearchTerm("")
+        setCurrentView(targetView);
+    }, [addProject, setCurrentView]);
 
+    // Specific Submit Handlers
+    const handleCookieSubmit = useCallback((cookie: CookieData) => {
+        handleSubmit(
+            cookie,
+            editingCookie,
+            setEditingCookie,
+            setCookies,
+            cookies,
+            PageView.LIST_COOKIES
+        );
+    }, [handleSubmit, editingCookie, setCookies, cookies]);
+
+    const handleSwaggerSubmit = useCallback((swagger: SwaggerData) => {
+        handleSubmit(
+            swagger,
+            editingSwagger,
+            setEditingSwagger,
+            setSwaggers,
+            swaggers,
+            PageView.LIST_SWAGGERS
+        );
+    }, [handleSubmit, editingSwagger, setSwaggers, swaggers]);
+
+    // Edit Management
+    const handleEdit = useCallback((data: DataType) => {
+        if (isCookieData(data)) {
+            setCurrentView(PageView.EDIT_COOKIE);
+            setEditingCookie(data);
+        } else {
+            setEditingSwagger(data);
+            setCurrentView(PageView.EDIT_SWAGGER);
+        }
+    }, []);
+
+    // Delete Management
+    const handleDeleteProfile = useCallback((data: DataType) => {
+        if (isCookieData(data)) {
+            setCookies(cookies.filter(c => c !== data));
+        } else {
+            setSwaggers(swaggers.filter(s => s !== data));
+        }
+    }, [cookies, swaggers, setCookies, setSwaggers]);
+
+    // Apply Management
+    const handleApply = useCallback(async (data: DataType) => {
+        try {
+            if (isCookieData(data)) {
+                await useApplyCookie(data);
+            } else {
+                await useApplySwagger(data);
+            }
+        } catch (error) {
+            console.error('Apply operation failed:', error);
+            toast.error('Failed to apply configuration!');
+        }
+    }, []);
+
+    // Import Management
+    const handleImport = useCallback((importedData: any) => {
+        try {
+            if (importedData.cookies) setCookies(importedData.cookies);
+            if (importedData.swaggers) setSwaggers(importedData.swaggers);
+            if (importedData.settings) updateSettings(importedData.settings);
+
+            setActiveProject(null);
+            storageManager.clearGlobalProject();
+            
+            toast.success('Data imported successfully!');
+        } catch (error) {
+            console.error('Import failed:', error);
+            toast.error('Failed to import data!');
+        }
+    }, [setCookies, setSwaggers, updateSettings, storageManager]);
+
+    // Search Management
+    const clearSearchTerm = useCallback(() => setSearchTerm(""), []);
+
+    // Context Value
+    const contextValue = useMemo(() => ({
+        currentView,
+        setCurrentView: changeView,
+
+        cookies,
+        setCookies,
+        swaggers,
+        setSwaggers,
+
+        editingCookie,
+        setEditingCookie,
+        editingSwagger,
+        setEditingSwagger,
+
+        handleEdit,
+        handleApply,
+
+        handleCookieSubmit,
+        handleDeleteProfile,
+        handleSwaggerSubmit,
+
+        animationDirection,
+        setAnimationDirection,
+
+        projects,
+        setProjects,
+        getAllProjects,
+        addProject,
+        handleDeleteProject,
+        
+        settings,
+        updateSettings,
+        
+        activeProject,
+        setActiveProject,
+        searchTerm,
+        setSearchTerm,
+        clearSearchTerm,
+        handleImport,
+        isInitialized: true,
+    }), [
+        currentView, changeView, cookies, setCookies, swaggers, setSwaggers,
+        editingCookie, editingSwagger, handleEdit, handleApply,
+        handleCookieSubmit, handleDeleteProfile, handleSwaggerSubmit,
+        animationDirection, projects, getAllProjects, addProject, handleDeleteProject,
+        settings, updateSettings, activeProject, searchTerm, clearSearchTerm, handleImport
+    ]);
 
     return (
-        <GlobalContext.Provider
-            value={{
-                currentView, setCurrentView: changeView,
-
-                cookies, setCookies,
-                swaggers, setSwaggers,
-
-                editingCookie, setEditingCookie,
-                editingSwagger, setEditingSwagger,
-
-                handleEdit, handleApply,
-
-                handleCookieSubmit, handleDeleteProfile,
-                handleSwaggerSubmit,
-
-                animationDirection, setAnimationDirection,
-
-                projects, setProjects,
-                getAllProjects,
-                addProject,
-                handleDeleteProject,
-                
-                settings, updateSettings,
-                
-                activeProject, setActiveProject,
-                searchTerm, setSearchTerm, clearSearchTerm,
-                handleImport,
-                isInitialized: true,
-            }}>
+        <GlobalContext.Provider value={contextValue}>
             {children}
         </GlobalContext.Provider>
     );
@@ -337,10 +450,10 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
 
 export const useGlobalContext = () => {
     const context = useContext(GlobalContext);
-    if (!context)
+    if (!context) {
         throw new Error("useGlobalContext must be used within a GlobalContextProvider");
-
+    }
     return context;
-}
+};
 
 

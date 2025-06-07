@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useGlobalContext } from "@/context/global-context";
+import { useGlobalContext, PageView } from "@/context/global-context";
 import { motion } from 'framer-motion';
 import { PlusCircle } from 'lucide-react';
 
@@ -20,29 +20,29 @@ export function Header() {
     };
 
     const getHeaderTitle = () => {
-        if (currentView === "add-cookie") return "Add New Cookie";
-        if (currentView === "edit-cookie") return "Edit Cookie";
-        if (currentView === "add-swagger") return "Add New Swagger";
-        if (currentView === "edit-swagger") return "Edit Swagger";
+        if (currentView === PageView.ADD_COOKIE) return "Add New Cookie";
+        if (currentView === PageView.EDIT_COOKIE) return "Edit Cookie";
+        if (currentView === PageView.ADD_SWAGGER) return "Add New Swagger";
+        if (currentView === PageView.EDIT_SWAGGER) return "Edit Swagger";
         return "";
     };
 
     const handleAddClick = () => {
         if (activePage(currentView) === "cookies") {
             setEditingCookie(null)
-            setCurrentView('add-cookie')
+            setCurrentView(PageView.ADD_COOKIE)
         } else {
             setEditingSwagger(null)
-            setCurrentView('add-swagger')
+            setCurrentView(PageView.ADD_SWAGGER)
         }
     }
     
-    const showTitle = ["add-cookie", "edit-cookie", "add-swagger", "edit-swagger"].includes(currentView);
+    const showTitle = [PageView.ADD_COOKIE, PageView.EDIT_COOKIE, PageView.ADD_SWAGGER, PageView.EDIT_SWAGGER].includes(currentView as PageView);
     
     const shouldShowAddButton = () => {
-        if (currentView === "list-cookies") {
+        if (currentView === PageView.LIST_COOKIES) {
             return cookies.length > 0;
-        } else if (currentView === "list-swaggers") {
+        } else if (currentView === PageView.LIST_SWAGGERS) {
             return swaggers.length > 0;
         }
         return false;

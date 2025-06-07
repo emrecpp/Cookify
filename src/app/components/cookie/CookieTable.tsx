@@ -32,7 +32,7 @@ export default function CookieTable({
 
     const handleCopy = (text: string) => {
         navigator.clipboard.writeText(text)
-        toast.success('Value copied')
+        toast.success('Value copied.')
     }
 
     const renderHeaders = () => {
