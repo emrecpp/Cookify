@@ -74,7 +74,7 @@ export function Header() {
 
                 <div className="space-x-2">
                     {["list-cookies", "list-swaggers"].includes(currentView) && shouldShowAddButton() && (
-                        <Button variant="outline" size="sm" onClick={handleAddClick}>
+                        <Button className="min-w-40" variant="outline" size="sm" onClick={handleAddClick}>
                             <PlusCircle
                                 className="h-4 w-4 mr-1"/> {activePage(currentView) === "cookies" ? 'Add New Cookie' : 'Add New Swagger'}
                         </Button>
