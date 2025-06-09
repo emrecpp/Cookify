@@ -5,8 +5,7 @@
     "version": "1.1.1",
     "permissions": [
         "cookies",
-        "activeTab",
-        "storage"
+        "activeTab"
     ],
     "host_permissions": [
         "<all_urls>"

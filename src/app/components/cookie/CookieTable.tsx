@@ -23,10 +23,9 @@ export default function CookieTable({
 
     const COLUMN_WIDTHS = {
         order: '60px',
-        alias: '180px',
-        cookieName: '150px',
+        alias: '210px',
         project: '140px',
-        actions: '100px'
+        actions: '120px'
     }
 
     const handleCopy = (text: string) => {
@@ -39,7 +38,6 @@ export default function CookieTable({
             <TableRow>
                 <TableHead style={{width: COLUMN_WIDTHS.order}} className="text-center">Order</TableHead>
                 <TableHead style={{width: COLUMN_WIDTHS.alias}}>Alias</TableHead>
-                <TableHead style={{width: COLUMN_WIDTHS.cookieName}}>Cookie Name</TableHead>
                 <TableHead style={{width: COLUMN_WIDTHS.project}}>Project</TableHead>
                 <TableHead style={{width: COLUMN_WIDTHS.actions}} className="text-center">Actions</TableHead>
             </TableRow>
@@ -59,7 +57,6 @@ export default function CookieTable({
                         {cookie.alias}
                     </div>
                 </TableCell>
-                <TableCell style={{width: COLUMN_WIDTHS.cookieName}}>{cookie.name}</TableCell>
                 <TableCell style={{width: COLUMN_WIDTHS.project}}>
                     <div className="flex items-center gap-2">
                         {cookie.project ? (
