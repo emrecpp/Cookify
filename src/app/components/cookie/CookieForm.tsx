@@ -1,7 +1,7 @@
 import { FormLayout } from "@/app/components/shared/FormLayout.tsx"
 import { InputField } from "@/app/components/shared/InputField.tsx"
 import { ProjectSelector } from "@/app/components/shared/ProjectSelector.tsx"
-import { useGlobalContext } from "@/context/global-context.tsx"
+import {PageView, useGlobalContext} from "@/context/global-context.tsx"
 import { useZodForm } from "@/hooks/useZodForm"
 import { cookieSchema } from "@/lib/schemas"
 import { CookieData } from "@/types/types.ts"
@@ -42,7 +42,7 @@ export function CookieForm() {
         onSubmit: handleCookieSubmit,
         setCurrentView,
         clearEditing: () => setEditingCookie(null),
-        backView: 'list-cookies'
+        backView: PageView.LIST_COOKIES
     });
 
     const projects = getAllProjects()

@@ -50,7 +50,7 @@ export default function DataTable<T extends DataType>({
 
     const handleRowClick = (item: T) => {
         if (settings.applyOnClick) {
-            handleApply(item)
+            handleApply(item);
         }
     }
 

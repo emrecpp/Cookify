@@ -2,11 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { useGlobalContext } from "@/context/global-context";
+import { useGlobalContext, PageView } from "@/context/global-context";
 import { exportToFile } from "@/lib/utils";
 import { AnimatePresence, motion } from 'framer-motion';
 import { Download, GithubIcon, Upload } from 'lucide-react';
 import toast from "react-hot-toast";
+import packageInfo from "../../../package.json";
 
 export function SettingsPage() {
     const { 
@@ -43,9 +44,9 @@ export function SettingsPage() {
                     try {
                         const data = JSON.parse(e.target?.result as string);
                         globalHandleImport(data);
-                        setCurrentView('list-cookies');
+                        setCurrentView(PageView.LIST_COOKIES);
                     } catch (error) {
-                        console.error('Error parsing JSON file:', error.message);
+                        console.error('Error parsing JSON file:', (error as Error).message);
                         toast.error('File import failed!');
                     }
                 };
@@ -134,7 +135,7 @@ export function SettingsPage() {
                                 </a>
                             </Button>
                         </p>
-                        <p className="text-xs select-none mt-2">v1.1.1</p>
+                        <p className="text-xs select-none mt-2">v{packageInfo.version}</p>
                     </div>
                 </div>
             </motion.div>

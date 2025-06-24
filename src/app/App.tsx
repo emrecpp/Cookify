@@ -1,9 +1,8 @@
 import TabPages from "@/app/pages/TabPages.tsx";
-import { useGlobalContext } from "@/context/global-context";
-import { useEffectAfterMount } from "@/hooks/useEffectAfterMount.ts";
-import {cn, exportToFile, getTabInfo, sendMessage} from "@/lib/utils.ts";
-import { useEffect } from 'react';
-import { Header } from './components/Header';
+import {PageView, useGlobalContext} from "@/context/global-context";
+import {sendMessage} from "@/lib/utils.ts";
+import {useEffect} from 'react';
+import {Header} from './components/Header';
 import "@fontsource/inter";
 
 const STORAGE_KEY = 'Cookify'
@@ -15,26 +14,17 @@ export default function App() {
         const initializeExtension = async () => {
             try {
                 const {isSwagger} = await sendMessage("isSwagger", {})
-                setCurrentView(isSwagger ? "list-swaggers" : "list-cookies")
-
-                const savedCookies = localStorage.getItem(STORAGE_KEY)
-                if (savedCookies) {
-                    const data = JSON.parse(savedCookies)
-                    setCookies(data.cookies || [])
-                    setSwaggers(data.swaggers || [])
-                }
+                setCurrentView(isSwagger ? PageView.LIST_SWAGGERS : PageView.LIST_COOKIES)
             } catch (error) {
                 console.error('Initialization error:', error.message)
-                setCurrentView("list-cookies")
+                setCurrentView(PageView.LIST_COOKIES)
             }
         }
 
         initializeExtension()
     }, [])
 
-    useEffectAfterMount(() => {
-        localStorage.setItem(STORAGE_KEY, exportToFile(cookies, swaggers))
-    }, [cookies, swaggers])
+
 
 
     return (

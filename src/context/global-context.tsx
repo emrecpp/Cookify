@@ -154,9 +154,17 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
     });
     const [projects, setProjects] = useState<string[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
-    const [settings, setSettings] = useState<ExtendedSettings>({
-        ...DEFAULT_SETTINGS,
-        projects: []
+    const [settings, setSettings] = useState<ExtendedSettings>(() => {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                return { ...DEFAULT_SETTINGS, projects: [], ...data.settings };
+            } catch {
+                return { ...DEFAULT_SETTINGS, projects: [] };
+            }
+        }
+        return { ...DEFAULT_SETTINGS, projects: [] };
     });
 
     // Storage Manager Instance
@@ -165,10 +173,6 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
     // Initialize data from localStorage
     useEffect(() => {
         const data = storageManager.getData();
-        
-        if (data.settings) {
-            setSettings(prev => ({ ...prev, ...data.settings }));
-        }
         
         if (data.cookies) {
             setCookiesState(sortByOrder(data.cookies));

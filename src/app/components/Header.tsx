@@ -1,7 +1,7 @@
-import { Button } from "@/components/ui/button";
-import { useGlobalContext, PageView } from "@/context/global-context";
-import { motion } from 'framer-motion';
-import { PlusCircle } from 'lucide-react';
+import {Button} from "@/components/ui/button";
+import {PageView, useGlobalContext} from "@/context/global-context";
+import {motion} from 'framer-motion';
+import {PlusCircle} from 'lucide-react';
 
 export function Header() {
     const {
@@ -60,7 +60,7 @@ export function Header() {
                     className="text-lg font-bold flex items-center cursor-pointer text-slate-800"
                     whileHover={{scale: 1.05}}
                     whileTap={{scale: 0.95}}
-                    onClick={() => setCurrentView('list-cookies')}
+                    onClick={() => setCurrentView(PageView.LIST_COOKIES)}
                 >
                     <img src="/icon/32.png" alt="Cookify Logo" width={32} height={32} className="mr-1 w-8 h-8"/>
                     Cookify
@@ -73,7 +73,7 @@ export function Header() {
                 )}
 
                 <div className="space-x-2">
-                    {["list-cookies", "list-swaggers"].includes(currentView) && shouldShowAddButton() && (
+                    {[PageView.LIST_COOKIES, PageView.LIST_SWAGGERS].includes(currentView) && shouldShowAddButton() && (
                         <Button className="min-w-40" variant="outline" size="sm" onClick={handleAddClick}>
                             <PlusCircle
                                 className="h-4 w-4 mr-1"/> {activePage(currentView) === "cookies" ? 'Add New Cookie' : 'Add New Swagger'}

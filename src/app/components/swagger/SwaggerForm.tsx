@@ -1,7 +1,7 @@
 import {FormLayout} from "@/app/components/shared/FormLayout.tsx"
 import {InputField} from "@/app/components/shared/InputField.tsx"
 import {ProjectSelector} from "@/app/components/shared/ProjectSelector.tsx"
-import {useGlobalContext} from "@/context/global-context.tsx"
+import {PageView, useGlobalContext} from "@/context/global-context.tsx"
 import {useZodForm} from "@/hooks/useZodForm"
 import {swaggerSchema} from "@/lib/schemas"
 import {SwaggerData} from "@/types/types.ts"
@@ -39,7 +39,7 @@ export function SwaggerForm() {
         onSubmit: handleSwaggerSubmit,
         setCurrentView,
         clearEditing: () => setEditingSwagger(null),
-        backView: 'list-swaggers'
+        backView: PageView.LIST_SWAGGERS
     });
 
     const projects = getAllProjects()
