@@ -15,13 +15,14 @@ export function SwaggerForm() {
         setCurrentView,
         setEditingSwagger,
         getAllProjects,
-        currentView
+        currentView,
+        activeProject
     } = useGlobalContext()
 
     const emptyFormData: SwaggerData = {
         alias: "",
         bearerToken: "",
-        project: ""
+        project: activeProject === "Not specified" ? "" : activeProject || ""
     }
 
     const {

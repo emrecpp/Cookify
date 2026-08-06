@@ -24,12 +24,14 @@ export interface SwaggerData extends SyncMetadata {
 export interface Settings {
     applyOnClick: boolean
     projects: string[]
+    activeProject: string | null
     updatedAt?: string
 }
 
 export const DEFAULT_SETTINGS: Settings = {
     applyOnClick: false,
-    projects: []
+    projects: [],
+    activeProject: null
 }
 
 export const isCookieData = (data: CookieData | SwaggerData): data is CookieData => {

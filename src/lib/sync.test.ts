@@ -32,7 +32,7 @@ function snapshot(cookies: CookieData[] = [], swaggers: SwaggerData[] = []): Syn
     return normalizeSnapshot({
         cookies,
         swaggers,
-        settings: { applyOnClick: false, projects: ["Cookify"], updatedAt: timestamp },
+        settings: { applyOnClick: false, projects: ["Cookify"], activeProject: null, updatedAt: timestamp },
     });
 }
 
@@ -99,5 +99,19 @@ describe("Google Drive snapshot merging", () => {
         expect(result.conflicts[0].local).toBeNull();
         const resolved = applyConflictResolutions(result, { [result.conflicts[0].id]: "cloud" });
         expect(resolved.cookies[0].value).toBe("cloud-new");
+    });
+
+    it("syncs the most recently selected project", () => {
+        const local = snapshot();
+        local.settings.activeProject = "Local";
+        local.settings.updatedAt = "2026-08-06T11:00:00.000Z";
+
+        const cloud = snapshot();
+        cloud.settings.activeProject = "Cloud";
+        cloud.settings.updatedAt = "2026-08-06T12:00:00.000Z";
+
+        const result = mergeSnapshots(local, cloud);
+
+        expect(result.snapshot.settings.activeProject).toBe("Cloud");
     });
 });

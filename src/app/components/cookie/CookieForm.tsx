@@ -15,7 +15,8 @@ export function CookieForm() {
         setCurrentView,
         setEditingCookie,
         getAllProjects,
-        currentView
+        currentView,
+        activeProject
     } = useGlobalContext()
 
     const emptyFormData: CookieData = {
@@ -24,7 +25,7 @@ export function CookieForm() {
         value: "",
         url: "",
         domain: "",
-        project: ""
+        project: activeProject === "Not specified" ? "" : activeProject || ""
     }
 
     const {

@@ -20,6 +20,35 @@ import toast from 'react-hot-toast';
 // Constants
 const STORAGE_KEY = 'Cookify' as const;
 const GLOBAL_PROJECT_KEY = 'cookify_selected_global_project' as const;
+const GOOGLE_DRIVE_HEADER_VISIBILITY_KEY = 'CookifyShowGoogleDriveHeader' as const;
+
+function normalizeActiveProject(value: unknown): string | null {
+    return typeof value === "string" && value.length > 0 ? value : null;
+}
+
+function readStoredActiveProject(): string | null {
+    try {
+        const rawData = localStorage.getItem(STORAGE_KEY);
+        if (rawData) {
+            const data = JSON.parse(rawData) as StorageData;
+            if (data.settings && Object.prototype.hasOwnProperty.call(data.settings, "activeProject")) {
+                return normalizeActiveProject(data.settings.activeProject);
+            }
+        }
+    } catch {
+        // Fall back to the legacy standalone selection below.
+    }
+
+    return normalizeActiveProject(localStorage.getItem(GLOBAL_PROJECT_KEY));
+}
+
+function storeActiveProject(projectName: string | null): void {
+    if (projectName) {
+        localStorage.setItem(GLOBAL_PROJECT_KEY, projectName);
+    } else {
+        localStorage.removeItem(GLOBAL_PROJECT_KEY);
+    }
+}
 
 // Enums
 export enum PageView {
@@ -136,6 +165,8 @@ interface GlobalContextState {
 
     activeProject: string | null;
     setActiveProject(projectName: string | null): void;
+    showGoogleDriveInHeader: boolean;
+    setShowGoogleDriveInHeader(show: boolean): void;
 
     searchTerm?: string;
     setSearchTerm?: React.Dispatch<React.SetStateAction<string>>;
@@ -166,10 +197,10 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
     const [editingCookie, setEditingCookie] = useState<CookieData | null>(null);
     const [editingSwagger, setEditingSwagger] = useState<SwaggerData | null>(null);
     const [animationDirection, setAnimationDirection] = useState<1 | -1>(1);
-    const [activeProject, setActiveProject] = useState<string | null>(() => {
-        const saved = localStorage.getItem(GLOBAL_PROJECT_KEY);
-        return saved === "Not specified" ? "Not specified" : saved;
-    });
+    const [activeProject, setActiveProjectState] = useState<string | null>(readStoredActiveProject);
+    const [showGoogleDriveInHeader, setShowGoogleDriveInHeaderState] = useState(
+        () => localStorage.getItem(GOOGLE_DRIVE_HEADER_VISIBILITY_KEY) !== "false",
+    );
     const [projects, setProjects] = useState<string[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [isInitialized, setIsInitialized] = useState(false);
@@ -178,7 +209,12 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
         if (saved) {
             try {
                 const data = JSON.parse(saved);
-                return { ...DEFAULT_SETTINGS, projects: [], ...data.settings };
+                return {
+                    ...DEFAULT_SETTINGS,
+                    projects: [],
+                    ...data.settings,
+                    activeProject: readStoredActiveProject(),
+                };
             } catch {
                 return { ...DEFAULT_SETTINGS, projects: [] };
             }
@@ -195,11 +231,17 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
         const normalized = normalizeSnapshot({
             cookies: data.cookies,
             swaggers: data.swaggers,
-            settings: { ...DEFAULT_SETTINGS, ...data.settings },
+            settings: {
+                ...DEFAULT_SETTINGS,
+                ...data.settings,
+                activeProject: readStoredActiveProject(),
+            },
         });
         setCookiesState(sortByOrder(normalized.cookies));
         setSwaggersState(sortByOrder(normalized.swaggers));
         setSettings(normalized.settings);
+        setActiveProjectState(normalized.settings.activeProject);
+        storeActiveProject(normalized.settings.activeProject);
         storageManager.saveData(normalized);
         setIsInitialized(true);
     }, [storageManager]);
@@ -212,6 +254,27 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
             return updated;
         });
     }, [storageManager]);
+
+    const setActiveProject = useCallback((projectName: string | null) => {
+        const normalizedProject = normalizeActiveProject(projectName);
+        setActiveProjectState(normalizedProject);
+        storeActiveProject(normalizedProject);
+        setSettings(previous => {
+            if (previous.activeProject === normalizedProject) return previous;
+            const updated = {
+                ...previous,
+                activeProject: normalizedProject,
+                updatedAt: new Date().toISOString(),
+            };
+            storageManager.saveData({ settings: updated });
+            return updated;
+        });
+    }, [storageManager]);
+
+    const setShowGoogleDriveInHeader = useCallback((show: boolean) => {
+        setShowGoogleDriveInHeaderState(show);
+        localStorage.setItem(GOOGLE_DRIVE_HEADER_VISIBILITY_KEY, String(show));
+    }, []);
 
     // Data Management Utilities
     const setCookies = useCallback((newCookies: CookieData[]) => {
@@ -409,17 +472,24 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
         try {
             if (importedData.cookies) setCookies(importedData.cookies);
             if (importedData.swaggers) setSwaggers(importedData.swaggers);
-            if (importedData.settings) updateSettings(importedData.settings);
-
-            setActiveProject(null);
-            storageManager.clearGlobalProject();
+            if (importedData.settings) {
+                const hasActiveProject = Object.prototype.hasOwnProperty.call(importedData.settings, "activeProject");
+                const importedActiveProject = normalizeActiveProject(importedData.settings.activeProject);
+                updateSettings({
+                    ...importedData.settings,
+                    ...(hasActiveProject ? { activeProject: importedActiveProject } : {}),
+                });
+                if (hasActiveProject) {
+                    setActiveProject(importedActiveProject);
+                }
+            }
             
             toast.success('Data imported successfully!');
         } catch (error) {
             console.error('Import failed:', error.message);
             toast.error('Failed to import data!');
         }
-    }, [setCookies, setSwaggers, updateSettings, storageManager]);
+    }, [setActiveProject, setCookies, setSwaggers, updateSettings]);
 
     // Search Management
     const clearSearchTerm = useCallback(() => setSearchTerm(""), []);
@@ -437,6 +507,8 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
         setCookiesState(sortedCookies);
         setSwaggersState(sortedSwaggers);
         setSettings(normalized.settings);
+        setActiveProjectState(normalized.settings.activeProject);
+        storeActiveProject(normalized.settings.activeProject);
         storageManager.saveData({
             cookies: sortedCookies,
             swaggers: sortedSwaggers,
@@ -486,6 +558,8 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
         
         activeProject,
         setActiveProject,
+        showGoogleDriveInHeader,
+        setShowGoogleDriveInHeader,
         searchTerm,
         setSearchTerm,
         clearSearchTerm,
@@ -503,7 +577,9 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
         editingCookie, editingSwagger, handleEdit, handleApply,
         handleCookieSubmit, handleDeleteProfile, handleSwaggerSubmit,
         animationDirection, projects, getAllProjects, addProject, handleDeleteProject,
-        settings, updateSettings, activeProject, searchTerm, clearSearchTerm, handleImport,
+        settings, updateSettings, activeProject, setActiveProject,
+        showGoogleDriveInHeader, setShowGoogleDriveInHeader,
+        searchTerm, clearSearchTerm, handleImport,
         isInitialized, driveSync
     ]);
 

@@ -50,6 +50,9 @@ export function normalizeSnapshot(snapshot: Partial<SyncSnapshot>): SyncSnapshot
         settings: {
             applyOnClick: snapshot.settings?.applyOnClick ?? false,
             projects: [...new Set(snapshot.settings?.projects || [])],
+            activeProject: typeof snapshot.settings?.activeProject === "string"
+                ? snapshot.settings.activeProject
+                : null,
             updatedAt: validDate(snapshot.settings?.updatedAt) || timestamp,
         },
     };
@@ -212,9 +215,23 @@ function mergeSettings(local: Settings, cloud: Settings, baseline?: Settings): S
             : local.applyOnClick;
     }
 
+    let activeProject: string | null;
+    if (local.activeProject === cloud.activeProject) {
+        activeProject = local.activeProject;
+    } else if (baseline && local.activeProject === baseline.activeProject) {
+        activeProject = cloud.activeProject;
+    } else if (baseline && cloud.activeProject === baseline.activeProject) {
+        activeProject = local.activeProject;
+    } else {
+        activeProject = Date.parse(cloud.updatedAt || "") > Date.parse(local.updatedAt || "")
+            ? cloud.activeProject
+            : local.activeProject;
+    }
+
     return {
         applyOnClick,
         projects: [...new Set([...local.projects, ...cloud.projects])],
+        activeProject,
         updatedAt: [local.updatedAt, cloud.updatedAt].filter(Boolean).sort().at(-1) || now(),
     };
 }

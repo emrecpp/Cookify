@@ -14,7 +14,7 @@ import {Switch} from "@/components/ui/switch";
 import {PageView, useGlobalContext} from "@/context/global-context";
 import {exportToFile} from "@/lib/utils";
 import {AnimatePresence, motion} from 'framer-motion';
-import {ChevronDown, Download, GithubIcon, LogIn, LogOut, RefreshCw, Upload, UserRoundPlus} from 'lucide-react';
+import {ChevronDown, Download, Eye, GithubIcon, LogIn, LogOut, RefreshCw, Upload, UserRoundPlus} from 'lucide-react';
 import toast from "react-hot-toast";
 import packageInfo from "../../../package.json";
 
@@ -38,6 +38,8 @@ export function SettingsPage() {
         connectGoogleDrive,
         disconnectGoogleDrive,
         syncGoogleDriveNow,
+        showGoogleDriveInHeader,
+        setShowGoogleDriveInHeader,
     } = useGlobalContext();
 
     const handleExport = () => {
@@ -127,10 +129,10 @@ export function SettingsPage() {
                         <CardContent className="space-y-4">
                             <div className="flex gap-2">
                                 <Button variant="outline" onClick={handleImport} className="w-full">
-                                    <Upload className="h-4 w-4" /> Import file
+                                    <Upload className="h-4 w-4" /> Import File
                                 </Button>
                                 <Button variant="outline" onClick={handleExport} className="w-full">
-                                    <Download className="h-4 w-4" /> Export file
+                                    <Download className="h-4 w-4" /> Export File
                                 </Button>
                             </div>
 
@@ -139,12 +141,26 @@ export function SettingsPage() {
                             <div className="flex items-start gap-3">
                                 <GoogleDriveIcon className="mt-0.5 h-5 w-5 shrink-0" />
                                 <div className="min-w-0 flex-1">
-                                    <p className="font-semibold">Google Drive sync</p>
+                                    <p className="font-semibold">Google Drive Sync</p>
                                     <p className="text-xs text-muted-foreground">
                                         Back up and sync across computers.
                                     </p>
                                 </div>
                             </div>
+
+                            {!showGoogleDriveInHeader && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-fit"
+                                    onClick={() => setShowGoogleDriveInHeader(true)}
+                                >
+                                    <Eye className="h-4 w-4" />
+                                    {googleDriveSync.enabled
+                                        ? "Show Google account in header"
+                                        : "Show Google sign-in in header"}
+                                </Button>
+                            )}
 
                             {!isGoogleDriveConfigured && (
                                 <p className="rounded-md border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900">

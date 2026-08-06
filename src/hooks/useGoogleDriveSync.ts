@@ -58,6 +58,7 @@ function isSnapshotEmpty(snapshot: SyncSnapshot): boolean {
     return snapshot.cookies.length === 0
         && snapshot.swaggers.length === 0
         && snapshot.settings.projects.length === 0
+        && !snapshot.settings.activeProject
         && !snapshot.settings.applyOnClick;
 }
 

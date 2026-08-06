@@ -43,10 +43,10 @@ export default function App() {
             )}
             <GoogleDriveOnboardingDialog />
             <SyncConflictDialog />
-            <div className="fixed top-0 left-0 right-0 z-50 bg-background max-w-[700px] mx-auto ">
+            <div className="relative z-50 shrink-0 bg-background">
                 <Header/>
             </div>
-            <div className="flex-grow overflow-auto flex flex-col pt-[56px] h-full">
+            <div className="flex-grow overflow-auto flex flex-col h-full">
                 <TabPages/>
             </div>
         </div>
