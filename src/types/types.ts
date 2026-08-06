@@ -1,4 +1,10 @@
-export interface CookieData {
+export interface SyncMetadata {
+    id?: string
+    createdAt?: string
+    updatedAt?: string
+}
+
+export interface CookieData extends SyncMetadata {
     alias: string
     name: string
     value: string
@@ -8,7 +14,7 @@ export interface CookieData {
     order?: number // For ordering
 }
 
-export interface SwaggerData {
+export interface SwaggerData extends SyncMetadata {
     alias: string
     bearerToken: string
     project?: string // For grouping by project
@@ -18,6 +24,7 @@ export interface SwaggerData {
 export interface Settings {
     applyOnClick: boolean
     projects: string[]
+    updatedAt?: string
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -30,3 +37,33 @@ export const isCookieData = (data: CookieData | SwaggerData): data is CookieData
 }
 
 export type FormType = "cookie" | "swagger"
+
+export interface SyncSnapshot {
+    cookies: CookieData[]
+    swaggers: SwaggerData[]
+    settings: Settings
+}
+
+export type SyncEntity = CookieData | SwaggerData
+export type SyncConflictType = "cookie" | "swagger"
+
+export interface SyncConflict {
+    id: string
+    key: string
+    type: SyncConflictType
+    local: SyncEntity | null
+    cloud: SyncEntity | null
+}
+
+export type ConflictResolution = "local" | "cloud"
+
+export interface GoogleDriveSyncStatus {
+    enabled: boolean
+    email?: string
+    profileImageUrl?: string
+    lastConnectedAt?: string
+    lastSyncedAt?: string
+    isSyncing: boolean
+    error?: string
+    conflicts: SyncConflict[]
+}

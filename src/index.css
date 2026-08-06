@@ -75,3 +75,18 @@
 :focus-visible {
     outline: none;
 }
+
+.google-drive-progress::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    width: 45%;
+    background: linear-gradient(90deg, #0f9d58, #f4b400, #4285f4);
+    animation: google-drive-loading 1.1s ease-in-out infinite;
+}
+
+@keyframes google-drive-loading {
+    from { transform: translateX(-110%); }
+    to { transform: translateX(245%); }
+}

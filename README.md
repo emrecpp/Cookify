@@ -34,6 +34,8 @@
 ### 🔄 **Profile Management**
 - **Export Profiles**: Save all your cookies and tokens into a single exportable file.
 - **Import Profiles**: Import your profiles into the extension on a different machine or browser.
+- **Optional Google Drive Sync**: Back up profiles and settings to Cookify's private Drive app-data folder and merge them across computers.
+- **Conflict Resolution**: Compare local and cloud cookies/JWTs, inspect timestamps and decoded JWT previews, then choose the version to keep.
 
 ### 📜 **Swagger Integration**
 - **Swagger Support**: Streamline your API testing by setting cookies and JWT tokens directly into Swagger documentation.
@@ -95,6 +97,24 @@ Check out these short videos to see Cookify in action:
    - Open Chrome and navigate to `chrome://extensions/`.
    - Enable **Developer Mode**.
    - Click **Load Unpacked** and select the `dist` folder from the project.
+
+### Google Drive OAuth setup
+
+Google Drive sync is optional and disabled unless the user connects an account from Settings. To enable the Connect button in a build:
+
+1. Enable the Google Drive API in a Google Cloud project.
+2. Create an OAuth 2.0 client for a Chrome extension and bind it to the Cookify extension ID. The published ID is `mafdkfnimilggjneibkjfejlnhcecnjd`; unpacked development builds may use a different stable ID.
+3. Create a Web application OAuth client for account switching and add `https://<extension-id>.chromiumapp.org/google-oauth` to its authorized redirect URIs.
+4. Add both client IDs to a local `.env` file:
+
+   ```env
+   VITE_GOOGLE_OAUTH_CLIENT_ID=1234567890-example.apps.googleusercontent.com
+   VITE_GOOGLE_OAUTH_WEB_CLIENT_ID=1234567890-example-web.apps.googleusercontent.com
+   ```
+
+5. Run `npm run build` and load `dist` in Chrome.
+
+Cookify requests only `https://www.googleapis.com/auth/drive.appdata`. This hidden area is accessible to Cookify but does not grant access to the user's other Drive files. OAuth client IDs are public identifiers; never add a client secret to the extension.
 
 ---
 

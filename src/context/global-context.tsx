@@ -1,8 +1,19 @@
 "use client"
 import { useApplyCookie } from "@/hooks/useCookie.tsx";
 import { useApplySwagger } from "@/hooks/useSwagger.ts";
+import { useGoogleDriveSync } from "@/hooks/useGoogleDriveSync.ts";
+import { normalizeSnapshot, prepareCookiesForSave, prepareSwaggersForSave } from "@/lib/sync.ts";
 import { sortByOrder } from "@/lib/utils.ts";
-import { CookieData, DEFAULT_SETTINGS, isCookieData, Settings, SwaggerData } from "@/types/types.ts";
+import {
+    ConflictResolution,
+    CookieData,
+    DEFAULT_SETTINGS,
+    GoogleDriveSyncStatus,
+    isCookieData,
+    Settings,
+    SwaggerData,
+    SyncSnapshot,
+} from "@/types/types.ts";
 import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 
@@ -132,6 +143,13 @@ interface GlobalContextState {
 
     handleImport(importedData?: any): void;
     isInitialized: boolean;
+
+    googleDriveSync: GoogleDriveSyncStatus;
+    isGoogleDriveConfigured: boolean;
+    connectGoogleDrive(chooseAccount?: boolean): Promise<void>;
+    disconnectGoogleDrive(): Promise<void>;
+    syncGoogleDriveNow(): Promise<void>;
+    resolveGoogleDriveConflicts(resolutions: Record<string, ConflictResolution>): Promise<void>;
 }
 
 export const GlobalContext = createContext<GlobalContextState | null>(null);
@@ -154,6 +172,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
     });
     const [projects, setProjects] = useState<string[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
+    const [isInitialized, setIsInitialized] = useState(false);
     const [settings, setSettings] = useState<ExtendedSettings>(() => {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
@@ -173,20 +192,22 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
     // Initialize data from localStorage
     useEffect(() => {
         const data = storageManager.getData();
-        
-        if (data.cookies) {
-            setCookiesState(sortByOrder(data.cookies));
-        }
-        
-        if (data.swaggers) {
-            setSwaggersState(sortByOrder(data.swaggers));
-        }
+        const normalized = normalizeSnapshot({
+            cookies: data.cookies,
+            swaggers: data.swaggers,
+            settings: { ...DEFAULT_SETTINGS, ...data.settings },
+        });
+        setCookiesState(sortByOrder(normalized.cookies));
+        setSwaggersState(sortByOrder(normalized.swaggers));
+        setSettings(normalized.settings);
+        storageManager.saveData(normalized);
+        setIsInitialized(true);
     }, [storageManager]);
 
     // Settings Management
     const updateSettings = useCallback((newSettings: Partial<ExtendedSettings>) => {
         setSettings(prev => {
-            const updated = { ...prev, ...newSettings };
+            const updated = { ...prev, ...newSettings, updatedAt: new Date().toISOString() };
             storageManager.saveData({ settings: updated });
             return updated;
         });
@@ -194,15 +215,19 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
 
     // Data Management Utilities
     const setCookies = useCallback((newCookies: CookieData[]) => {
-        const sortedCookies = sortByOrder(newCookies);
-        setCookiesState(sortedCookies);
-        storageManager.saveData({ cookies: sortedCookies });
+        setCookiesState((previous) => {
+            const sortedCookies = sortByOrder(prepareCookiesForSave(newCookies, previous));
+            storageManager.saveData({ cookies: sortedCookies });
+            return sortedCookies;
+        });
     }, [storageManager]);
 
     const setSwaggers = useCallback((newSwaggers: SwaggerData[]) => {
-        const sortedSwaggers = sortByOrder(newSwaggers);
-        setSwaggersState(sortedSwaggers);
-        storageManager.saveData({ swaggers: sortedSwaggers });
+        setSwaggersState((previous) => {
+            const sortedSwaggers = sortByOrder(prepareSwaggersForSave(newSwaggers, previous));
+            storageManager.saveData({ swaggers: sortedSwaggers });
+            return sortedSwaggers;
+        });
     }, [storageManager]);
 
     // Project Management
@@ -252,7 +277,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
         
         const allProjects = [...new Set([...settings.projects, ...cookieProjects, ...swaggerProjects])];
         
-        if (JSON.stringify(allProjects.sort()) !== JSON.stringify(settings.projects.sort())) {
+        if (JSON.stringify([...allProjects].sort()) !== JSON.stringify([...settings.projects].sort())) {
             updateSettings({ projects: allProjects });
         }
     }, [cookies, swaggers, settings.projects, updateSettings]);
@@ -399,6 +424,32 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
     // Search Management
     const clearSearchTerm = useCallback(() => setSearchTerm(""), []);
 
+    const syncSnapshot = useMemo<SyncSnapshot>(() => ({
+        cookies,
+        swaggers,
+        settings,
+    }), [cookies, settings, swaggers]);
+
+    const applySyncedSnapshot = useCallback((snapshot: SyncSnapshot) => {
+        const normalized = normalizeSnapshot(snapshot);
+        const sortedCookies = sortByOrder(normalized.cookies);
+        const sortedSwaggers = sortByOrder(normalized.swaggers);
+        setCookiesState(sortedCookies);
+        setSwaggersState(sortedSwaggers);
+        setSettings(normalized.settings);
+        storageManager.saveData({
+            cookies: sortedCookies,
+            swaggers: sortedSwaggers,
+            settings: normalized.settings,
+        });
+    }, [storageManager]);
+
+    const driveSync = useGoogleDriveSync({
+        snapshot: syncSnapshot,
+        isInitialized,
+        applySnapshot: applySyncedSnapshot,
+    });
+
     // Context Value
     const contextValue = useMemo(() => ({
         currentView,
@@ -439,13 +490,21 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
         setSearchTerm,
         clearSearchTerm,
         handleImport,
-        isInitialized: true,
+        isInitialized,
+
+        googleDriveSync: driveSync.status,
+        isGoogleDriveConfigured: driveSync.isConfigured,
+        connectGoogleDrive: driveSync.connect,
+        disconnectGoogleDrive: driveSync.disconnect,
+        syncGoogleDriveNow: driveSync.syncNow,
+        resolveGoogleDriveConflicts: driveSync.resolveConflicts,
     }), [
         currentView, changeView, cookies, setCookies, swaggers, setSwaggers,
         editingCookie, editingSwagger, handleEdit, handleApply,
         handleCookieSubmit, handleDeleteProfile, handleSwaggerSubmit,
         animationDirection, projects, getAllProjects, addProject, handleDeleteProject,
-        settings, updateSettings, activeProject, searchTerm, clearSearchTerm, handleImport
+        settings, updateSettings, activeProject, searchTerm, clearSearchTerm, handleImport,
+        isInitialized, driveSync
     ]);
 
     return (

@@ -1,4 +1,4 @@
-import { defineConfig, Plugin } from 'vite';
+import { defineConfig, loadEnv, Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { crx } from '@crxjs/vite-plugin';
 import manifest from './manifest.json';
@@ -16,17 +16,27 @@ const manifestPlugin: Plugin = {
     },
 };
 
-export default defineConfig({
-    plugins: [
-        react(),
-        manifestPlugin,
-        // viteManifestHackIssue846,
-        crx({ manifest }),
-    ],
-
-    resolve: {
-        alias: {
-            "@": path.resolve(__dirname, "./src"),
+export default defineConfig(({ mode }) => {
+    const env = loadEnv(mode, process.cwd(), "");
+    const extensionManifest = {
+        ...manifest,
+        oauth2: {
+            ...manifest.oauth2,
+            client_id: env.VITE_GOOGLE_OAUTH_CLIENT_ID || manifest.oauth2.client_id,
         },
-    }
+    };
+
+    return {
+        plugins: [
+            react(),
+            manifestPlugin,
+            crx({ manifest: extensionManifest }),
+        ],
+
+        resolve: {
+            alias: {
+                "@": path.resolve(__dirname, "./src"),
+            },
+        },
+    };
 });
