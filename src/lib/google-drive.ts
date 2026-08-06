@@ -1,4 +1,4 @@
-import { SyncSnapshot } from "@/types/types";
+import {SyncSnapshot} from "@/types/types";
 
 const DRIVE_API = "https://www.googleapis.com/drive/v3";
 const DRIVE_UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
@@ -60,9 +60,9 @@ function getConfiguredWebClientId(): string | undefined {
 function readWebAuthSelection(): WebAuthSelection {
     try {
         const raw = localStorage.getItem(WEB_AUTH_SELECTION_KEY);
-        return raw ? JSON.parse(raw) as WebAuthSelection : { enabled: false };
+        return raw ? JSON.parse(raw) as WebAuthSelection : {enabled: false};
     } catch {
-        return { enabled: false };
+        return {enabled: false};
     }
 }
 
@@ -84,7 +84,7 @@ async function getChromeAccessToken(interactive: boolean): Promise<string> {
         throw new Error("Google OAuth is not configured for this build.");
     }
 
-    const result = await chrome.identity.getAuthToken({ interactive });
+    const result = await chrome.identity.getAuthToken({interactive});
     if (!result.token) {
         throw new Error("Google did not return an access token.");
     }
@@ -152,7 +152,7 @@ async function invalidateAccessToken(token: string): Promise<void> {
         webTokenCache = undefined;
         return;
     }
-    await chrome.identity.removeCachedAuthToken({ token });
+    await chrome.identity.removeCachedAuthToken({token});
 }
 
 async function authorizedFetch(
@@ -182,7 +182,7 @@ async function assertOk(response: Response, action: string): Promise<void> {
     if (response.ok) return;
     let detail = "";
     try {
-        const body = await response.json() as { error?: { message?: string } };
+        const body = await response.json() as {error?: {message?: string}};
         detail = body.error?.message || "";
     } catch {
         detail = await response.text().catch(() => "");
@@ -192,10 +192,10 @@ async function assertOk(response: Response, action: string): Promise<void> {
 
 async function fetchGoogleAccountProfile(token: string): Promise<GoogleAccountProfile> {
     const response = await fetch("https://openidconnect.googleapis.com/v1/userinfo", {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {Authorization: `Bearer ${token}`},
     });
     if (!response.ok) return {};
-    const profile = await response.json() as { email?: string; picture?: string };
+    const profile = await response.json() as {email?: string; picture?: string};
     return {
         email: profile.email,
         profileImageUrl: profile.picture,
@@ -204,7 +204,7 @@ async function fetchGoogleAccountProfile(token: string): Promise<GoogleAccountPr
 
 async function getGoogleAccountProfile(interactive: boolean): Promise<GoogleAccountProfile> {
     const token = await getAccessToken(interactive);
-    const chromeProfile = await chrome.identity.getProfileUserInfo({ accountStatus: "ANY" });
+    const chromeProfile = await chrome.identity.getProfileUserInfo({accountStatus: "ANY"});
     try {
         const profile = await fetchGoogleAccountProfile(token);
         return {
@@ -212,7 +212,7 @@ async function getGoogleAccountProfile(interactive: boolean): Promise<GoogleAcco
             profileImageUrl: profile.profileImageUrl,
         };
     } catch {
-        return { email: chromeProfile.email || undefined };
+        return {email: chromeProfile.email || undefined};
     }
 }
 
@@ -221,7 +221,7 @@ export async function connectGoogleDrive(chooseAccount = false): Promise<GoogleA
         const token = await getWebAccessToken(true, true);
         const profile = await fetchGoogleAccountProfile(token);
         if (!profile.email) throw new Error("Google did not return the selected account email.");
-        writeWebAuthSelection({ enabled: true, email: profile.email });
+        writeWebAuthSelection({enabled: true, email: profile.email});
         return profile;
     }
     return getGoogleAccountProfile(true);
@@ -231,7 +231,7 @@ export function getCachedGoogleAccountProfile(): Promise<GoogleAccountProfile> {
     return getGoogleAccountProfile(false);
 }
 
-export async function disconnectGoogleDrive(): Promise<void> {
+export async function logoutGoogleDrive(): Promise<void> {
     webTokenCache = undefined;
     try {
         await chrome.identity.clearAllCachedAuthTokens();
@@ -285,7 +285,7 @@ async function createSyncFile(document: DriveSyncDocument): Promise<string> {
     ].join("\r\n");
     const response = await authorizedFetch(`${DRIVE_UPLOAD_API}/files?uploadType=multipart&fields=id`, {
         method: "POST",
-        headers: { "Content-Type": `multipart/related; boundary=${boundary}` },
+        headers: {"Content-Type": `multipart/related; boundary=${boundary}`},
         body,
     });
     await assertOk(response, "Creating the Cookify backup");
@@ -296,7 +296,7 @@ async function createSyncFile(document: DriveSyncDocument): Promise<string> {
 export async function uploadSyncDocument(
     snapshot: SyncSnapshot,
     existingFileId?: string,
-): Promise<{ fileId: string; document: DriveSyncDocument }> {
+): Promise<{fileId: string; document: DriveSyncDocument}> {
     const document: DriveSyncDocument = {
         name: "cookify",
         version: 2,
@@ -305,7 +305,7 @@ export async function uploadSyncDocument(
     };
     if (!existingFileId) {
         const fileId = await createSyncFile(document);
-        return { fileId, document };
+        return {fileId, document};
     }
 
     const fileId = existingFileId;
@@ -313,10 +313,10 @@ export async function uploadSyncDocument(
         `${DRIVE_UPLOAD_API}/files/${encodeURIComponent(fileId)}?uploadType=media`,
         {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
+            headers: {"Content-Type": "application/json"},
             body: JSON.stringify(document),
         },
     );
     await assertOk(response, "Uploading the Cookify backup");
-    return { fileId, document };
+    return {fileId, document};
 }

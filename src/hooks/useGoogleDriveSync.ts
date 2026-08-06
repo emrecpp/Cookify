@@ -1,20 +1,21 @@
 import {
     connectGoogleDrive,
-    disconnectGoogleDrive,
     downloadSyncDocument,
+    DriveSyncDocument,
     findSyncFile,
     getCachedGoogleAccountProfile,
     isGoogleDriveConfigured,
+    logoutGoogleDrive,
     uploadSyncDocument,
 } from "@/lib/google-drive";
-import { applyConflictResolutions, MergeResult, mergeSnapshots, normalizeSnapshot } from "@/lib/sync";
-import { clearSyncConflictPageState, openSyncConflictPage } from "@/lib/sync-conflict-page";
+import {applyConflictResolutions, MergeResult, mergeSnapshots, normalizeSnapshot, syncSnapshotsEqual} from "@/lib/sync";
+import {clearSyncConflictPageState, openSyncConflictPage} from "@/lib/sync-conflict-page";
 import {
     ConflictResolution,
     GoogleDriveSyncStatus,
     SyncSnapshot,
 } from "@/types/types";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 
 const SYNC_CONFIG_KEY = "CookifyGoogleDriveSync";
 const AUTO_SYNC_DELAY_MS = 1500;
@@ -44,9 +45,9 @@ interface UseGoogleDriveSyncOptions {
 function readConfig(): StoredSyncConfig {
     try {
         const raw = localStorage.getItem(SYNC_CONFIG_KEY);
-        return raw ? JSON.parse(raw) as StoredSyncConfig : { enabled: false };
+        return raw ? JSON.parse(raw) as StoredSyncConfig : {enabled: false};
     } catch {
-        return { enabled: false };
+        return {enabled: false};
     }
 }
 
@@ -79,6 +80,7 @@ export function useGoogleDriveSync({
         lastConnectedAt: initialConfig.current.lastConnectedAt,
         lastSyncedAt: initialConfig.current.lastSyncedAt,
         isSyncing: false,
+        showProgress: false,
         conflicts: initialConfig.current.pendingMerge?.result.conflicts || [],
     });
     const [pendingMerge, setPendingMerge] = useState<PendingMerge | null>(initialConfig.current.pendingMerge || null);
@@ -90,19 +92,18 @@ export function useGoogleDriveSync({
         snapshotRef.current = snapshot;
     }, [snapshot]);
 
-    const finishSync = useCallback(async (
+    const completeSync = useCallback((
         merged: SyncSnapshot,
-        fileId?: string,
+        fileId: string,
+        lastSyncedAt: string,
         configOverride?: StoredSyncConfig,
     ) => {
         const normalized = normalizeSnapshot(merged);
-        const upload = await uploadSyncDocument(normalized, fileId);
-        const lastSyncedAt = upload.document.updatedAt;
         const current = configOverride || readConfig();
         const nextConfig: StoredSyncConfig = {
             ...current,
             enabled: true,
-            fileId: upload.fileId,
+            fileId,
             lastSyncedAt,
             baseline: normalized,
             pendingMerge: undefined,
@@ -119,52 +120,84 @@ export function useGoogleDriveSync({
             lastConnectedAt: nextConfig.lastConnectedAt,
             lastSyncedAt,
             isSyncing: false,
+            showProgress: false,
             conflicts: [],
         });
     }, [applySnapshot]);
 
-    const performSync = useCallback(async (configOverride?: StoredSyncConfig) => {
+    const finishSync = useCallback(async (
+        merged: SyncSnapshot,
+        fileId?: string,
+        configOverride?: StoredSyncConfig,
+    ) => {
+        const normalized = normalizeSnapshot(merged);
+        setStatus((previous) => ({...previous, showProgress: true}));
+        const upload = await uploadSyncDocument(normalized, fileId);
+        completeSync(
+            normalized,
+            upload.fileId,
+            upload.document.updatedAt,
+            configOverride,
+        );
+    }, [completeSync]);
+
+    const performSync = useCallback(async (
+        configOverride?: StoredSyncConfig,
+        forceProgress = false,
+    ) => {
         const config = configOverride || readConfig();
         if (!config.enabled || syncingRef.current) return;
 
         syncingRef.current = true;
-        setStatus((previous) => ({ ...previous, isSyncing: true, error: undefined }));
+        setStatus((previous) => ({
+            ...previous,
+            isSyncing: true,
+            showProgress: forceProgress,
+            error: undefined,
+        }));
         try {
             const local = normalizeSnapshot(snapshotRef.current);
-            let file = config.fileId ? { id: config.fileId } : await findSyncFile();
-            let cloud: SyncSnapshot | undefined;
+            const isInitialDownload = isSnapshotEmpty(local) && !config.baseline;
+            let file = config.fileId ? {id: config.fileId} : await findSyncFile();
+            let cloudDocument: DriveSyncDocument | undefined;
 
             if (file) {
+                if (isInitialDownload) {
+                    setStatus((previous) => ({...previous, showProgress: true}));
+                }
                 try {
-                    cloud = (await downloadSyncDocument(file.id)).snapshot;
+                    cloudDocument = await downloadSyncDocument(file.id);
                 } catch (error) {
                     if (config.fileId && getErrorMessage(error).includes("404")) {
                         file = await findSyncFile();
-                        cloud = file ? (await downloadSyncDocument(file.id)).snapshot : undefined;
+                        cloudDocument = file ? await downloadSyncDocument(file.id) : undefined;
                     } else {
                         throw error;
                     }
                 }
             }
 
-            if (!cloud) {
+            if (!cloudDocument) {
                 await finishSync(local, undefined, config);
                 return;
             }
 
-            if (isSnapshotEmpty(local) && !config.baseline) {
-                await finishSync(cloud, file?.id, config);
+            const cloud = cloudDocument.snapshot;
+
+            if (isInitialDownload) {
+                completeSync(cloud, file!.id, cloudDocument.updatedAt, config);
                 return;
             }
 
             const result = mergeSnapshots(local, cloud, config.baseline);
             if (result.conflicts.length > 0) {
-                const pending = { result, fileId: file!.id };
+                const pending = {result, fileId: file!.id};
                 setPendingMerge(pending);
-                writeConfig({ ...config, pendingMerge: pending });
+                writeConfig({...config, pendingMerge: pending});
                 setStatus((previous) => ({
                     ...previous,
                     isSyncing: false,
+                    showProgress: false,
                     conflicts: result.conflicts,
                 }));
                 if (!new URLSearchParams(window.location.search).has("page")) {
@@ -173,20 +206,36 @@ export function useGoogleDriveSync({
                 return;
             }
 
+            if (syncSnapshotsEqual(result.snapshot, cloud)) {
+                completeSync(result.snapshot, file!.id, cloudDocument.updatedAt, config);
+                return;
+            }
+
             await finishSync(result.snapshot, file?.id, config);
         } catch (error) {
             setStatus((previous) => ({
                 ...previous,
                 isSyncing: false,
+                showProgress: false,
                 error: getErrorMessage(error),
             }));
         } finally {
             syncingRef.current = false;
         }
-    }, [finishSync]);
+    }, [completeSync, finishSync]);
+
+    const syncNow = useCallback(
+        () => performSync(undefined, true),
+        [performSync],
+    );
 
     const connect = useCallback(async (chooseAccount = false) => {
-        setStatus((previous) => ({ ...previous, isSyncing: true, error: undefined }));
+        setStatus((previous) => ({
+            ...previous,
+            isSyncing: true,
+            showProgress: false,
+            error: undefined,
+        }));
         try {
             const currentConfig = readConfig();
             const profile = await connectGoogleDrive(chooseAccount);
@@ -195,22 +244,23 @@ export function useGoogleDriveSync({
                 && !!profile.email
                 && currentConfig.email !== profile.email;
             const nextConfig: StoredSyncConfig = accountChanged
-                ? { enabled: true, ...profile, lastConnectedAt }
-                : { ...currentConfig, enabled: true, ...profile, lastConnectedAt };
+                ? {enabled: true, ...profile, lastConnectedAt}
+                : {...currentConfig, enabled: true, ...profile, lastConnectedAt};
             writeConfig(nextConfig);
-            setStatus((previous) => ({ ...previous, enabled: true, ...profile, lastConnectedAt }));
+            setStatus((previous) => ({...previous, enabled: true, ...profile, lastConnectedAt}));
             await performSync(nextConfig);
         } catch (error) {
             setStatus((previous) => ({
                 ...previous,
                 isSyncing: false,
+                showProgress: false,
                 error: getErrorMessage(error),
             }));
         }
     }, [performSync]);
 
-    const disconnect = useCallback(async () => {
-        await disconnectGoogleDrive();
+    const logout = useCallback(async () => {
+        await logoutGoogleDrive();
         const currentConfig = readConfig();
         const nextConfig: StoredSyncConfig = {
             ...currentConfig,
@@ -227,6 +277,7 @@ export function useGoogleDriveSync({
             lastConnectedAt: nextConfig.lastConnectedAt,
             lastSyncedAt: nextConfig.lastSyncedAt,
             isSyncing: false,
+            showProgress: false,
             conflicts: [],
         });
     }, []);
@@ -237,18 +288,23 @@ export function useGoogleDriveSync({
         void getCachedGoogleAccountProfile()
             .then((profile) => {
                 if (!active || (!profile.email && !profile.profileImageUrl)) return;
-                const nextConfig = { ...readConfig(), ...profile };
+                const nextConfig = {...readConfig(), ...profile};
                 writeConfig(nextConfig);
-                setStatus((previous) => ({ ...previous, ...profile }));
+                setStatus((previous) => ({...previous, ...profile}));
             })
             .catch(() => undefined);
-        return () => { active = false; };
+        return () => {active = false;};
     }, [status.enabled, status.profileImageUrl]);
 
     const resolveConflicts = useCallback(async (resolutions: Record<string, ConflictResolution>) => {
         if (!pendingMerge || syncingRef.current) return;
         syncingRef.current = true;
-        setStatus((previous) => ({ ...previous, isSyncing: true, error: undefined }));
+        setStatus((previous) => ({
+            ...previous,
+            isSyncing: true,
+            showProgress: true,
+            error: undefined,
+        }));
         try {
             const resolved = applyConflictResolutions(pendingMerge.result, resolutions);
             await finishSync(resolved, pendingMerge.fileId);
@@ -256,6 +312,7 @@ export function useGoogleDriveSync({
             setStatus((previous) => ({
                 ...previous,
                 isSyncing: false,
+                showProgress: false,
                 error: getErrorMessage(error),
             }));
         } finally {
@@ -274,8 +331,8 @@ export function useGoogleDriveSync({
         status,
         isConfigured: isGoogleDriveConfigured(),
         connect,
-        disconnect,
-        syncNow: performSync,
+        logout,
+        syncNow,
         resolveConflicts,
     };
 }

@@ -36,7 +36,7 @@ export function SettingsPage() {
         googleDriveSync,
         isGoogleDriveConfigured,
         connectGoogleDrive,
-        disconnectGoogleDrive,
+        logoutGoogleDrive,
         syncGoogleDriveNow,
         showGoogleDriveInHeader,
         setShowGoogleDriveInHeader,
@@ -198,8 +198,8 @@ export function SettingsPage() {
                                             <RefreshCw className={googleDriveSync.isSyncing ? "animate-spin" : ""} />
                                             {googleDriveSync.isSyncing ? "Syncing…" : "Sync now"}
                                         </Button>
-                                        <Button variant="destructive" className="w-full" onClick={() => void disconnectGoogleDrive()}>
-                                            <LogOut /> Disconnect
+                                        <Button variant="destructive" className="w-full" onClick={() => void logoutGoogleDrive()}>
+                                            <LogOut /> Logout
                                         </Button>
                                     </div>
                                 </>

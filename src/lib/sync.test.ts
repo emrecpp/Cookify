@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyConflictResolutions, mergeSnapshots, normalizeSnapshot } from "./sync";
+import { applyConflictResolutions, mergeSnapshots, normalizeSnapshot, syncSnapshotsEqual } from "./sync";
 import { CookieData, SwaggerData, SyncSnapshot } from "@/types/types";
 
 const timestamp = "2026-08-06T10:00:00.000Z";
@@ -113,5 +113,35 @@ describe("Google Drive snapshot merging", () => {
         const result = mergeSnapshots(local, cloud);
 
         expect(result.snapshot.settings.activeProject).toBe("Cloud");
+    });
+
+    it("recognizes a download-only merge that does not need another upload", () => {
+        const secondCookie = {
+            ...cookie("second"),
+            id: "cookie-2",
+            alias: "Second API",
+        };
+        const secondSwagger = {
+            ...swagger("Production", "production-token"),
+            id: "swagger-production",
+        };
+        const cloud = snapshot(
+            [cookie("cloud"), secondCookie],
+            [swagger("Staging", "remote-token"), secondSwagger],
+        );
+        const merged = normalizeSnapshot({
+            ...cloud,
+            cookies: [...cloud.cookies].reverse(),
+            swaggers: [...cloud.swaggers].reverse(),
+        });
+
+        expect(syncSnapshotsEqual(merged, cloud)).toBe(true);
+    });
+
+    it("requires an upload when merged data differs from the cloud", () => {
+        const cloud = snapshot([cookie("cloud")]);
+        const merged = snapshot([cookie("local-change")]);
+
+        expect(syncSnapshotsEqual(merged, cloud)).toBe(false);
     });
 });

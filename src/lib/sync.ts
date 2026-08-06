@@ -88,6 +88,47 @@ const swaggerContent = (swagger: SwaggerData) => JSON.stringify({
     order: swagger.order,
 });
 
+function canonicalSnapshot(snapshot: SyncSnapshot) {
+    const normalized = normalizeSnapshot(snapshot);
+    return {
+        cookies: normalized.cookies
+            .map((cookie) => ({
+                id: cookie.id,
+                alias: cookie.alias,
+                name: cookie.name,
+                value: cookie.value,
+                url: cookie.url || "",
+                domain: cookie.domain || "",
+                project: cookie.project || "",
+                order: cookie.order,
+                createdAt: cookie.createdAt,
+                updatedAt: cookie.updatedAt,
+            }))
+            .sort((left, right) => (left.id || "").localeCompare(right.id || "")),
+        swaggers: normalized.swaggers
+            .map((swagger) => ({
+                id: swagger.id,
+                alias: swagger.alias,
+                bearerToken: swagger.bearerToken,
+                project: swagger.project || "",
+                order: swagger.order,
+                createdAt: swagger.createdAt,
+                updatedAt: swagger.updatedAt,
+            }))
+            .sort((left, right) => (left.id || "").localeCompare(right.id || "")),
+        settings: {
+            applyOnClick: normalized.settings.applyOnClick,
+            projects: [...normalized.settings.projects].sort(),
+            activeProject: normalized.settings.activeProject,
+            updatedAt: normalized.settings.updatedAt,
+        },
+    };
+}
+
+export function syncSnapshotsEqual(left: SyncSnapshot, right: SyncSnapshot): boolean {
+    return JSON.stringify(canonicalSnapshot(left)) === JSON.stringify(canonicalSnapshot(right));
+}
+
 function prepareChangedItems<T extends SyncEntity>(
     items: T[],
     previousItems: T[],

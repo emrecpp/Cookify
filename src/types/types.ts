@@ -66,6 +66,7 @@ export interface GoogleDriveSyncStatus {
     lastConnectedAt?: string
     lastSyncedAt?: string
     isSyncing: boolean
+    showProgress: boolean
     error?: string
     conflicts: SyncConflict[]
 }

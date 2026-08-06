@@ -38,7 +38,7 @@ export default function App() {
 
     return (
         <div className="min-w-[600px] max-w-[700px] h-[600px] mx-auto flex flex-col p-2">
-            {googleDriveSync.isSyncing && (
+            {googleDriveSync.showProgress && (
                 <div className="google-drive-progress fixed inset-x-0 top-0 z-[100] h-1 overflow-hidden bg-muted" role="progressbar" aria-label="Syncing with Google Drive" />
             )}
             <GoogleDriveOnboardingDialog />

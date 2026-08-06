@@ -1,9 +1,9 @@
 "use client"
-import { useApplyCookie } from "@/hooks/useCookie.tsx";
-import { useApplySwagger } from "@/hooks/useSwagger.ts";
-import { useGoogleDriveSync } from "@/hooks/useGoogleDriveSync.ts";
-import { normalizeSnapshot, prepareCookiesForSave, prepareSwaggersForSave } from "@/lib/sync.ts";
-import { sortByOrder } from "@/lib/utils.ts";
+import {useApplyCookie} from "@/hooks/useCookie.tsx";
+import {useGoogleDriveSync} from "@/hooks/useGoogleDriveSync.ts";
+import {useApplySwagger} from "@/hooks/useSwagger.ts";
+import {normalizeSnapshot, prepareCookiesForSave, prepareSwaggersForSave} from "@/lib/sync.ts";
+import {sortByOrder} from "@/lib/utils.ts";
 import {
     ConflictResolution,
     CookieData,
@@ -14,7 +14,7 @@ import {
     SwaggerData,
     SyncSnapshot,
 } from "@/types/types.ts";
-import React, { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, {createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import toast from 'react-hot-toast';
 
 // Constants
@@ -87,7 +87,7 @@ type DataArray<T> = T extends CookieData ? CookieData[] : SwaggerData[];
 // Storage Utilities
 class StorageManager {
     private static instance: StorageManager;
-    
+
     static getInstance(): StorageManager {
         if (!StorageManager.instance) {
             StorageManager.instance = new StorageManager();
@@ -109,7 +109,7 @@ class StorageManager {
     saveData(data: Partial<StorageData>): void {
         try {
             const currentData = this.getData();
-            const updatedData = { ...currentData, ...data };
+            const updatedData = {...currentData, ...data};
             localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
         } catch (error) {
             console.error('Failed to save data to localStorage:', error.message);
@@ -178,7 +178,7 @@ interface GlobalContextState {
     googleDriveSync: GoogleDriveSyncStatus;
     isGoogleDriveConfigured: boolean;
     connectGoogleDrive(chooseAccount?: boolean): Promise<void>;
-    disconnectGoogleDrive(): Promise<void>;
+    logoutGoogleDrive(): Promise<void>;
     syncGoogleDriveNow(): Promise<void>;
     resolveGoogleDriveConflicts(resolutions: Record<string, ConflictResolution>): Promise<void>;
 }
@@ -189,7 +189,7 @@ interface GlobalContextProps {
     children: ReactNode;
 }
 
-export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }) => {
+export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) => {
     // State
     const [currentView, setCurrentView] = useState<PageViewTypes>(null);
     const [cookies, setCookiesState] = useState<CookieData[]>([]);
@@ -216,10 +216,10 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
                     activeProject: readStoredActiveProject(),
                 };
             } catch {
-                return { ...DEFAULT_SETTINGS, projects: [] };
+                return {...DEFAULT_SETTINGS, projects: []};
             }
         }
-        return { ...DEFAULT_SETTINGS, projects: [] };
+        return {...DEFAULT_SETTINGS, projects: []};
     });
 
     // Storage Manager Instance
@@ -249,8 +249,8 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
     // Settings Management
     const updateSettings = useCallback((newSettings: Partial<ExtendedSettings>) => {
         setSettings(prev => {
-            const updated = { ...prev, ...newSettings, updatedAt: new Date().toISOString() };
-            storageManager.saveData({ settings: updated });
+            const updated = {...prev, ...newSettings, updatedAt: new Date().toISOString()};
+            storageManager.saveData({settings: updated});
             return updated;
         });
     }, [storageManager]);
@@ -266,7 +266,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
                 activeProject: normalizedProject,
                 updatedAt: new Date().toISOString(),
             };
-            storageManager.saveData({ settings: updated });
+            storageManager.saveData({settings: updated});
             return updated;
         });
     }, [storageManager]);
@@ -280,7 +280,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
     const setCookies = useCallback((newCookies: CookieData[]) => {
         setCookiesState((previous) => {
             const sortedCookies = sortByOrder(prepareCookiesForSave(newCookies, previous));
-            storageManager.saveData({ cookies: sortedCookies });
+            storageManager.saveData({cookies: sortedCookies});
             return sortedCookies;
         });
     }, [storageManager]);
@@ -288,7 +288,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
     const setSwaggers = useCallback((newSwaggers: SwaggerData[]) => {
         setSwaggersState((previous) => {
             const sortedSwaggers = sortByOrder(prepareSwaggersForSave(newSwaggers, previous));
-            storageManager.saveData({ swaggers: sortedSwaggers });
+            storageManager.saveData({swaggers: sortedSwaggers});
             return sortedSwaggers;
         });
     }, [storageManager]);
@@ -297,26 +297,26 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
     const addProject = useCallback((projectName: string) => {
         const trimmedName = projectName.trim();
         if (!trimmedName || settings.projects.includes(trimmedName)) return;
-        
+
         const updatedProjects = [...settings.projects, trimmedName];
-        updateSettings({ projects: updatedProjects });
+        updateSettings({projects: updatedProjects});
     }, [settings.projects, updateSettings]);
 
     const removeProject = useCallback((projectName: string) => {
         const trimmedName = projectName.trim();
         if (!trimmedName || !settings.projects.includes(trimmedName)) return;
-        
+
         const updatedProjects = settings.projects.filter(p => p !== trimmedName);
-        updateSettings({ projects: updatedProjects });
-        
+        updateSettings({projects: updatedProjects});
+
         // Update cookies and swaggers to remove project reference
-        const updatedCookies = cookies.map(cookie => 
-            cookie.project === trimmedName ? { ...cookie, project: "" } : cookie
+        const updatedCookies = cookies.map(cookie =>
+            cookie.project === trimmedName ? {...cookie, project: ""} : cookie
         );
-        const updatedSwaggers = swaggers.map(swagger => 
-            swagger.project === trimmedName ? { ...swagger, project: "" } : swagger
+        const updatedSwaggers = swaggers.map(swagger =>
+            swagger.project === trimmedName ? {...swagger, project: ""} : swagger
         );
-        
+
         setCookies(updatedCookies);
         setSwaggers(updatedSwaggers);
     }, [settings.projects, updateSettings, cookies, swaggers, setCookies, setSwaggers]);
@@ -333,15 +333,15 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
         const cookieProjects = cookies
             .filter(cookie => cookie.project?.trim())
             .map(cookie => cookie.project as string);
-            
+
         const swaggerProjects = swaggers
             .filter(swagger => swagger.project?.trim())
             .map(swagger => swagger.project as string);
-        
+
         const allProjects = [...new Set([...settings.projects, ...cookieProjects, ...swaggerProjects])];
-        
+
         if (JSON.stringify([...allProjects].sort()) !== JSON.stringify([...settings.projects].sort())) {
-            updateSettings({ projects: allProjects });
+            updateSettings({projects: allProjects});
         }
     }, [cookies, swaggers, settings.projects, updateSettings]);
 
@@ -364,20 +364,20 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
             setCurrentView(null);
             return;
         }
-        
+
         if (currentView === null) {
             setCurrentView(newView);
             return;
         }
-        
+
         const currentGroup = getPageGroup(currentView);
         const targetGroup = getPageGroup(newView);
-        
+
         setAnimationDirection(
-            (currentGroup === PageGroup.MAIN && targetGroup !== PageGroup.MAIN) || 
-            currentGroup === targetGroup ? 1 : -1
+            (currentGroup === PageGroup.MAIN && targetGroup !== PageGroup.MAIN) ||
+                currentGroup === targetGroup ? 1 : -1
         );
-        
+
         setCurrentView(newView);
     }, [currentView, getPageGroup]);
 
@@ -393,10 +393,10 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
         if (data.project) {
             addProject(data.project);
         }
-        
+
         if (editingData) {
             // Update existing item
-            const updatedArray = (dataArray as T[]).map(item => 
+            const updatedArray = (dataArray as T[]).map(item =>
                 item === editingData ? data : item
             ) as DataArray<T>;
             setDataArray(updatedArray);
@@ -477,13 +477,13 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
                 const importedActiveProject = normalizeActiveProject(importedData.settings.activeProject);
                 updateSettings({
                     ...importedData.settings,
-                    ...(hasActiveProject ? { activeProject: importedActiveProject } : {}),
+                    ...(hasActiveProject ? {activeProject: importedActiveProject} : {}),
                 });
                 if (hasActiveProject) {
                     setActiveProject(importedActiveProject);
                 }
             }
-            
+
             toast.success('Data imported successfully!');
         } catch (error) {
             console.error('Import failed:', error.message);
@@ -552,10 +552,10 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
         getAllProjects,
         addProject,
         handleDeleteProject,
-        
+
         settings,
         updateSettings,
-        
+
         activeProject,
         setActiveProject,
         showGoogleDriveInHeader,
@@ -569,7 +569,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({ children }
         googleDriveSync: driveSync.status,
         isGoogleDriveConfigured: driveSync.isConfigured,
         connectGoogleDrive: driveSync.connect,
-        disconnectGoogleDrive: driveSync.disconnect,
+        logoutGoogleDrive: driveSync.logout,
         syncGoogleDriveNow: driveSync.syncNow,
         resolveGoogleDriveConflicts: driveSync.resolveConflicts,
     }), [

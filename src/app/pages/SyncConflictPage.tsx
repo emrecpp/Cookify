@@ -231,7 +231,7 @@ export function SyncConflictPage() {
 
     return (
         <main className="min-h-screen bg-slate-100">
-            {googleDriveSync.isSyncing && <div className="google-drive-progress fixed inset-x-0 top-0 z-[100] h-1 overflow-hidden bg-muted" role="progressbar" />}
+            {googleDriveSync.showProgress && <div className="google-drive-progress fixed inset-x-0 top-0 z-[100] h-1 overflow-hidden bg-muted" role="progressbar" />}
             <header className="sticky top-0 z-40 border-b bg-white/95 shadow-sm backdrop-blur">
                 <div className="mx-auto flex max-w-[1500px] items-center gap-4 px-6 py-4">
                     <ShieldAlert className="h-7 w-7 text-amber-500" />
