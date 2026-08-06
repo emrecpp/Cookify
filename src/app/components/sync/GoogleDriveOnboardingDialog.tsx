@@ -1,4 +1,5 @@
-import { Button } from "@/components/ui/button";
+import {GoogleDriveIcon} from "@/app/components/sync/GoogleDriveIcon";
+import {Button} from "@/components/ui/button";
 import {
     Dialog,
     DialogContent,
@@ -7,9 +8,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { useGlobalContext } from "@/context/global-context";
-import { GoogleDriveIcon } from "@/app/components/sync/GoogleDriveIcon";
-import { useEffect, useState } from "react";
+import {useGlobalContext} from "@/context/global-context";
+import {useEffect, useState} from "react";
 
 const GOOGLE_DRIVE_ONBOARDING_KEY = "CookifyGoogleDriveOnboardingSeen";
 
@@ -56,10 +56,12 @@ export function GoogleDriveOnboardingDialog() {
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
-                    <Button type="button" variant="outline" onClick={dismiss}>Not now</Button>
-                    <Button type="button" onClick={importFromGoogleDrive}>
-                        <GoogleDriveIcon /> Import from Google Drive
-                    </Button>
+                    <div className="flex flex-col gap-2">
+                        <Button type="button" variant="outline" onClick={dismiss}>Not now</Button>
+                        <Button type="button" onClick={importFromGoogleDrive}>
+                            <GoogleDriveIcon /> Import from Google Drive
+                        </Button>
+                    </div>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
