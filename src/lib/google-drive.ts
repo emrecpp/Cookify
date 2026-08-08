@@ -54,7 +54,8 @@ function getConfiguredClientId(): string | undefined {
 
 function getConfiguredWebClientId(): string | undefined {
     const clientId = import.meta.env.VITE_GOOGLE_OAUTH_WEB_CLIENT_ID as string | undefined;
-    return clientId?.trim() || undefined;
+    const trimmedClientId = clientId?.trim() || undefined;
+    return trimmedClientId;
 }
 
 function readWebAuthSelection(): WebAuthSelection {
