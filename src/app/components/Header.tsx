@@ -56,6 +56,20 @@ export function Header() {
         }
     }
 
+    const openGoogleDriveSettings = () => {
+        setCurrentView(PageView.SETTINGS)
+
+        // Wait for the settings tab to become visible before scrolling to its section.
+        window.requestAnimationFrame(() => {
+            window.requestAnimationFrame(() => {
+                document.getElementById("google-drive-settings")?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                })
+            })
+        })
+    }
+
     const showTitle = [PageView.ADD_COOKIE, PageView.EDIT_COOKIE, PageView.ADD_SWAGGER, PageView.EDIT_SWAGGER].includes(currentView as PageView);
 
     const shouldShowAddButton = () => {
@@ -102,7 +116,7 @@ export function Header() {
                             <button
                                 type="button"
                                 className="mt-0.5 flex items-center max-w-[260px] justify-center gap-1 text-left text-[11px] leading-tight text-slate-500 hover:text-slate-800 focus-visible:rounded-sm focus-visible:outline-none"
-                                onClick={() => setCurrentView(PageView.SETTINGS)}
+                                onClick={openGoogleDriveSettings}
                                 title="Open Google Drive settings"
                                 aria-label={googleDriveSync.email
                                     ? `Open Google Drive settings for ${googleDriveSync.email}`

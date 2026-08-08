@@ -119,7 +119,7 @@ export function SettingsPage() {
                         </CardContent>
                     </Card>
 
-                    <Card className="border mb-6">
+                    <Card id="google-drive-settings" className="border mb-6 scroll-mt-2">
                         <CardHeader>
                             <CardTitle>Data Management</CardTitle>
                             <CardDescription>
