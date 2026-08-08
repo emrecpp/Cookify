@@ -15,6 +15,7 @@ import {
     GoogleDriveSyncStatus,
     SyncSnapshot,
 } from "@/types/types";
+import toast from "react-hot-toast";
 import {useCallback, useEffect, useRef, useState} from "react";
 
 const SYNC_CONFIG_KEY = "CookifyGoogleDriveSync";
@@ -67,6 +68,16 @@ function getErrorMessage(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
 }
 
+function isGoogleDriveAuthorizationError(error: unknown): boolean {
+    const message = getErrorMessage(error).toLowerCase();
+    return message.includes("access_denied")
+        || (message.includes("403") && (
+            message.includes("insufficient authentication scopes")
+            || message.includes("insufficientpermissions")
+            || message.includes("permission")
+        ));
+}
+
 export function useGoogleDriveSync({
     snapshot,
     isInitialized,
@@ -87,6 +98,29 @@ export function useGoogleDriveSync({
     const snapshotRef = useRef(snapshot);
     const syncingRef = useRef(false);
     const lastSyncedSignatureRef = useRef<string>();
+
+    const logout = useCallback(async () => {
+        await logoutGoogleDrive();
+        const currentConfig = readConfig();
+        const nextConfig: StoredSyncConfig = {
+            ...currentConfig,
+            enabled: false,
+            pendingMerge: undefined,
+        };
+        writeConfig(nextConfig);
+        clearSyncConflictPageState();
+        setPendingMerge(null);
+        setStatus({
+            enabled: false,
+            email: nextConfig.email,
+            profileImageUrl: nextConfig.profileImageUrl,
+            lastConnectedAt: nextConfig.lastConnectedAt,
+            lastSyncedAt: nextConfig.lastSyncedAt,
+            isSyncing: false,
+            showProgress: false,
+            conflicts: [],
+        });
+    }, []);
 
     useEffect(() => {
         snapshotRef.current = snapshot;
@@ -242,6 +276,11 @@ export function useGoogleDriveSync({
 
             await finishSync(result.snapshot, file?.id, config, local);
         } catch (error) {
+            if (isGoogleDriveAuthorizationError(error)) {
+                toast.error("Google Drive permission was denied. You have been signed out.");
+                await logout();
+                return;
+            }
             setStatus((previous) => ({
                 ...previous,
                 isSyncing: false,
@@ -251,7 +290,7 @@ export function useGoogleDriveSync({
         } finally {
             syncingRef.current = false;
         }
-    }, [completeSync, finishSync]);
+    }, [completeSync, finishSync, logout]);
 
     const syncNow = useCallback(
         () => performSync(undefined, true),
@@ -279,6 +318,11 @@ export function useGoogleDriveSync({
             setStatus((previous) => ({...previous, enabled: true, ...profile, lastConnectedAt}));
             await performSync(nextConfig);
         } catch (error) {
+            if (isGoogleDriveAuthorizationError(error)) {
+                toast.error("Google Drive permission was denied. You have been signed out.");
+                await logout();
+                return;
+            }
             setStatus((previous) => ({
                 ...previous,
                 isSyncing: false,
@@ -286,30 +330,7 @@ export function useGoogleDriveSync({
                 error: getErrorMessage(error),
             }));
         }
-    }, [performSync]);
-
-    const logout = useCallback(async () => {
-        await logoutGoogleDrive();
-        const currentConfig = readConfig();
-        const nextConfig: StoredSyncConfig = {
-            ...currentConfig,
-            enabled: false,
-            pendingMerge: undefined,
-        };
-        writeConfig(nextConfig);
-        clearSyncConflictPageState();
-        setPendingMerge(null);
-        setStatus({
-            enabled: false,
-            email: nextConfig.email,
-            profileImageUrl: nextConfig.profileImageUrl,
-            lastConnectedAt: nextConfig.lastConnectedAt,
-            lastSyncedAt: nextConfig.lastSyncedAt,
-            isSyncing: false,
-            showProgress: false,
-            conflicts: [],
-        });
-    }, []);
+    }, [logout, performSync]);
 
     useEffect(() => {
         if (!status.enabled || status.profileImageUrl) return;
