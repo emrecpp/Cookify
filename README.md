@@ -36,11 +36,10 @@
 - **Import Profiles**: Import your profiles into the extension on a different machine or browser.
 
 ### ☁️ **Google Drive Sync**
-- **Optional Cloud Backup**: Sign in with Google from Settings or the header to back up cookies, JWT profiles, and application settings.
-- **Cross-Computer Sync**: Keep your Cookify data available across computers using Cookify's private Google Drive app-data folder.
+- **One-Click Sign-In**: Sign in directly with your Google account from the header to sync your Cookify profiles and settings without navigating through the Settings page.
+- **Automatic Sync on New Computers**: Sign in with the same Google account on a new computer to automatically restore your synced Cookify data.
 - **Safe Scope**: Cookify requests access only to its own hidden app-data area, not to the rest of your Google Drive files.
-- **Smart Merging**: Merge local and cloud changes using item timestamps when data changes on more than one computer.
-- **Conflict Resolution**: Review conflicting cookies and JWT profiles before choosing which version to keep.
+- **Compare Before Choosing**: When local and cloud versions differ, compare both versions and choose which one to keep.
 
 ### 📜 **Swagger Integration**
 - **Swagger Support**: Streamline your API testing by setting cookies and JWT tokens directly into Swagger documentation.
