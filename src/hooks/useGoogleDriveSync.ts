@@ -97,9 +97,12 @@ export function useGoogleDriveSync({
         fileId: string,
         lastSyncedAt: string,
         configOverride?: StoredSyncConfig,
+        expectedLocalSnapshot?: SyncSnapshot,
     ) => {
         const normalized = normalizeSnapshot(merged);
         const current = configOverride || readConfig();
+        const localChangedDuringSync = expectedLocalSnapshot
+            && !syncSnapshotsEqual(snapshotRef.current, expectedLocalSnapshot);
         const nextConfig: StoredSyncConfig = {
             ...current,
             enabled: true,
@@ -111,7 +114,11 @@ export function useGoogleDriveSync({
         writeConfig(nextConfig);
         clearSyncConflictPageState();
         lastSyncedSignatureRef.current = JSON.stringify(normalized);
-        applySnapshot(normalized);
+        // Do not let an older in-flight sync overwrite edits made while it was running.
+        // The follow-up sync is scheduled when isSyncing changes back to false.
+        if (!localChangedDuringSync) {
+            applySnapshot(normalized);
+        }
         setPendingMerge(null);
         setStatus({
             enabled: true,
@@ -129,7 +136,17 @@ export function useGoogleDriveSync({
         merged: SyncSnapshot,
         fileId?: string,
         configOverride?: StoredSyncConfig,
+        expectedLocalSnapshot?: SyncSnapshot,
     ) => {
+        if (expectedLocalSnapshot && !syncSnapshotsEqual(snapshotRef.current, expectedLocalSnapshot)) {
+            setStatus((previous) => ({
+                ...previous,
+                isSyncing: false,
+                showProgress: false,
+            }));
+            return;
+        }
+
         const normalized = normalizeSnapshot(merged);
         setStatus((previous) => ({...previous, showProgress: true}));
         const upload = await uploadSyncDocument(normalized, fileId);
@@ -138,6 +155,7 @@ export function useGoogleDriveSync({
             upload.fileId,
             upload.document.updatedAt,
             configOverride,
+            expectedLocalSnapshot,
         );
     }, [completeSync]);
 
@@ -178,14 +196,25 @@ export function useGoogleDriveSync({
             }
 
             if (!cloudDocument) {
-                await finishSync(local, undefined, config);
+                await finishSync(local, undefined, config, local);
                 return;
             }
 
             const cloud = cloudDocument.snapshot;
 
+            // A newer local edit arrived while the cloud document was downloading.
+            // Abort this stale merge and let the normal auto-sync effect retry it.
+            if (!syncSnapshotsEqual(snapshotRef.current, local)) {
+                setStatus((previous) => ({
+                    ...previous,
+                    isSyncing: false,
+                    showProgress: false,
+                }));
+                return;
+            }
+
             if (isInitialDownload) {
-                completeSync(cloud, file!.id, cloudDocument.updatedAt, config);
+                completeSync(cloud, file!.id, cloudDocument.updatedAt, config, local);
                 return;
             }
 
@@ -207,11 +236,11 @@ export function useGoogleDriveSync({
             }
 
             if (syncSnapshotsEqual(result.snapshot, cloud)) {
-                completeSync(result.snapshot, file!.id, cloudDocument.updatedAt, config);
+                completeSync(result.snapshot, file!.id, cloudDocument.updatedAt, config, local);
                 return;
             }
 
-            await finishSync(result.snapshot, file?.id, config);
+            await finishSync(result.snapshot, file?.id, config, local);
         } catch (error) {
             setStatus((previous) => ({
                 ...previous,
@@ -321,11 +350,11 @@ export function useGoogleDriveSync({
     }, [finishSync, pendingMerge]);
 
     useEffect(() => {
-        if (!isInitialized || !status.enabled || status.conflicts.length > 0) return;
+        if (!isInitialized || !status.enabled || status.isSyncing || status.conflicts.length > 0) return;
         if (JSON.stringify(snapshot) === lastSyncedSignatureRef.current) return;
         const timeoutId = window.setTimeout(() => void performSync(), AUTO_SYNC_DELAY_MS);
         return () => window.clearTimeout(timeoutId);
-    }, [isInitialized, performSync, snapshot, status.conflicts.length, status.enabled]);
+    }, [isInitialized, performSync, snapshot, status.conflicts.length, status.enabled, status.isSyncing]);
 
     return {
         status,
