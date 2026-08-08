@@ -34,8 +34,13 @@
 ### 🔄 **Profile Management**
 - **Export Profiles**: Save all your cookies and tokens into a single exportable file.
 - **Import Profiles**: Import your profiles into the extension on a different machine or browser.
-- **Optional Google Drive Sync**: Back up profiles and settings to Cookify's private Drive app-data folder and merge them across computers.
-- **Conflict Resolution**: Compare local and cloud cookies/JWTs, inspect timestamps and decoded JWT previews, then choose the version to keep.
+
+### ☁️ **Google Drive Sync**
+- **Optional Cloud Backup**: Sign in with Google from Settings or the header to back up cookies, JWT profiles, and application settings.
+- **Cross-Computer Sync**: Keep your Cookify data available across computers using Cookify's private Google Drive app-data folder.
+- **Safe Scope**: Cookify requests access only to its own hidden app-data area, not to the rest of your Google Drive files.
+- **Smart Merging**: Merge local and cloud changes using item timestamps when data changes on more than one computer.
+- **Conflict Resolution**: Review conflicting cookies and JWT profiles before choosing which version to keep.
 
 ### 📜 **Swagger Integration**
 - **Swagger Support**: Streamline your API testing by setting cookies and JWT tokens directly into Swagger documentation.
@@ -105,11 +110,11 @@ Google Drive sync is optional and disabled unless the user connects an account f
 1. Enable the Google Drive API in a Google Cloud project.
 2. Create an OAuth 2.0 client for a Chrome extension and bind it to the Cookify extension ID. The published ID is `mafdkfnimilggjneibkjfejlnhcecnjd`; unpacked development builds may use a different stable ID.
 3. Create a Web application OAuth client for account switching and add `https://<extension-id>.chromiumapp.org/google-oauth` to its authorized redirect URIs.
-4. Add both client IDs to a local `.env` file:
+4. Copy `.env.example` to a local `.env.development` or `.env.production` file. The file contains the public OAuth client IDs required for the build:
 
    ```env
-   VITE_GOOGLE_OAUTH_CLIENT_ID=1234567890-example.apps.googleusercontent.com
-   VITE_GOOGLE_OAUTH_WEB_CLIENT_ID=1234567890-example-web.apps.googleusercontent.com
+   VITE_GOOGLE_OAUTH_CLIENT_ID=your-chrome-extension-client-id.apps.googleusercontent.com
+   VITE_GOOGLE_OAUTH_WEB_CLIENT_ID=your-web-client-id.apps.googleusercontent.com
    ```
 
 5. Run `npm run build` and load `dist` in Chrome.
