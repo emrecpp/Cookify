@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cookify: Postman-like API client for Swagger UI</title>
+<meta name="description" content="Turn any Swagger UI page into an API client. Tabs, environments, saved tokens and dark mode, with no import and no setup. Free Chrome extension.">
+<meta name="author" content="Emre Demircan (emrecpp)">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#131417">
+<link rel="canonical" href="https://emrecpp.github.io/Cookify/">
+<link rel="icon" href="icon/32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="icon/128.png">
+<link rel="stylesheet" href="style.css">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Cookify">
+<meta property="og:title" content="Cookify: Postman-like API client for Swagger UI">
+<meta property="og:description" content="Turn any Swagger UI page into an API client. Tabs, environments, saved tokens and dark mode, with no import and no setup. Free Chrome extension.">
+<meta property="og:url" content="https://emrecpp.github.io/Cookify/">
+<meta property="og:image" content="https://emrecpp.github.io/Cookify/screenshots/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "Cookify", "url": "https://emrecpp.github.io/Cookify/", "description": "Postman-like API client for any Swagger UI page. Tabs, environments, saved tokens and dark mode, with no import and no setup.", "applicationCategory": "DeveloperApplication", "operatingSystem": "Chrome", "softwareVersion": "2.0.0", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "downloadUrl": "https://chromewebstore.google.com/detail/cookify/mafdkfnimilggjneibkjfejlnhcecnjd", "license": "https://opensource.org/licenses/MIT", "image": "https://emrecpp.github.io/Cookify/screenshots/social-preview.png", "sameAs": ["https://github.com/emrecpp/Cookify", "https://chromewebstore.google.com/detail/cookify/mafdkfnimilggjneibkjfejlnhcecnjd"], "author": {"@type": "Person", "name": "Emre Demircan", "alternateName": "emrecpp", "url": "https://github.com/emrecpp"}}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is Cookify?", "acceptedAnswer": {"@type": "Answer", "text": "Cookify is a free, open source Chrome extension that turns any Swagger UI page into a Postman-like API client. It adds tabs, environments, saved tokens, a command palette and dark mode to the docs page you already have."}}, {"@type": "Question", "name": "Is Cookify a Postman alternative?", "acceptedAnswer": {"@type": "Answer", "text": "For calling and checking an API that has Swagger docs, yes. It doesn't replace Postman's collections, test scripts or mock servers. See the comparison."}}, {"@type": "Question", "name": "Do I need to import my OpenAPI file?", "acceptedAnswer": {"@type": "Answer", "text": "No. Cookify reads the API document from the Swagger UI page, so your endpoints, schemas and examples are already there. When the API changes, it marks what's new."}}, {"@type": "Question", "name": "Does it change my API or my server?", "acceptedAnswer": {"@type": "Answer", "text": "No. Cookify runs only in your browser, so there's nothing to install on the server. It also works on APIs you don't own, as long as you can open their Swagger UI page."}}, {"@type": "Question", "name": "How do I get dark mode in Swagger UI?", "acceptedAnswer": {"@type": "Answer", "text": "Install Cookify. Its view is dark by default on every Swagger UI page, and you can switch to light from the header. See all the options."}}, {"@type": "Question", "name": "Can I go back to the original Swagger UI?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Classic view in the header brings it back for that page, and Cookify view returns."}}, {"@type": "Question", "name": "Does it work with Redoc or Scalar?", "acceptedAnswer": {"@type": "Answer", "text": "Not yet. Cookify works on pages that run Swagger UI."}}, {"@type": "Question", "name": "Where is my data stored?", "acceptedAnswer": {"@type": "Answer", "text": "In your browser. There's no account and no analytics, and requests go straight from your browser to your API. Google Drive sync is optional and uses a private app folder in your own Drive."}}]}</script>
+</head>
+<body>
+<header class="top">
+<div class="wrap top-in">
+<a class="brand" href="./"><img src="icon/32.png" alt="" width="24" height="24">Cookify</a>
+<nav aria-label="Main">
+<a href="#features">Features</a>
+<a href="#compare">Compare</a>
+<a href="#works-with">Works with</a>
+<a href="#faq">FAQ</a>
+</nav>
+<a class="btn is-quiet top-gh" href="https://github.com/emrecpp/Cookify"><svg class="gh" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
+<a class="btn is-primary" href="https://chromewebstore.google.com/detail/cookify/mafdkfnimilggjneibkjfejlnhcecnjd">Add to Chrome</a>
+</div>
+</header>
+<main>
+<section class="hero">
+<div class="wrap">
+<h1>Turn any Swagger UI page into an API client</h1>
+<p class="lede">Postman-like tabs, environments, saved tokens and dark mode on the docs page you already have. No import, no setup.</p>
+<div class="actions"><a class="btn is-primary is-lg" href="https://chromewebstore.google.com/detail/cookify/mafdkfnimilggjneibkjfejlnhcecnjd">Add to Chrome</a><a class="btn is-lg" href="https://github.com/emrecpp/Cookify"><svg class="gh" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>View on GitHub</a></div>
+<p class="note">Free and open source. No account, no analytics. Works with FastAPI, NestJS, Express, ASP.NET Core and Spring Boot.</p>
+<div class="video">
+<video id="demo" width="2560" height="1440" poster="demo-poster.jpg" controls muted loop playsinline preload="metadata" aria-label="Cookify demo: scrolling endpoints, sending a request and switching environments">
+<source src="screenshots/demo.mp4" type="video/mp4">
+</video>
+</div>
+</div>
+</section>
+<section id="how">
+<div class="wrap">
+<h2>How it works</h2>
+<ol class="steps">
+<li><strong>Install the extension</strong><span>Add Cookify from the Chrome Web Store.</span></li>
+<li><strong>Open your Swagger UI page</strong><span>Cookify finds the API document on the page by itself.</span></li>
+<li><strong>Start sending requests</strong><span>Your endpoints, schemas and examples are already there.</span></li>
+</ol>
+</div>
+</section>
+<section id="features">
+<div class="wrap">
+<h2>Made for working all day</h2>
+<article class="feature">
+<div class="feature-text"><h3>Send requests without losing your place</h3><p>Keep several endpoints open in tabs. Parameters get a field that fits their type, and request bodies start from the schema's example in a JSON editor with folding and search. Your bodies are saved, with one click back to the default.</p></div>
+<div class="shot"><img src="screenshots/01-request-response.png" alt="A request body next to its JSON response in Cookify" width="2880" height="1800" loading="lazy"></div>
+</article>
+<article class="feature">
+<div class="feature-text"><h3>See every documented response</h3><p>Read the body, headers, status, time and size next to your request. Every documented response has its example and schema, colored by status code.</p></div>
+<div class="shot"><img src="screenshots/02-documented-responses.png" alt="Documented responses colored by status code" width="2880" height="1800" loading="lazy"></div>
+</article>
+<article class="feature">
+<div class="feature-text"><h3>Find anything with Ctrl+P</h3><p>The command palette searches endpoints, tabs, APIs, environments and commands. Filter the list by method or favorites, and copy any request as cURL, fetch, Python, axios, HTTPie or PowerShell.</p></div>
+<div class="shot"><img src="screenshots/05-command-palette.png" alt="Command palette listing endpoints" width="2880" height="1800" loading="lazy"></div>
+</article>
+<article class="feature">
+<div class="feature-text"><h3>Switch environments, keep your tabs</h3><p>Save an API once and move between Development, Staging and Production. Favorites, tabs and drafts stay with you, and each environment keeps its own token.</p></div>
+<div class="shot"><img src="screenshots/09-manage-apis.png" alt="Table of saved APIs and their environments" width="2880" height="1800" loading="lazy"></div>
+</article>
+<article class="feature">
+<div class="feature-text"><h3>Sign in once</h3><p>Log in with the API's OAuth2 password flow, or pick a saved token. The header shows who you are and when the token expires, and every request uses it.</p></div>
+<div class="shot"><img src="screenshots/07-session.png" alt="Signed-in user and token expiry in the header" width="2880" height="1800" loading="lazy"></div>
+</article>
+<article class="feature">
+<div class="feature-text"><h3>Know when the API changes</h3><p>New, changed and removed endpoints are marked in the list when the API definition changes, so you don't have to compare anything by hand.</p></div>
+<div class="shot"><img src="screenshots/15-spec-changes.png" alt="New and changed endpoints marked in the list" width="2880" height="1800" loading="lazy"></div>
+</article>
+<article class="feature">
+<div class="feature-text"><h3>Cookies and JWT tokens in the popup</h3><p>Save, organize and apply cookies and JWT tokens, grouped by project. Export everything to one compressed file, encrypted if you set a password, or use the optional Google Drive sync to continue on another computer where you left off.</p></div>
+<div class="shot is-popups"><img src="screenshots/11-popup-cookies.png" alt="Saved cookies in the popup" width="1200" height="1200" loading="lazy"><img src="screenshots/12-popup-tokens.png" alt="Saved tokens in the popup" width="1200" height="1200" loading="lazy"></div>
+</article>
+</div>
+</section>
+<section id="compare">
+<div class="wrap">
+<h2>Cookify, Swagger UI and Postman</h2>
+<div class="table">
+<table>
+<thead><tr><th></th><th>Swagger UI</th><th>Postman</th><th>Cookify</th></tr></thead>
+<tbody>
+<tr><th scope="row">Works on your docs page with no import</th><td class="y">Yes</td><td class="n">No</td><td class="y">Yes</td></tr>
+<tr><th scope="row">Follows API changes on its own</th><td class="y">Yes</td><td class="n">No</td><td class="y">Yes</td></tr>
+<tr><th scope="row">Several endpoints open in tabs</th><td class="n">No</td><td class="y">Yes</td><td class="y">Yes</td></tr>
+<tr><th scope="row">Environments (dev, staging, production)</th><td class="n">No</td><td class="y">Yes</td><td class="y">Yes</td></tr>
+<tr><th scope="row">Saved tokens per environment</th><td class="n">No</td><td class="y">Yes</td><td class="y">Yes</td></tr>
+<tr><th scope="row">Collections, test scripts and mock servers</th><td class="n">No</td><td class="y">Yes</td><td class="n">No</td></tr>
+</tbody>
+</table>
+</div>
+<p>Need full test suites and team workspaces? Postman is the better fit, and Cookify can export your endpoints as a Postman collection. <a href="postman-alternative/">Read the full comparison</a>.</p>
+</div>
+</section>
+<section id="works-with">
+<div class="wrap">
+<h2>Works with your stack</h2>
+<p>Cookify runs on Swagger UI pages and reads both Swagger 2.0 and OpenAPI 3.x documents.</p>
+<div class="table">
+<table>
+<thead><tr><th>Stack</th><th>Library</th><th>Usual address</th></tr></thead>
+<tbody>
+<tr><th scope="row"><a href="fastapi/">FastAPI</a></th><td>Built in</td><td><code>/docs</code></td></tr>
+<tr><th scope="row"><a href="nestjs/">NestJS</a></th><td><code>@nestjs/swagger</code></td><td><code>/api</code></td></tr>
+<tr><th scope="row"><a href="express/">Express</a></th><td><code>swagger-ui-express</code></td><td><code>/api-docs</code></td></tr>
+<tr><th scope="row"><a href="aspnet-core/">ASP.NET Core</a></th><td>Swashbuckle</td><td><code>/swagger</code></td></tr>
+<tr><th scope="row"><a href="spring-boot/">Spring Boot</a></th><td>springdoc-openapi</td><td><code>/swagger-ui/index.html</code></td></tr>
+<tr><th scope="row">Anything else</th><td>Swagger UI</td><td>Any page that runs it</td></tr>
+</tbody>
+</table>
+</div>
+<p>If Cookify can't find the API document on a page, the original Swagger UI stays as it is.</p>
+</div>
+</section>
+<section id="faq">
+<div class="wrap">
+<h2>Questions</h2>
+<dl class="faq"><dt>What is Cookify?</dt><dd>Cookify is a free, open source Chrome extension that turns any Swagger UI page into a Postman-like API client. It adds tabs, environments, saved tokens, a command palette and dark mode to the docs page you already have.</dd><dt>Is Cookify a Postman alternative?</dt><dd>For calling and checking an API that has Swagger docs, yes. It doesn't replace Postman's collections, test scripts or mock servers. <a href="postman-alternative/">See the comparison</a>.</dd><dt>Do I need to import my OpenAPI file?</dt><dd>No. Cookify reads the API document from the Swagger UI page, so your endpoints, schemas and examples are already there. When the API changes, it marks what's new.</dd><dt>Does it change my API or my server?</dt><dd>No. Cookify runs only in your browser, so there's nothing to install on the server. It also works on APIs you don't own, as long as you can open their Swagger UI page.</dd><dt>How do I get dark mode in Swagger UI?</dt><dd>Install Cookify. Its view is dark by default on every Swagger UI page, and you can switch to light from the header. <a href="swagger-ui-dark-mode/">See all the options</a>.</dd><dt>Can I go back to the original Swagger UI?</dt><dd>Yes. <strong>Classic view</strong> in the header brings it back for that page, and <strong>Cookify view</strong> returns.</dd><dt>Does it work with Redoc or Scalar?</dt><dd>Not yet. Cookify works on pages that run Swagger UI.</dd><dt>Where is my data stored?</dt><dd>In your browser. There's no account and no analytics, and requests go straight from your browser to your API. Google Drive sync is optional and uses a private app folder in your own Drive.</dd></dl>
+</div>
+</section>
+<section class="cta">
+<div class="wrap">
+<h2>Open your Swagger docs and start working</h2>
+<p>Free and open source, with no account.</p>
+<div class="actions"><a class="btn is-primary is-lg" href="https://chromewebstore.google.com/detail/cookify/mafdkfnimilggjneibkjfejlnhcecnjd">Add to Chrome</a><a class="btn is-lg" href="https://github.com/emrecpp/Cookify"><svg class="gh" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>View on GitHub</a></div>
+</div>
+</section>
+<script>
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches) document.getElementById('demo').play().catch(() => {});
+</script>
+</main>
+<footer class="foot">
+<div class="wrap foot-in">
+<div><strong>Cookify</strong> is made by <a href="https://github.com/emrecpp">Emre Demircan (emrecpp)</a>. Free and open source under the MIT License.</div>
+<div class="foot-links">
+<a href="https://github.com/emrecpp/Cookify"><svg class="gh" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>github.com/emrecpp/Cookify</a>
+<a href="https://chromewebstore.google.com/detail/cookify/mafdkfnimilggjneibkjfejlnhcecnjd">Chrome Web Store</a>
+<a href="privacy/">Privacy Policy</a>
+</div>
+<div class="foot-links">
+<a href="fastapi/">FastAPI</a><a href="nestjs/">NestJS</a><a href="express/">Express</a><a href="aspnet-core/">ASP.NET Core</a><a href="spring-boot/">Spring Boot</a><a href="swagger-ui-dark-mode/">Swagger UI dark mode</a><a href="postman-alternative/">Postman alternative</a>
+</div>
+</div>
+</footer>
+</body>
+</html>
