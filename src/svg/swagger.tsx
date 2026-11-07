@@ -1,4 +1,4 @@
-import React, {SVGProps} from "react";
+import {SVGProps} from "react";
 
 const SwaggerSVG = (props: SVGProps<SVGSVGElement>) => <svg xmlns="http://www.w3.org/2000/svg"
                                                          preserveAspectRatio="xMidYMid" viewBox="0 0 256 256"

@@ -7,7 +7,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import toast from "react-hot-toast";
 
 interface ActionButtonsProps {
   onEdit: () => void;

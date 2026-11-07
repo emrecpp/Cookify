@@ -1,15 +1,16 @@
 import {useEffect, useState} from 'react';
 import toast from 'react-hot-toast';
 import {z} from 'zod';
+import {PageView} from "@/context/global-context";
 
 interface UseZodFormOptions<T, S extends z.ZodType<T>> {
     initialData: T | null;
     emptyData: T;
     schema: S;
     onSubmit: (data: T) => void;
-    setCurrentView: (view: string) => void;
+    setCurrentView: (view: PageView) => void;
     clearEditing: () => void;
-    backView: string;
+    backView: PageView;
 }
 
 export function useZodForm<T, S extends z.ZodType<T>>({
@@ -43,7 +44,6 @@ export function useZodForm<T, S extends z.ZodType<T>>({
                     const path = error.path.join('.');
                     formattedErrors[path] = error.message;
                 });
-                console.log("formattedErrors: ", formattedErrors)
                 setErrors(formattedErrors);
             }
             return false;
@@ -74,7 +74,7 @@ export function useZodForm<T, S extends z.ZodType<T>>({
         }
     };
 
-    const handleFieldChange = (field: string, value: any) => {
+    const handleFieldChange = (field: string, value: unknown) => {
         setFormData(prev => ({...prev, [field]: value}));
 
         if (errors[field]) {

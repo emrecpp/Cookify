@@ -1,3 +1,4 @@
+import {errorText} from "@/lib/values";
 import {SyncSnapshot} from "@/types/types";
 
 const DRIVE_API = "https://www.googleapis.com/drive/v3";
@@ -24,7 +25,25 @@ interface WebTokenCache {
     expiresAt: number;
 }
 
-let webTokenCache: WebTokenCache | undefined;
+// Kept in chrome.storage.session so the background service worker can use it after a restart.
+const WEB_TOKEN_KEY = "cookifyGoogleWebToken";
+
+async function readWebToken(): Promise<WebTokenCache | undefined> {
+    try {
+        return (await chrome.storage.session.get(WEB_TOKEN_KEY))[WEB_TOKEN_KEY] as WebTokenCache | undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+async function writeWebToken(cache: WebTokenCache | undefined): Promise<void> {
+    try {
+        if (cache) await chrome.storage.session.set({[WEB_TOKEN_KEY]: cache});
+        else await chrome.storage.session.remove(WEB_TOKEN_KEY);
+    } catch {
+        // ignore
+    }
+}
 
 interface DriveFile {
     id: string;
@@ -38,7 +57,8 @@ interface DriveFileList {
 
 export interface DriveSyncDocument {
     name: "cookify";
-    version: 2;
+    /** 2: popup data only; 3: also the Swagger view data (snapshot.swaggerUi). */
+    version: 2 | 3;
     updatedAt: string;
     snapshot: SyncSnapshot;
 }
@@ -58,26 +78,34 @@ function getConfiguredWebClientId(): string | undefined {
     return trimmedClientId;
 }
 
-function readWebAuthSelection(): WebAuthSelection {
+async function readWebAuthSelection(): Promise<WebAuthSelection> {
     try {
-        const raw = localStorage.getItem(WEB_AUTH_SELECTION_KEY);
-        return raw ? JSON.parse(raw) as WebAuthSelection : {enabled: false};
+        return ((await chrome.storage.local.get(WEB_AUTH_SELECTION_KEY))[WEB_AUTH_SELECTION_KEY] as WebAuthSelection | undefined) ?? {enabled: false};
     } catch {
         return {enabled: false};
     }
 }
 
-function writeWebAuthSelection(selection: WebAuthSelection): void {
-    localStorage.setItem(WEB_AUTH_SELECTION_KEY, JSON.stringify(selection));
+async function writeWebAuthSelection(selection: WebAuthSelection): Promise<void> {
+    await chrome.storage.local.set({[WEB_AUTH_SELECTION_KEY]: selection});
+}
+
+/** Moves the account selection out of the popup's localStorage (before it lived there). */
+export async function migrateWebAuthSelection(): Promise<void> {
+    const raw = localStorage.getItem(WEB_AUTH_SELECTION_KEY);
+    if (raw === null) return;
+    try {
+        const stored = await chrome.storage.local.get(WEB_AUTH_SELECTION_KEY);
+        if (!stored[WEB_AUTH_SELECTION_KEY]) await writeWebAuthSelection(JSON.parse(raw) as WebAuthSelection);
+        localStorage.removeItem(WEB_AUTH_SELECTION_KEY);
+    } catch {
+        // keep it for the next try
+    }
 }
 
 export function isGoogleDriveConfigured(): boolean {
     const clientId = getConfiguredClientId();
     return !!clientId && !clientId.startsWith(PLACEHOLDER_CLIENT_ID_PREFIX);
-}
-
-function errorMessage(error: unknown): string {
-    return error instanceof Error ? error.message : String(error);
 }
 
 async function getChromeAccessToken(interactive: boolean): Promise<string> {
@@ -93,8 +121,9 @@ async function getChromeAccessToken(interactive: boolean): Promise<string> {
 }
 
 async function getWebAccessToken(interactive: boolean, chooseAccount = false): Promise<string> {
-    if (!chooseAccount && webTokenCache && webTokenCache.expiresAt > Date.now() + 60_000) {
-        return webTokenCache.token;
+    const cached = await readWebToken();
+    if (!chooseAccount && cached && cached.expiresAt > Date.now() + 60_000) {
+        return cached.token;
     }
 
     const clientId = getConfiguredWebClientId();
@@ -102,7 +131,7 @@ async function getWebAccessToken(interactive: boolean, chooseAccount = false): P
         throw new Error("Google account chooser is not configured for this build.");
     }
 
-    const selection = readWebAuthSelection();
+    const selection = await readWebAuthSelection();
     const state = crypto.randomUUID();
     const redirectUri = chrome.identity.getRedirectURL("google-oauth");
     const params = new URLSearchParams({
@@ -135,22 +164,22 @@ async function getWebAccessToken(interactive: boolean, chooseAccount = false): P
     const token = result.get("access_token");
     if (!token) throw new Error("Google did not return an access token.");
     const expiresIn = Number(result.get("expires_in") || "3600");
-    webTokenCache = {
+    await writeWebToken({
         token,
         expiresAt: Date.now() + Math.max(expiresIn, 60) * 1000,
-    };
+    });
     return token;
 }
 
 async function getAccessToken(interactive: boolean): Promise<string> {
-    return readWebAuthSelection().enabled
+    return (await readWebAuthSelection()).enabled
         ? getWebAccessToken(interactive)
         : getChromeAccessToken(interactive);
 }
 
 async function invalidateAccessToken(token: string): Promise<void> {
-    if (readWebAuthSelection().enabled) {
-        webTokenCache = undefined;
+    if ((await readWebAuthSelection()).enabled) {
+        await writeWebToken(undefined);
         return;
     }
     await chrome.identity.removeCachedAuthToken({token});
@@ -222,7 +251,7 @@ export async function connectGoogleDrive(chooseAccount = false): Promise<GoogleA
         const token = await getWebAccessToken(true, true);
         const profile = await fetchGoogleAccountProfile(token);
         if (!profile.email) throw new Error("Google did not return the selected account email.");
-        writeWebAuthSelection({enabled: true, email: profile.email});
+        await writeWebAuthSelection({enabled: true, email: profile.email});
         return profile;
     }
     return getGoogleAccountProfile(true);
@@ -233,11 +262,11 @@ export function getCachedGoogleAccountProfile(): Promise<GoogleAccountProfile> {
 }
 
 export async function logoutGoogleDrive(): Promise<void> {
-    webTokenCache = undefined;
+    await writeWebToken(undefined);
     try {
         await chrome.identity.clearAllCachedAuthTokens();
     } catch (error) {
-        console.warn("Could not clear Google authentication tokens:", errorMessage(error));
+        console.warn("Could not clear Google authentication tokens:", errorText(error));
     }
 }
 
@@ -259,7 +288,7 @@ export async function downloadSyncDocument(fileId: string): Promise<DriveSyncDoc
     const response = await authorizedFetch(`${DRIVE_API}/files/${encodeURIComponent(fileId)}?alt=media`);
     await assertOk(response, "Downloading the Cookify backup");
     const data = await response.json() as DriveSyncDocument;
-    if (data.name !== "cookify" || data.version !== 2 || !data.snapshot) {
+    if (data.name !== "cookify" || (data.version !== 2 && data.version !== 3) || !data.snapshot) {
         throw new Error("The Google Drive backup has an unsupported format.");
     }
     return data;
@@ -300,7 +329,7 @@ export async function uploadSyncDocument(
 ): Promise<{fileId: string; document: DriveSyncDocument}> {
     const document: DriveSyncDocument = {
         name: "cookify",
-        version: 2,
+        version: 3,
         updatedAt: new Date().toISOString(),
         snapshot,
     };

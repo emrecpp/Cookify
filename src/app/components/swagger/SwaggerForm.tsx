@@ -85,7 +85,7 @@ export function SwaggerForm() {
                         icon={<KeyRound size={16}/>}
                         placeholder="Enter JWT bearer token (Ex: eyJhbGciOi...)"
                         multiline
-                        className={"min-h-44"}
+                        className={"min-h-32"}
                         required
                         error={errors.bearerToken}
                     />

@@ -7,9 +7,10 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {PageView, useGlobalContext} from "@/context/global-context";
+import {PageView, PageViewTypes, useGlobalContext} from "@/context/global-context";
 import {motion} from 'framer-motion';
-import {ChevronDown, EyeOff, LogIn, PlusCircle, UserRoundPlus} from 'lucide-react';
+import {useTheme} from "@/lib/theme";
+import {ChevronDown, EyeOff, LogIn, Moon, PlusCircle, Sun, UserRoundPlus} from 'lucide-react';
 
 function lastSignInText(value?: string): string {
     return value
@@ -31,10 +32,11 @@ export function Header() {
         showGoogleDriveInHeader,
         setShowGoogleDriveInHeader
     } = useGlobalContext()
+    const [theme, setTheme] = useTheme()
 
-    const activePage = (view: string) => {
-        if (view.includes("cookie")) return "cookies";
-        if (view.includes("swagger")) return "swaggers";
+    const activePage = (view: PageViewTypes) => {
+        if (view?.includes("cookie")) return "cookies";
+        if (view?.includes("swagger")) return "swaggers";
         return view;
     };
 
@@ -82,7 +84,7 @@ export function Header() {
     };
 
     return (
-        <div className="px-2 bg-white shadow-sm">
+        <div className="px-2 bg-background shadow-sm">
             <motion.header
                 className="flex justify-between items-center select-none py-3"
                 initial={{opacity: 0, y: -20}}
@@ -104,7 +106,7 @@ export function Header() {
                         <h1>
                             <motion.button
                                 type="button"
-                                className="w-fit cursor-pointer text-lg font-bold text-slate-800"
+                                className="w-fit cursor-pointer text-lg font-bold text-foreground"
                                 whileHover={{scale: 1.05}}
                                 whileTap={{scale: 0.95}}
                                 onClick={() => setCurrentView(PageView.LIST_COOKIES)}
@@ -115,7 +117,7 @@ export function Header() {
                         {showGoogleDriveInHeader && (googleDriveSync.enabled ? (
                             <button
                                 type="button"
-                                className="mt-0.5 flex items-center max-w-[260px] justify-center gap-1 text-left text-[11px] leading-tight text-slate-500 hover:text-slate-800 focus-visible:rounded-sm focus-visible:outline-none"
+                                className="mt-0.5 flex items-center max-w-[260px] justify-center gap-1 text-left text-[11px] leading-tight text-muted-foreground hover:text-foreground focus-visible:rounded-sm focus-visible:outline-none"
                                 onClick={openGoogleDriveSettings}
                                 title="Open Google Drive settings"
                                 aria-label={googleDriveSync.email
@@ -132,7 +134,7 @@ export function Header() {
                                 ) : (
                                     <GoogleDriveIcon className="h-3.5 w-3.5 shrink-0" />
                                 )}
-                                <span className="shrink-0 font-medium text-slate-600">Google</span>
+                                <span className="shrink-0 font-medium text-muted-foreground">Google</span>
                                 {googleDriveSync.email && (
                                     <>
                                         <span aria-hidden="true">·</span>
@@ -144,7 +146,7 @@ export function Header() {
                             <div className="mt-0.5 flex max-w-[260px]">
                                 <button
                                     type="button"
-                                    className="flex min-w-0 items-center gap-1 rounded-l-full rounded-r-none border border-slate-200 bg-slate-50 py-0.5 pl-1.5 pr-1 text-[11px] font-medium leading-tight text-slate-600 hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800 focus-visible:z-10 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                    className="flex min-w-0 items-center gap-1 rounded-l-full rounded-r-none border border-border bg-muted/50 py-0.5 pl-1.5 pr-1 text-[11px] font-medium leading-tight text-muted-foreground hover:border-ring/40 hover:bg-accent hover:text-foreground focus-visible:z-10 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                     disabled={!isGoogleDriveConfigured || googleDriveSync.isSyncing}
                                     onClick={() => void connectGoogleDrive()}
                                     title={isGoogleDriveConfigured
@@ -173,7 +175,7 @@ export function Header() {
                                     <DropdownMenuTrigger asChild>
                                         <button
                                             type="button"
-                                            className="shrink-0 rounded-l-none rounded-r-full border border-l-0 border-slate-200 bg-slate-50 px-1 py-0.5 text-slate-600 hover:border-slate-300 hover:bg-slate-100 hover:text-slate-800 focus-visible:z-10 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                            className="shrink-0 rounded-l-none rounded-r-full border border-l-0 border-border bg-muted/50 px-1 py-0.5 text-muted-foreground hover:border-ring/40 hover:bg-accent hover:text-foreground focus-visible:z-10 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                                             disabled={googleDriveSync.isSyncing}
                                             aria-label="Choose Google account"
                                         >
@@ -232,21 +234,25 @@ export function Header() {
                 </div>
 
                 {showTitle && (
-                    <div className="absolute left-1/2 transform -translate-x-1/2 text-sm text-gray-500 font-medium">
+                    <div className="min-w-0 flex-1 truncate px-4 text-center text-sm font-medium text-muted-foreground">
                         {getHeaderTitle()}
                     </div>
                 )}
 
-                <div className="space-x-2">
-                    {[PageView.LIST_COOKIES, PageView.LIST_SWAGGERS].includes(currentView) && shouldShowAddButton() && (
+                <div className="flex items-center gap-2">
+                    {(currentView === PageView.LIST_COOKIES || currentView === PageView.LIST_SWAGGERS) && shouldShowAddButton() && (
                         <Button className="min-w-40" variant="outline" size="sm" onClick={handleAddClick}>
                             <PlusCircle
                                 className="h-4 w-4 mr-1" /> {activePage(currentView) === "cookies" ? 'Add New Cookie' : 'Add New Swagger'}
                         </Button>
                     )}
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                            title={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"} aria-label={theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}>
+                        {theme === "dark" ? <Sun className="h-4 w-4"/> : <Moon className="h-4 w-4"/>}
+                    </Button>
                 </div>
             </motion.header>
-            <div className="w-full bg-gray-300 h-[1px] my-1" />
+            <div className="w-full bg-border h-[1px] my-1" />
         </div>
     )
 }

@@ -1,0 +1,216 @@
+/* Injected by Chrome before the page renders (manifest content_scripts.css).
+   - Hides Swagger UI immediately (display:none also skips its layout cost) so the classic UI never flashes.
+   - Shows a skeleton of the Cookify layout plus a progress bar while the OpenAPI document loads.
+     The content script drives the bar through the --cookify-progress custom property (0..1).
+   - The skeleton follows the real layout box for box (sizes from styles.css: 40px header with fixed-width
+     slots, 26px rows), so nothing jumps when the view replaces it. The guard (swagger-guard.js) sets, from
+     what the page looked like last time: `cookify-boot-light` (light theme), `cookify-boot-tabs` (endpoint
+     tabs were open, else the welcome screen) and --cookify-side (sidebar width).
+   - The content script adds `cookify-off` to <html> when the classic UI should be shown and
+     `cookify-ready` once the Cookify view is mounted.
+   - Variant rules repeat `:is(.cookify-boot, :has(#swagger-ui))`: it carries an id's specificity, which the base
+     rules have too, so without it a variant would lose to them.
+   - Failsafe: if the script never reports back, the original page is revealed after 12s
+     (no !important on animated properties so the animations can override them). */
+
+html:not(.cookify-off) #swagger-ui,
+html:not(.cookify-off) body > .swagger-ui {
+    display: none;
+    animation: cookify-reveal 0s linear 12s forwards;
+}
+
+/* ---- colors (the view's theme tokens) and layout values ---- */
+html:not(.cookify-off):not(.cookify-ready):is(.cookify-boot, :has(#swagger-ui)) {
+    --ck-bg: #1d1e21;
+    --ck-surface: #25262a;
+    --ck-bar: #2c2d32;
+    --ck-input: #18191c;
+    --ck-border: #37393f;
+    --ck-strong: #46484f;
+    --ck-text: #44464d;
+    --ck-text2: #3a3c42;
+    --ck-logo: #6b5226;
+    --ck-accent: #2d4a6d;
+    --ck-s: var(--cookify-side, 320px);
+    --ck-m: calc(var(--ck-s) + 2px);
+    background: var(--ck-bg);
+}
+html.cookify-boot-light:not(.cookify-off):not(.cookify-ready):is(.cookify-boot, :has(#swagger-ui)) {
+    --ck-bg: #f2f2f2;
+    --ck-surface: #ffffff;
+    --ck-bar: #e9e9e9;
+    --ck-input: #ffffff;
+    --ck-border: #d2d2d2;
+    --ck-strong: #b9b9b9;
+    --ck-text: #d9d9d9;
+    --ck-text2: #e4e4e4;
+    --ck-logo: #f0d29e;
+    --ck-accent: #c6dcf2;
+}
+
+/* ---- header (controls 30px tall), sidebar top and the main area ---- */
+html:not(.cookify-off):not(.cookify-ready):is(.cookify-boot, :has(#swagger-ui))::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 2147482000;
+    pointer-events: none;
+    background:
+        /* header: logo, "API", API switcher (220), version (60), document type (84), reload, separator, "Environment", environment (325-500, fits the address) */
+        linear-gradient(var(--ck-logo), var(--ck-logo)) 10px 10px / 20px 20px no-repeat,
+        linear-gradient(var(--ck-text2), var(--ck-text2)) 40px 15px / 20px 10px no-repeat,
+        linear-gradient(var(--ck-text), var(--ck-text)) 74px 15px / 140px 10px no-repeat,
+        linear-gradient(var(--ck-bar), var(--ck-bar)) 66px 5px / 218px 28px no-repeat,
+        linear-gradient(var(--ck-strong), var(--ck-strong)) 65px 4px / 220px 30px no-repeat,
+        linear-gradient(var(--ck-text2), var(--ck-text2)) 295px 15px / 40px 10px no-repeat,
+        linear-gradient(var(--ck-text2), var(--ck-text2)) 365px 15px / 70px 10px no-repeat,
+        linear-gradient(var(--ck-text2), var(--ck-text2)) 464px 13px / 14px 14px no-repeat,
+        linear-gradient(var(--ck-border), var(--ck-border)) 493px 10px / 1px 18px no-repeat,
+        linear-gradient(var(--ck-text2), var(--ck-text2)) 504px 15px / 72px 10px no-repeat,
+        linear-gradient(var(--ck-text), var(--ck-text)) 592px 15px / 250px 10px no-repeat,
+        linear-gradient(var(--ck-bar), var(--ck-bar)) 584px 5px / 323px 28px no-repeat,
+        linear-gradient(var(--ck-strong), var(--ck-strong)) 583px 4px / 325px 30px no-repeat,
+        /* header right: Commands (138), session (240), theme (56), Classic view (89) */
+        linear-gradient(var(--ck-bar), var(--ck-bar)) right 424px top 5px / 136px 28px no-repeat,
+        linear-gradient(var(--ck-strong), var(--ck-strong)) right 423px top 4px / 138px 30px no-repeat,
+        linear-gradient(var(--ck-bar), var(--ck-bar)) right 174px top 5px / 238px 28px no-repeat,
+        linear-gradient(var(--ck-strong), var(--ck-strong)) right 173px top 4px / 240px 30px no-repeat,
+        linear-gradient(var(--ck-bar), var(--ck-bar)) right 108px top 5px / 54px 28px no-repeat,
+        linear-gradient(var(--ck-strong), var(--ck-strong)) right 107px top 4px / 56px 30px no-repeat,
+        linear-gradient(var(--ck-bar), var(--ck-bar)) right 9px top 5px / 87px 28px no-repeat,
+        linear-gradient(var(--ck-strong), var(--ck-strong)) right 8px top 4px / 89px 30px no-repeat,
+        linear-gradient(var(--ck-border), var(--ck-border)) 0 39px / 100% 1px no-repeat,
+        linear-gradient(var(--ck-surface), var(--ck-surface)) 0 0 / 100% 40px no-repeat,
+        /* sidebar top: search, method filters and count, then the Path / Name bar */
+        linear-gradient(var(--ck-input), var(--ck-input)) 7px 47px / calc(var(--ck-s) - 15px) 24px no-repeat,
+        linear-gradient(var(--ck-strong), var(--ck-strong)) 6px 46px / calc(var(--ck-s) - 13px) 26px no-repeat,
+        linear-gradient(var(--ck-bar), var(--ck-bar)) 6px 78px / 214px 20px no-repeat,
+        linear-gradient(var(--ck-text2), var(--ck-text2)) calc(var(--ck-s) - 21px) 83px / 13px 10px no-repeat,
+        linear-gradient(var(--ck-border), var(--ck-border)) 0 104px / var(--ck-s) 1px no-repeat,
+        linear-gradient(var(--ck-surface), var(--ck-surface)) 6px 109px / 99px 22px no-repeat,
+        linear-gradient(var(--ck-text2), var(--ck-text2)) calc(var(--ck-s) - 76px) 115px / 65px 10px no-repeat,
+        linear-gradient(var(--ck-border), var(--ck-border)) 0 135px / var(--ck-s) 1px no-repeat,
+        linear-gradient(var(--ck-bar), var(--ck-bar)) 0 105px / var(--ck-s) 30px no-repeat,
+        /* sidebar panel and its border */
+        linear-gradient(var(--ck-border), var(--ck-border)) calc(var(--ck-s) - 1px) 40px / 1px 100% no-repeat,
+        linear-gradient(var(--ck-surface), var(--ck-surface)) 0 40px / var(--ck-s) 100% no-repeat,
+        /* welcome screen: title and summary line (the shortcut rows are body::after) */
+        linear-gradient(var(--ck-text), var(--ck-text)) calc(var(--ck-m) + 28px) 69px / 190px 12px no-repeat,
+        linear-gradient(var(--ck-text2), var(--ck-text2)) calc(var(--ck-m) + 28px) 99px / 380px 10px no-repeat,
+        var(--ck-bg);
+    animation: cookify-hide 0s linear 12s forwards;
+}
+
+/* An endpoint tab was open: tab bar, URL toolbar, endpoint title and the request / response panels. */
+html.cookify-boot-tabs:not(.cookify-off):not(.cookify-ready):is(.cookify-boot, :has(#swagger-ui))::before {
+    background:
+        linear-gradient(var(--ck-logo), var(--ck-logo)) 10px 10px / 20px 20px no-repeat,
+        linear-gradient(var(--ck-text2), var(--ck-text2)) 40px 15px / 20px 10px no-repeat,
+        linear-gradient(var(--ck-text), var(--ck-text)) 74px 15px / 140px 10px no-repeat,
+        linear-gradient(var(--ck-bar), var(--ck-bar)) 66px 5px / 218px 28px no-repeat,
+        linear-gradient(var(--ck-strong), var(--ck-strong)) 65px 4px / 220px 30px no-repeat,
+        linear-gradient(var(--ck-text2), var(--ck-text2)) 295px 15px / 40px 10px no-repeat,
+        linear-gradient(var(--ck-text2), var(--ck-text2)) 365px 15px / 70px 10px no-repeat,
+        linear-gradient(var(--ck-text2), var(--ck-text2)) 464px 13px / 14px 14px no-repeat,
+        linear-gradient(var(--ck-border), var(--ck-border)) 493px 10px / 1px 18px no-repeat,
+        linear-gradient(var(--ck-text2), var(--ck-text2)) 504px 15px / 72px 10px no-repeat,
+        linear-gradient(var(--ck-text), var(--ck-text)) 592px 15px / 250px 10px no-repeat,
+        linear-gradient(var(--ck-bar), var(--ck-bar)) 584px 5px / 323px 28px no-repeat,
+        linear-gradient(var(--ck-strong), var(--ck-strong)) 583px 4px / 325px 30px no-repeat,
+        linear-gradient(var(--ck-bar), var(--ck-bar)) right 424px top 5px / 136px 28px no-repeat,
+        linear-gradient(var(--ck-strong), var(--ck-strong)) right 423px top 4px / 138px 30px no-repeat,
+        linear-gradient(var(--ck-bar), var(--ck-bar)) right 174px top 5px / 238px 28px no-repeat,
+        linear-gradient(var(--ck-strong), var(--ck-strong)) right 173px top 4px / 240px 30px no-repeat,
+        linear-gradient(var(--ck-bar), var(--ck-bar)) right 108px top 5px / 54px 28px no-repeat,
+        linear-gradient(var(--ck-strong), var(--ck-strong)) right 107px top 4px / 56px 30px no-repeat,
+        linear-gradient(var(--ck-bar), var(--ck-bar)) right 9px top 5px / 87px 28px no-repeat,
+        linear-gradient(var(--ck-strong), var(--ck-strong)) right 8px top 4px / 89px 30px no-repeat,
+        linear-gradient(var(--ck-border), var(--ck-border)) 0 39px / 100% 1px no-repeat,
+        linear-gradient(var(--ck-surface), var(--ck-surface)) 0 0 / 100% 40px no-repeat,
+        linear-gradient(var(--ck-input), var(--ck-input)) 7px 47px / calc(var(--ck-s) - 15px) 24px no-repeat,
+        linear-gradient(var(--ck-strong), var(--ck-strong)) 6px 46px / calc(var(--ck-s) - 13px) 26px no-repeat,
+        linear-gradient(var(--ck-bar), var(--ck-bar)) 6px 78px / 214px 20px no-repeat,
+        linear-gradient(var(--ck-text2), var(--ck-text2)) calc(var(--ck-s) - 21px) 83px / 13px 10px no-repeat,
+        linear-gradient(var(--ck-border), var(--ck-border)) 0 104px / var(--ck-s) 1px no-repeat,
+        linear-gradient(var(--ck-surface), var(--ck-surface)) 6px 109px / 99px 22px no-repeat,
+        linear-gradient(var(--ck-text2), var(--ck-text2)) calc(var(--ck-s) - 76px) 115px / 65px 10px no-repeat,
+        linear-gradient(var(--ck-border), var(--ck-border)) 0 135px / var(--ck-s) 1px no-repeat,
+        linear-gradient(var(--ck-bar), var(--ck-bar)) 0 105px / var(--ck-s) 30px no-repeat,
+        linear-gradient(var(--ck-border), var(--ck-border)) calc(var(--ck-s) - 1px) 40px / 1px 100% no-repeat,
+        linear-gradient(var(--ck-surface), var(--ck-surface)) 0 40px / var(--ck-s) 100% no-repeat,
+        /* tab bar (32) with one tab */
+        linear-gradient(var(--ck-text), var(--ck-text)) calc(var(--ck-m) + 13px) 53px / 120px 10px no-repeat,
+        linear-gradient(var(--ck-surface), var(--ck-surface)) calc(var(--ck-m) + 5px) 44px / 170px 28px no-repeat,
+        linear-gradient(var(--ck-border), var(--ck-border)) var(--ck-m) 71px / 100% 1px no-repeat,
+        linear-gradient(var(--ck-bar), var(--ck-bar)) var(--ck-m) 40px / 100% 31px no-repeat,
+        /* toolbar (46): method, URL, Send, more */
+        linear-gradient(var(--ck-accent), var(--ck-accent)) calc(var(--ck-m) + 8px) 82px / 58px 26px no-repeat,
+        linear-gradient(var(--ck-input), var(--ck-input)) calc(var(--ck-m) + 73px) 83px / calc(100% - var(--ck-m) - 221px) 24px no-repeat,
+        linear-gradient(var(--ck-strong), var(--ck-strong)) calc(var(--ck-m) + 72px) 82px / calc(100% - var(--ck-m) - 219px) 26px no-repeat,
+        linear-gradient(var(--ck-accent), var(--ck-accent)) right 44px top 80px / 96px 30px no-repeat,
+        linear-gradient(var(--ck-bar), var(--ck-bar)) right 8px top 80px / 30px 30px no-repeat,
+        linear-gradient(var(--ck-border), var(--ck-border)) var(--ck-m) 117px / 100% 1px no-repeat,
+        linear-gradient(var(--ck-surface), var(--ck-surface)) var(--ck-m) 72px / 100% 45px no-repeat,
+        /* endpoint title and description */
+        linear-gradient(var(--ck-text), var(--ck-text)) calc(var(--ck-m) + 12px) 134px / 160px 12px no-repeat,
+        linear-gradient(var(--ck-text2), var(--ck-text2)) calc(var(--ck-m) + 12px) 168px / 380px 10px no-repeat,
+        /* request and response panels with their head bars */
+        linear-gradient(var(--ck-bar), var(--ck-bar)) calc(var(--ck-m) + 7px) 200px / calc((100% - var(--ck-m) - 19px) / 2 - 2px) 29px no-repeat,
+        linear-gradient(var(--ck-surface), var(--ck-surface)) calc(var(--ck-m) + 7px) 200px / calc((100% - var(--ck-m) - 19px) / 2 - 2px) calc(100% - 206px) no-repeat,
+        linear-gradient(var(--ck-border), var(--ck-border)) calc(var(--ck-m) + 6px) 199px / calc((100% - var(--ck-m) - 19px) / 2) calc(100% - 204px) no-repeat,
+        linear-gradient(var(--ck-bar), var(--ck-bar)) right 8px top 200px / calc((100% - var(--ck-m) - 19px) / 2 - 2px) 29px no-repeat,
+        linear-gradient(var(--ck-surface), var(--ck-surface)) right 8px top 200px / calc((100% - var(--ck-m) - 19px) / 2 - 2px) calc(100% - 206px) no-repeat,
+        linear-gradient(var(--ck-border), var(--ck-border)) right 7px top 199px / calc((100% - var(--ck-m) - 19px) / 2) calc(100% - 204px) no-repeat,
+        var(--ck-bg);
+}
+
+/* ---- sidebar rows (26px, like the tree), confined to the list ---- */
+html:not(.cookify-off):not(.cookify-ready):is(.cookify-boot, :has(#swagger-ui))::after {
+    content: "";
+    position: fixed;
+    top: 136px;
+    left: 0;
+    bottom: 0;
+    width: calc(var(--ck-s) - 1px);
+    z-index: 2147482001;
+    pointer-events: none;
+    background:
+        linear-gradient(to bottom, transparent 9px, var(--ck-text) 9px 17px, transparent 17px) 21px 0 / 30px 26px repeat-y,
+        linear-gradient(to bottom, transparent 9px, var(--ck-text2) 9px 17px, transparent 17px) 67px 0 / min(200px, calc(var(--ck-s) - 110px)) 26px repeat-y;
+    -webkit-mask-image: linear-gradient(to bottom, #000 50%, transparent);
+    mask-image: linear-gradient(to bottom, #000 50%, transparent);
+    animation: cookify-hide 0s linear 12s forwards;
+}
+
+/* ---- welcome screen: the eight shortcut rows (25px) ---- */
+html:not(.cookify-off):not(.cookify-ready):not(.cookify-boot-tabs):is(.cookify-boot, :has(#swagger-ui)) body::after {
+    content: "";
+    position: fixed;
+    top: 132px;
+    left: calc(var(--ck-m) + 28px);
+    width: 520px;
+    height: 200px;
+    z-index: 2147482002;
+    pointer-events: none;
+    background:
+        linear-gradient(to bottom, transparent 3px, var(--ck-bar) 3px 22px, transparent 22px) 0 0 / 52px 25px repeat-y,
+        linear-gradient(to bottom, transparent 8px, var(--ck-text2) 8px 17px, transparent 17px) 211px 0 / 240px 25px repeat-y;
+    animation: cookify-hide 0s linear 12s forwards;
+}
+
+/* ---- progress bar ---- */
+html:not(.cookify-off):not(.cookify-ready):is(.cookify-boot, :has(#swagger-ui)) body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 2px;
+    width: calc(var(--cookify-progress, 0.08) * 100%);
+    z-index: 2147482003;
+    pointer-events: none;
+    background: #4b8fdb;
+    animation: cookify-hide 0s linear 12s forwards;
+}
+
+@keyframes cookify-reveal { to { display: block; } }
+@keyframes cookify-hide { to { visibility: hidden; } }

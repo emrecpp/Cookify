@@ -1,9 +1,8 @@
 import { CookieForm } from "@/app/components/cookie/CookieForm.tsx";
 import { TabItem } from "@/app/components/shared/TabItem.tsx";
 import { SwaggerForm } from "@/app/components/swagger/SwaggerForm.tsx";
-import CookiesMainPage from "@/app/pages/CookiesMainPage.tsx";
+import ProfilesPage from "@/app/pages/ProfilesPage.tsx";
 import { SettingsPage } from "@/app/pages/SettingsPage.tsx";
-import SwaggerMainPage from "@/app/pages/SwaggerMainPage.tsx";
 import { Tabs, TabsContent, TabsList } from "@/components/ui/tabs.tsx";
 import { useGlobalContext, PageView } from "@/context/global-context.tsx";
 import SwaggerSVG from "@/svg/swagger.tsx";
@@ -35,9 +34,9 @@ export default function TabPages() {
             <div className="flex-grow overflow-auto mb-16">
                 <Tabs className="w-full h-full flex flex-col"
                       value={currentView}
-                      onValueChange={setCurrentView}>
-                    {renderTabContent(PageView.LIST_COOKIES, <CookiesMainPage />)}
-                    {renderTabContent(PageView.LIST_SWAGGERS, <SwaggerMainPage />)}
+                      onValueChange={(view) => setCurrentView(view as PageView)}>
+                    {renderTabContent(PageView.LIST_COOKIES, <ProfilesPage type="cookie" />)}
+                    {renderTabContent(PageView.LIST_SWAGGERS, <ProfilesPage type="swagger" />)}
                     {renderTabContent(PageView.SETTINGS, <SettingsPage />)}
                     {renderTabContent(PageView.ADD_COOKIE, <CookieForm />)}
                     {renderTabContent(PageView.EDIT_COOKIE, <CookieForm />)}

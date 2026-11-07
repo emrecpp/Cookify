@@ -11,89 +11,24 @@ import {Input} from "@/components/ui/input"
 import {ProjectAvatar} from "@/components/ui/project-avatar"
 import {useGlobalContext} from "@/context/global-context"
 import {AlignCenter, FolderGit2, Plus, Search, Trash, X} from "lucide-react"
-import {useEffect, useRef, useState} from 'react'
+import {useRef, useState} from 'react'
 import {ProjectNameInput} from "./ProjectNameInput"
 import {cn} from "@/lib/utils.ts";
-import {CookieData, FormType} from "@/types/types.ts";
 import toast from "react-hot-toast";
 
-export interface FilterableItem {
-    project?: string;
-    alias: string;
-
-    [key: string]: any;
-}
-
-
-interface ProjectFilterProps<T extends FilterableItem> {
-    items: T[];
-    type: FormType;
-    storageKey: string;
+interface ProjectFilterProps {
+    /** How long a project's delete button has to be held. */
     longPressTime?: number;
-
 }
 
-const additionalSearchFields = (item: any, type: string) => {
-    if (type === "cookie") {
-        const cookieItem = item as unknown as CookieData;
-        return [
-            cookieItem.name,
-            cookieItem.domain || ""
-        ];
-    }
-    return [];
-};
-
-
-export const ProjectFilter = ({
-                                  items,
-                                  type,
-                                  storageKey,
-                                  longPressTime = 2000,
-                              }: ProjectFilterProps<any>) => {
+export const ProjectFilter = ({longPressTime = 2000}: ProjectFilterProps) => {
 
     const [isCreatingProject, setIsCreatingProject] = useState(false)
     const [newProjectName, setNewProjectName] = useState("")
 
     const inputRef = useRef<HTMLInputElement>(null)
 
-    const {addProject, handleDeleteProject, projects, activeProject, setActiveProject, cookies, swaggers,
-        searchTerm, setSearchTerm} = useGlobalContext();
-
-
-
-
-
-    const filterItems = () => {
-        let filtered = [...items]
-
-        if (searchTerm) {
-            const searchLower = searchTerm.toLowerCase()
-            filtered = filtered.filter(item => {
-                const defaultMatch =
-                    item.alias.toLowerCase().includes(searchLower) ||
-                    (item.project && item.project.toLowerCase().includes(searchLower));
-
-                const additionalFields = additionalSearchFields(item, type);
-                const additionalMatch = additionalFields.some(field =>
-                    field && field.toLowerCase().includes(searchLower)
-                );
-
-                return defaultMatch || additionalMatch;
-            });
-        }
-
-        if (activeProject) {
-            filtered = filtered.filter(item =>
-                activeProject === "Not specified"
-                    ? !item.project
-                    : item.project === activeProject
-            )
-        }
-        return filtered
-    }
-
-
+    const {addProject, handleDeleteProject, projects, activeProject, setActiveProject, searchTerm, setSearchTerm} = useGlobalContext();
 
 
     const handleClearSearch = () => setSearchTerm("")
@@ -107,12 +42,6 @@ export const ProjectFilter = ({
         }
 
         setActiveProject(project)
-
-        if (project === null) {
-            localStorage.removeItem(storageKey);
-        } else {
-            localStorage.setItem(storageKey, project);
-        }
     }
 
     const handleCreateProject = () => {
@@ -124,7 +53,6 @@ export const ProjectFilter = ({
         addProject(newProjectName);
 
         setActiveProject(newProjectName)
-        localStorage.setItem(storageKey, newProjectName);
         setNewProjectName("")
         setIsCreatingProject(false)
     }
@@ -132,7 +60,6 @@ export const ProjectFilter = ({
     const handleProjectDelete = (projectName: string) => {
         if (activeProject === projectName) {
             setActiveProject(null)
-            localStorage.removeItem(storageKey)
         }
 
         handleDeleteProject(projectName);
@@ -195,7 +122,7 @@ export const ProjectFilter = ({
                         <DropdownMenuContent className="mr-1">
                             <DropdownMenuItem
                                 onClick={() => handleProjectSelect("new")}
-                                className="flex items-center gap-2 cursor-pointer hover:bg-slate-100"
+                                className="flex items-center gap-2 cursor-pointer hover:bg-accent"
                             >
                                 <Plus className="h-3.5 w-3.5 font-semibold"/>
                                 <span className="font-semibold">Create new project</span>
@@ -203,7 +130,7 @@ export const ProjectFilter = ({
                             <DropdownMenuSeparator/>
                             <DropdownMenuItem
                                 onClick={() => handleProjectSelect(null)}
-                                className={cn("cursor-pointer hover:bg-gray-100/80", activeProject === null ? "bg-muted" : "")}
+                                className={cn("cursor-pointer hover:bg-accent", activeProject === null ? "bg-muted" : "")}
                             >
                                 <div className="flex items-center gap-2 w-full">
                                     <div
@@ -215,7 +142,7 @@ export const ProjectFilter = ({
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 onClick={() => handleProjectSelect("Not specified")}
-                                className={cn("cursor-pointer hover:bg-gray-100/80", activeProject === "Not specified" ? "bg-muted" : "")}
+                                className={cn("cursor-pointer hover:bg-accent", activeProject === "Not specified" ? "bg-muted" : "")}
                             >
                                 <div className="flex items-center gap-2 w-full">
                                     <div
@@ -229,7 +156,7 @@ export const ProjectFilter = ({
                             {projects.map(projectName => (
                                 <DropdownMenuItem
                                     key={projectName}
-                                    className={`${activeProject === projectName ? "bg-slate-200" : "hover:bg-gray-100/80"} px-2 relative p-0 overflow-hidden`}
+                                    className={`${activeProject === projectName ? "bg-accent" : "hover:bg-accent"} px-2 relative p-0 overflow-hidden`}
                                 >
                                         <div
                                             className="flex items-center justify-between w-full px-2 py-1.5 cursor-pointer"
@@ -243,7 +170,7 @@ export const ProjectFilter = ({
                                                 onLongPress={() => handleProjectDelete(projectName)}
                                                 onFailed={() => toast.error('Keep holding to delete project.')}
                                                 onClick={(e) => e.stopPropagation()}
-                                                className="ml-2 p-1.5 hover:bg-gray-200 active:bg-gray-200/50 transition-colors duration-300 rounded-md"
+                                                className="ml-2 p-1.5 hover:bg-accent active:bg-accent/50 transition-colors duration-300 rounded-md"
                                                 progressClassName="bg-red-600"
                                                 progressPosition="bottom"
                                                 longPressTime={longPressTime}

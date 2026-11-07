@@ -1,19 +1,20 @@
 import {Table, TableBody, TableCell, TableHeader, TableRow} from "@/components/ui/table"
 import {CookieData, SwaggerData} from "@/types/types"
-import {DragDropContext, Draggable, Droppable} from '@hello-pangea/dnd'
+import {DragDropContext, Draggable, DraggableProvidedDragHandleProps, Droppable, DropResult} from '@hello-pangea/dnd'
 import {BrushCleaning, PlusCircle, Search} from 'lucide-react'
 import React from "react"
-import {useGlobalContext} from "@/context/global-context.tsx"
+import {PageView, useGlobalContext} from "@/context/global-context.tsx"
 import {Button} from "@/components/ui/button"
 
 export type DataType = CookieData | SwaggerData;
+export type DragHandleProps = DraggableProvidedDragHandleProps | null | undefined;
 
 interface DataTableProps<T extends DataType> {
     data: T[];
     type: 'cookie' | 'swagger';
     onReorder?: (startIndex: number, endIndex: number) => void;
     renderHeaders: () => React.ReactNode;
-    renderCells: (item: T, index: number, dragHandleProps: any) => React.ReactNode;
+    renderCells: (item: T, index: number, dragHandleProps: DragHandleProps) => React.ReactNode;
     originalDataLength?: number;
 }
 
@@ -30,20 +31,10 @@ export default function DataTable<T extends DataType>({
         searchTerm, clearSearchTerm, handleApply
     } = useGlobalContext()
 
-    const hasStoredData = () => {
-        const stored = localStorage.getItem('Cookify')
-        if (!stored) return false
-        try {
-            const data = JSON.parse(stored)
-            return (data.cookies && data.cookies.length > 0) || (data.swaggers && data.swaggers.length > 0)
-        } catch {
-            return false
-        }
-    }
+    // Nothing to list: say why (search, project filter) or offer to add the first one.
+    const shouldShowNoResults = data.length === 0
 
-    const shouldShowNoResults = data.length === 0 && (!hasStoredData() || searchTerm || activeProject)
-
-    const handleDragEnd = (result: any) => {
+    const handleDragEnd = (result: DropResult) => {
         if (!result.destination || !onReorder) return
         onReorder(result.source.index, result.destination.index)
     }
@@ -56,11 +47,10 @@ export default function DataTable<T extends DataType>({
 
     const handleClearProjectFilter = () => {
         setActiveProject(null);
-        localStorage.removeItem("cookify_selected_global_project");
     }
 
     const handleAddNew = () => {
-        setCurrentView(type === 'cookie' ? 'add-cookie' : 'add-swagger');
+        setCurrentView(type === 'cookie' ? PageView.ADD_COOKIE : PageView.ADD_SWAGGER);
     }
 
     return (

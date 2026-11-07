@@ -1,8 +1,9 @@
-import {CookieList} from "@/app/components/cookie/CookieList.tsx";
+import {ProfileList, ProfileType} from "@/app/components/shared/ProfileList.tsx";
 import {useGlobalContext} from "@/context/global-context.tsx";
 import {AnimatePresence, motion} from "framer-motion";
 
-const CookiesMainPage = () => {
+/** The Cookies and the Swaggers tab. */
+const ProfilesPage = ({type}: { type: ProfileType }) => {
     const {currentView} = useGlobalContext()
 
     return (
@@ -15,10 +16,10 @@ const CookiesMainPage = () => {
                 exit={{opacity: 0}}
                 transition={{duration: 0}}
             >
-                <CookieList/>
+                <ProfileList type={type}/>
             </motion.div>
         </AnimatePresence>
     );
 };
 
-export default CookiesMainPage;
+export default ProfilesPage;

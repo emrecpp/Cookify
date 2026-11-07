@@ -13,7 +13,6 @@ export const cookieSchema = z.object({
   order: z.number().optional()
 });
 
-export type CookieSchema = z.infer<typeof cookieSchema>;
 
 /**
  * Schema for Swagger data
@@ -24,5 +23,3 @@ export const swaggerSchema = z.object({
   project: z.string().optional(),
   order: z.number().optional()
 });
-
-export type SwaggerSchema = z.infer<typeof swaggerSchema>; 

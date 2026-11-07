@@ -35,7 +35,7 @@ export function InputField({
             </Label>
             <div className="relative">
                 {icon && (
-                    <div className="absolute left-2.5 top-2.5 transform text-gray-400 pointer-events-none">
+                    <div className="absolute left-2.5 top-2.5 transform text-muted-foreground pointer-events-none">
                         {icon}
                     </div>
                 )}
