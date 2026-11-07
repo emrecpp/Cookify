@@ -1,0 +1,47 @@
+# Cookify
+
+> Cookify is a free, open source Chrome extension that turns any Swagger UI page into a Postman-like API client. It reads the OpenAPI document from the docs page you already have, so there is nothing to import and nothing to change on the server. It adds tabs, environments, saved JWT tokens and cookies, a command palette, code snippets and dark mode.
+
+Cookify works on pages that run Swagger UI, whatever framework serves them: FastAPI (/docs), NestJS (@nestjs/swagger), Spring Boot (springdoc-openapi), ASP.NET Core (Swashbuckle), Express (swagger-ui-express) and others. It reads Swagger 2.0 and OpenAPI 3.x documents. It runs only in the browser: no account, no analytics and no Cookify server. Requests go from the browser to the user's API. Google Drive sync is optional and uses a private app folder in the user's own Drive.
+
+Good fit: calling and checking an API that already has Swagger UI docs, every day, across Development, Staging and Production, without importing it into another tool. Not a fit: Postman collections with test scripts, mock servers, or docs pages built with Redoc or Scalar (not supported yet).
+
+Install from the Chrome Web Store: https://chromewebstore.google.com/detail/cookify/mafdkfnimilggjneibkjfejlnhcecnjd
+
+## Features
+
+- Tabs: keep several endpoints open and switch with Alt+1…9
+- Request forms that fit each parameter's type, and a JSON editor for request bodies that starts from the schema's example
+- Validation of missing or invalid values before sending
+- Responses next to the request, with every documented response colored by status code; click a value to copy it or its JSON path
+- JSON, form data and file uploads to an API on any domain, without CORS errors
+- Command palette (Ctrl+P) for endpoints, tabs, APIs, environments and commands
+- Code snippets: cURL, fetch(), Python requests, axios, HTTPie and PowerShell
+- Export to a Postman collection (v2.1)
+- Saved APIs with Development, Staging and Production environments, each with its own token, tabs, favorites and drafts
+- Sign in with the API's OAuth2 password flow, or pick a saved token; see who is signed in and when the token expires
+- New, changed and removed endpoints are marked when the API changes
+- Popup: save, organize and apply cookies and JWT tokens, grouped by project
+- Backup to one file, encrypted with a password if wanted; optional Google Drive sync between computers
+- Dark theme by default, light theme one click away; Classic view brings back the original Swagger UI
+
+## Guides
+
+- [FastAPI /docs as an API client](https://emrecpp.github.io/Cookify/fastapi/): tabs, environments and saved tokens on FastAPI's Swagger UI
+- [NestJS Swagger as an API client](https://emrecpp.github.io/Cookify/nestjs/): the @nestjs/swagger page as a Postman-like client
+- [Spring Boot Swagger UI as an API client](https://emrecpp.github.io/Cookify/spring-boot/): springdoc-openapi pages
+- [ASP.NET Core Swagger as an API client](https://emrecpp.github.io/Cookify/aspnet-core/): Swashbuckle pages
+- [swagger-ui-express as an API client](https://emrecpp.github.io/Cookify/express/): Express pages
+- [Swagger UI dark mode](https://emrecpp.github.io/Cookify/swagger-ui-dark-mode/): every option, from the built-in toggle to custom CSS and an extension
+- [A Postman alternative for APIs with Swagger docs](https://emrecpp.github.io/Cookify/postman-alternative/): what Cookify does and doesn't replace
+
+## Project
+
+- [Source code on GitHub](https://github.com/emrecpp/Cookify): MIT license
+- [Issues and support](https://github.com/emrecpp/Cookify/issues)
+- [Privacy policy](https://emrecpp.github.io/Cookify/privacy/): what stays in the browser and what goes to Google Drive
+
+## Optional
+
+- [Website](https://emrecpp.github.io/Cookify/): overview, screenshots and FAQ
+- Author: Emre Demircan (emrecpp), https://github.com/emrecpp

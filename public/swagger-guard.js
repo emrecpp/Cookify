@@ -75,6 +75,8 @@
         script.type = "javascript/blocked";
         handled.add(script);
         blocked.push(entry);
+        // Swagger UI's own script next to its root: this is a Swagger UI page, show the skeleton (swagger-preload.css).
+        document.documentElement.classList.add("cookify-swagger");
     }
 
     function inspect(script) {
