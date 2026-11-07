@@ -3,6 +3,8 @@
 // request goes in as the first message, the response comes back as one message, and closing the port (Cancel,
 // a timeout, the page going away) aborts the request in the worker as well.
 
+import {readBytes} from "@/lib/values";
+
 export const PROXY_PORT = "cookify:fetch";
 /** Responses are handed over as one extension message (limited to 64 MiB, base64 adds a third). */
 export const MAX_PROXY_BYTES = 32 * 1024 * 1024;
@@ -100,26 +102,7 @@ function toFormData(parts: ProxyFormPart[]): FormData {
 /** The body, or null once it grows past `limit` (the rest is not downloaded). */
 async function readLimited(response: Response, limit: number): Promise<Uint8Array | null> {
     if (!response.body) return new Uint8Array(await response.arrayBuffer());
-    const reader = response.body.getReader();
-    const chunks: Uint8Array[] = [];
-    let size = 0;
-    for (;;) {
-        const {done, value} = await reader.read();
-        if (done) break;
-        size += value.byteLength;
-        if (size > limit) {
-            await reader.cancel().catch(() => undefined);
-            return null;
-        }
-        chunks.push(value);
-    }
-    const out = new Uint8Array(size);
-    let offset = 0;
-    for (const chunk of chunks) {
-        out.set(chunk, offset);
-        offset += chunk.byteLength;
-    }
-    return out;
+    return readBytes(response.body, limit);
 }
 
 /** Runs a request in the background worker. Never throws: failures come back as `error`. */

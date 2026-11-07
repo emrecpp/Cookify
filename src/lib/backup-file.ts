@@ -1,6 +1,9 @@
 // Export file format: a small header, then the JSON backup compressed with gzip. With a password the
 // compressed data is encrypted with AES-256-GCM, using a key derived from the password with PBKDF2.
 // The header is authenticated too, so changing it makes the file fail to open.
+
+import {concatBytes, readBytes} from "@/lib/values";
+
 const MAGIC = [0x43, 0x4b, 0x46, 0x59]; // "CKFY"
 const FORMAT = 1;
 const FLAG_ENCRYPTED = 1;
@@ -27,31 +30,10 @@ class TooLargeError extends Error {
     }
 }
 
-function concat(...parts: Uint8Array[]): Uint8Array {
-    const out = new Uint8Array(parts.reduce((size, part) => size + part.length, 0));
-    let offset = 0;
-    for (const part of parts) {
-        out.set(part, offset);
-        offset += part.length;
-    }
-    return out;
-}
-
 async function transform(data: Uint8Array, stream: CompressionStream | DecompressionStream, limit = Infinity): Promise<Uint8Array> {
-    const reader = new Blob([data]).stream().pipeThrough(stream).getReader();
-    const chunks: Uint8Array[] = [];
-    let size = 0;
-    for (;;) {
-        const {done, value} = await reader.read();
-        if (done) break;
-        size += value.byteLength;
-        if (size > limit) {
-            await reader.cancel().catch(() => undefined);
-            throw new TooLargeError();
-        }
-        chunks.push(value);
-    }
-    return concat(...chunks);
+    const bytes = await readBytes(new Blob([data]).stream().pipeThrough(stream), limit);
+    if (!bytes) throw new TooLargeError();
+    return bytes;
 }
 
 async function deriveKey(password: string, salt: Uint8Array, iterations: number): Promise<CryptoKey> {
@@ -70,16 +52,16 @@ async function deriveKey(password: string, salt: Uint8Array, iterations: number)
 /** An empty password means the file is compressed only. */
 export async function packBackup(json: string, password = ""): Promise<Uint8Array> {
     const compressed = await transform(new TextEncoder().encode(json), new CompressionStream("gzip"));
-    if (!password) return concat(Uint8Array.from([...MAGIC, FORMAT, 0]), compressed);
+    if (!password) return concatBytes(Uint8Array.from([...MAGIC, FORMAT, 0]), compressed);
 
     const salt = crypto.getRandomValues(new Uint8Array(SALT_BYTES));
     const iv = crypto.getRandomValues(new Uint8Array(IV_BYTES));
     const iterations = new Uint8Array(ITERATIONS_BYTES);
     new DataView(iterations.buffer).setUint32(0, ITERATIONS);
-    const header = concat(Uint8Array.from([...MAGIC, FORMAT, FLAG_ENCRYPTED]), iterations, salt, iv);
+    const header = concatBytes(Uint8Array.from([...MAGIC, FORMAT, FLAG_ENCRYPTED]), iterations, salt, iv);
     const key = await deriveKey(password, salt, ITERATIONS);
     const body = await crypto.subtle.encrypt({name: "AES-GCM", iv, additionalData: header}, key, compressed);
-    return concat(header, new Uint8Array(body));
+    return concatBytes(header, new Uint8Array(body));
 }
 
 const isPacked = (bytes: Uint8Array) => bytes.length >= PREFIX_BYTES && MAGIC.every((byte, index) => bytes[index] === byte);

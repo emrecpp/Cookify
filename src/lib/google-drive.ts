@@ -68,6 +68,11 @@ export interface GoogleAccountProfile {
     profileImageUrl?: string;
 }
 
+/** The line under a Google account that is not connected right now. */
+export function lastSignInText(value?: string): string {
+    return value ? `Last signed in ${new Date(value).toLocaleString()}` : "Previously connected";
+}
+
 function getConfiguredClientId(): string | undefined {
     return chrome.runtime.getManifest().oauth2?.client_id;
 }

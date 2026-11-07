@@ -20,3 +20,32 @@ export function originOf(url?: string): string {
         return "";
     }
 }
+
+/** Joins byte arrays into one. */
+export function concatBytes(...parts: Uint8Array[]): Uint8Array {
+    const out = new Uint8Array(parts.reduce((size, part) => size + part.length, 0));
+    let offset = 0;
+    for (const part of parts) {
+        out.set(part, offset);
+        offset += part.length;
+    }
+    return out;
+}
+
+/** Reads a stream to the end, or returns null once it grows past `limit` (the rest is not read). */
+export async function readBytes(stream: ReadableStream<Uint8Array>, limit = Infinity): Promise<Uint8Array | null> {
+    const reader = stream.getReader();
+    const chunks: Uint8Array[] = [];
+    let size = 0;
+    for (;;) {
+        const {done, value} = await reader.read();
+        if (done) break;
+        size += value.byteLength;
+        if (size > limit) {
+            await reader.cancel().catch(() => undefined);
+            return null;
+        }
+        chunks.push(value);
+    }
+    return concatBytes(...chunks);
+}

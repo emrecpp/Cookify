@@ -154,7 +154,7 @@ Google Drive sync is optional and disabled unless the user connects an account f
 1. Enable the Google Drive API in a Google Cloud project.
 2. Create an OAuth 2.0 client for a Chrome extension and bind it to the Cookify extension ID. The published ID is `mafdkfnimilggjneibkjfejlnhcecnjd`; unpacked development builds may use a different stable ID.
 3. Create a Web application OAuth client for account switching and add `https://<extension-id>.chromiumapp.org/google-oauth` to its authorized redirect URIs.
-4. Copy `.env.example` to a local `.env.development` or `.env.production` file. The file contains the public OAuth client IDs required for the build:
+4. Copy `.env.example` to a local `.env.development` or `.env.production` file. It holds the public client IDs of the published extension; for a build with another extension ID, put your own there:
 
    ```env
    VITE_GOOGLE_OAUTH_CLIENT_ID=your-chrome-extension-client-id.apps.googleusercontent.com

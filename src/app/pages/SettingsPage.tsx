@@ -14,6 +14,7 @@ import {Switch} from "@/components/ui/switch";
 import {PageView, useGlobalContext} from "@/context/global-context";
 import {applyImport, buildExport, ImportedFile, parseImport, summarize} from "@/lib/backup";
 import {isEncryptedBackup, openBackup, packBackup} from "@/lib/backup-file";
+import {lastSignInText} from "@/lib/google-drive";
 import {getSwaggerUiPrefs, setSwaggerUiEnabled} from "@/lib/swagger-bridge";
 import {cn} from "@/lib/utils";
 import {FormEvent, ReactNode, useEffect, useState} from "react";
@@ -33,12 +34,6 @@ import {
 } from 'lucide-react';
 import toast from "react-hot-toast";
 import packageInfo from "../../../package.json";
-
-function lastSignInText(value?: string): string {
-    return value
-        ? `Last signed in ${new Date(value).toLocaleString()}`
-        : "Previously connected";
-}
 
 const syncTime = (value: string) => new Date(value).toLocaleString([], {dateStyle: "medium", timeStyle: "short"});
 

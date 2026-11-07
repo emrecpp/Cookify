@@ -38,8 +38,6 @@ export const isCookieData = (data: CookieData | SwaggerData): data is CookieData
     return (data as CookieData).name !== undefined
 }
 
-export type FormType = "cookie" | "swagger"
-
 export interface SyncSnapshot {
     cookies: CookieData[]
     swaggers: SwaggerData[]

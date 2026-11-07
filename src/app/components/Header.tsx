@@ -9,14 +9,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {PageView, PageViewTypes, useGlobalContext} from "@/context/global-context";
 import {motion} from 'framer-motion';
+import {lastSignInText} from "@/lib/google-drive";
 import {useTheme} from "@/lib/theme";
 import {ChevronDown, EyeOff, LogIn, Moon, PlusCircle, Sun, UserRoundPlus} from 'lucide-react';
-
-function lastSignInText(value?: string): string {
-    return value
-        ? `Last signed in ${new Date(value).toLocaleString()}`
-        : "Previously connected";
-}
 
 export function Header() {
     const {

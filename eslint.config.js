@@ -25,4 +25,10 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    // The Swagger view runs as a content script, where Fast Refresh never applies (the page reloads instead),
+    // so its modules may export helpers next to components.
+    files: ['src/swagger-ui/**/*.{ts,tsx}'],
+    rules: {'react-refresh/only-export-components': 'off'},
+  },
 )

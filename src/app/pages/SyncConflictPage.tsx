@@ -27,7 +27,8 @@ function formatDate(value?: string): string {
     }).format(new Date(value));
 }
 
-function decodeJwt(token?: string): string {
+/** A token's header and payload as indented JSON, for comparing two tokens. */
+function jwtText(token?: string): string {
     if (!token) return "—";
     try {
         const [header, payload] = token.split(".");
@@ -81,8 +82,8 @@ function getDiffFields(conflict: SyncConflict): DiffField[] {
     if (conflict.type === "swagger") {
         fields.push({
             label: "JWT preview",
-            local: decodeJwt((local as SwaggerData | null)?.bearerToken),
-            cloud: decodeJwt((cloud as SwaggerData | null)?.bearerToken),
+            local: jwtText((local as SwaggerData | null)?.bearerToken),
+            cloud: jwtText((cloud as SwaggerData | null)?.bearerToken),
             multiline: true,
         });
     }

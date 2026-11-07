@@ -249,17 +249,12 @@ let started = false;
 export async function bootstrapSwaggerUi() {
     if (started || window.top !== window) return;
     started = true;
-    const guard = swaggerGuard();
-    const t0 = performance.now();
-    const timings: string[] = [];
-    const mark = (label: string) => timings.push(`${label} ${Math.round(performance.now() - t0)}ms`);
 
     setProgress(0.2);
 
     // Network discovery starts right away; prefs + cache are read in parallel.
     const freshPromise = discoverSpec();
     const [prefs, cached] = await Promise.all([loadPrefs(), readCache()]);
-    mark("storage");
     if (!prefs.enabled) {
         rememberClassic(true);
         setClassicVisible(true);
@@ -277,9 +272,7 @@ export async function bootstrapSwaggerUi() {
         }
     }
 
-    const fromCache = initial !== null;
     if (initial) {
-        mark("cache");
         // Stale-while-revalidate: refresh in the background and swap in the new spec if it changed.
         void freshPromise.then((found) => {
             if (!found || found.text === initial!.text) return;
@@ -292,7 +285,6 @@ export async function bootstrapSwaggerUi() {
         });
     } else {
         const found = await freshPromise;
-        mark("fetch");
         if (!found) {
             console.info("[Cookify] Swagger UI detected but no OpenAPI document could be located.");
             rememberClassic(true);
@@ -305,7 +297,6 @@ export async function bootstrapSwaggerUi() {
             setClassicVisible(true);
             return;
         }
-        mark("parse");
         initial = {url: found.url, text: found.text, spec};
         void writeCache(found);
     }
@@ -325,9 +316,5 @@ export async function bootstrapSwaggerUi() {
     mountRoot();
     setProgress(1);
 
-    requestAnimationFrame(() => {
-        document.documentElement.classList.add("cookify-ready");
-        mark("render");
-        console.info(`[Cookify] Swagger UI ready (${fromCache ? "from cache" : "network"}${guard?.blocked.length ? ", classic UI held back" : ""}): ${timings.join(", ")} · ${Math.round(performance.now())}ms since navigation`);
-    });
+    requestAnimationFrame(() => document.documentElement.classList.add("cookify-ready"));
 }
