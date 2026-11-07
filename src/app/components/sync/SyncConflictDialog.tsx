@@ -16,7 +16,7 @@ export function SyncConflictDialog() {
     const conflicts = googleDriveSync.conflicts;
 
     const openResolver = async () => {
-        await openSyncConflictPage(true);
+        await openSyncConflictPage();
         window.close();
     };
 

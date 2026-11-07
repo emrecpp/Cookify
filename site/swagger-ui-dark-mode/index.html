@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Swagger UI dark mode: your options on any page | Cookify</title>
+<meta name="description" content="How to get dark mode in Swagger UI: the built-in toggle, custom CSS, a user style, or a browser extension that works on every Swagger page.">
+<meta name="author" content="Emre Demircan (emrecpp)">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#131417">
+<link rel="canonical" href="https://emrecpp.github.io/Cookify/swagger-ui-dark-mode/">
+<link rel="icon" href="../icon/32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../icon/128.png">
+<link rel="stylesheet" href="../style.css">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Cookify">
+<meta property="og:title" content="Swagger UI dark mode: your options on any page | Cookify">
+<meta property="og:description" content="How to get dark mode in Swagger UI: the built-in toggle, custom CSS, a user style, or a browser extension that works on every Swagger page.">
+<meta property="og:url" content="https://emrecpp.github.io/Cookify/swagger-ui-dark-mode/">
+<meta property="og:image" content="https://emrecpp.github.io/Cookify/screenshots/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Cookify", "item": "https://emrecpp.github.io/Cookify/"}, {"@type": "ListItem", "position": 2, "name": "Swagger UI dark mode", "item": "https://emrecpp.github.io/Cookify/swagger-ui-dark-mode/"}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Does Swagger UI have dark mode?", "acceptedAnswer": {"@type": "Answer", "text": "Recent releases have a dark mode toggle. Older versions don't, and whoever runs the API decides which version the page uses."}}, {"@type": "Question", "name": "How do I get dark mode in FastAPI's Swagger UI?", "acceptedAnswer": {"@type": "Answer", "text": "Install Cookify and open /docs. To change it for everyone who opens your docs, add custom CSS to the project instead."}}, {"@type": "Question", "name": "Does it change the page for my teammates?", "acceptedAnswer": {"@type": "Answer", "text": "No. Cookify runs only in the browser where it's installed."}}]}</script>
+</head>
+<body>
+<header class="top">
+<div class="wrap top-in">
+<a class="brand" href="../"><img src="../icon/32.png" alt="" width="24" height="24">Cookify</a>
+<nav aria-label="Main">
+<a href="../#features">Features</a>
+<a href="../#compare">Compare</a>
+<a href="../#works-with">Works with</a>
+<a href="../#faq">FAQ</a>
+</nav>
+<a class="btn is-quiet top-gh" href="https://github.com/emrecpp/Cookify"><svg class="gh" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
+<a class="btn is-primary" href="https://chromewebstore.google.com/detail/cookify/mafdkfnimilggjneibkjfejlnhcecnjd">Add to Chrome</a>
+</div>
+</header>
+<main>
+<article class="doc">
+<div class="wrap narrow">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="../">Cookify</a> / Swagger UI dark mode</nav>
+<h1>Swagger UI dark mode on any page</h1>
+<p class="lede">Recent Swagger UI releases have a dark mode toggle, but a page only has it if it runs one of those versions. Here are your options when it doesn't.</p>
+<div class="actions"><a class="btn is-primary is-lg" href="https://chromewebstore.google.com/detail/cookify/mafdkfnimilggjneibkjfejlnhcecnjd">Add to Chrome</a><a class="btn is-lg" href="https://github.com/emrecpp/Cookify"><svg class="gh" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>View on GitHub</a></div>
+
+<div class="shot"><img src="../screenshots/03-query-params.png" alt="Cookify dark theme on a Swagger UI page" width="2880" height="1800" loading="lazy"></div>
+<h2>Your options</h2>
+<div class="table"><table><thead><tr><th>Option</th><th>Works on APIs you don't own</th><th>Backend change</th><th>Adds more than colors</th></tr></thead><tbody>
+<tr><th scope="row">Update Swagger UI</th><td class="n">No</td><td>Yes, in each project</td><td class="n">No</td></tr>
+<tr><th scope="row">Custom CSS in your project</th><td class="n">No</td><td>Yes, in each project</td><td class="n">No</td></tr>
+<tr><th scope="row">A user style in your browser</th><td class="y">Yes</td><td>No</td><td class="n">No</td></tr>
+<tr><th scope="row">Cookify</th><td class="y">Yes</td><td>No</td><td class="y">Yes</td></tr>
+</tbody></table></div>
+<p>If you only need dark colors for one FastAPI project, a CSS file is enough. <a href="https://github.com/emrecpp/swagger-fastapi-dark-theme">swagger-fastapi-dark-theme</a> does exactly that.</p>
+<h2>Get dark mode with Cookify</h2>
+<ol class="plain"><li>Add Cookify from the <a href="https://chromewebstore.google.com/detail/cookify/mafdkfnimilggjneibkjfejlnhcecnjd">Chrome Web Store</a>.</li><li>Open any Swagger UI page. It opens in the dark Cookify view.</li><li>Use the <strong>Light</strong> button in the header if you want to switch.</li></ol><p>Cookify shows the page in its own view, so you also get tabs, environments and saved tokens. <strong>Classic view</strong> brings back the original page at any time, with its original colors.</p>
+<h2>Questions</h2>
+<dl class="faq"><dt>Does Swagger UI have dark mode?</dt><dd>Recent releases have a dark mode toggle. Older versions don't, and whoever runs the API decides which version the page uses.</dd><dt>How do I get dark mode in FastAPI&#x27;s Swagger UI?</dt><dd>Install Cookify and open <code>/docs</code>. To change it for everyone who opens your docs, add custom CSS to the project instead.</dd><dt>Does it change the page for my teammates?</dt><dd>No. Cookify runs only in the browser where it's installed.</dd></dl>
+<h2>Other guides</h2>
+<p class="related"><a href="../fastapi/">FastAPI</a><a href="../nestjs/">NestJS</a><a href="../express/">Express</a><a href="../aspnet-core/">ASP.NET Core</a><a href="../spring-boot/">Spring Boot</a><a href="../postman-alternative/">Postman alternative</a></p>
+</div>
+</article>
+<section class="cta">
+<div class="wrap">
+<h2>Open your Swagger docs and start working</h2>
+<p>Free and open source, with no account.</p>
+<div class="actions"><a class="btn is-primary is-lg" href="https://chromewebstore.google.com/detail/cookify/mafdkfnimilggjneibkjfejlnhcecnjd">Add to Chrome</a><a class="btn is-lg" href="https://github.com/emrecpp/Cookify"><svg class="gh" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>View on GitHub</a></div>
+</div>
+</section>
+</main>
+<footer class="foot">
+<div class="wrap foot-in">
+<div><strong>Cookify</strong> is made by <a href="https://github.com/emrecpp">Emre Demircan (emrecpp)</a>. Free and open source under the MIT License.</div>
+<div class="foot-links">
+<a href="https://github.com/emrecpp/Cookify"><svg class="gh" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>github.com/emrecpp/Cookify</a>
+<a href="https://chromewebstore.google.com/detail/cookify/mafdkfnimilggjneibkjfejlnhcecnjd">Chrome Web Store</a>
+<a href="../privacy/">Privacy Policy</a>
+</div>
+<div class="foot-links">
+<a href="../fastapi/">FastAPI</a><a href="../nestjs/">NestJS</a><a href="../express/">Express</a><a href="../aspnet-core/">ASP.NET Core</a><a href="../spring-boot/">Spring Boot</a><a href="../swagger-ui-dark-mode/">Swagger UI dark mode</a><a href="../postman-alternative/">Postman alternative</a>
+</div>
+</div>
+</footer>
+</body>
+</html>

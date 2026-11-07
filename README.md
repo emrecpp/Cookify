@@ -1,108 +1,153 @@
-
-
-# Cookify - Chrome Extension for Cookie and Bearer Token Management 🍪🔑
-
-
-**Cookify** is a **Chrome extension** that makes managing cookies and JWT tokens easy for developers. It integrates smoothly with Swagger API docs, helping you automate tasks, save time, and boost productivity. Built with React, TypeScript, and Vite, it’s fast, reliable, and perfect for modern web development.
-
-[⬇️ Download on Chrome Web Store](https://chromewebstore.google.com/detail/cookify/mafdkfnimilggjneibkjfejlnhcecnjd)
-
----
-
 <p align="center">
-<img width="300" height="300" align="center" src="public/icon/icon.svg" alt="Cookify Logo" style="min-width: 300px">
+<img src="public/icon/icon.svg" width="110" alt="Cookify logo">
 </p>
 
-## ✨ Features
+<h1 align="center">Cookify: Postman-like API client for Swagger UI</h1>
 
-### 🔑 **Cookie Management**
-- **Add Cookies**: Manually add cookies with a user-friendly interface.
-- **Save Cookies**: Store cookies for quick reuse.
-- **Apply Cookies**: Set saved cookies on target websites with one click.
-- **Delete Cookies**: Easily remove cookies when they are no longer needed.
-- **Filter Cookies**: Search and filter cookies by name or value.
+<p align="center">
+<b>Open your Swagger docs and start working.</b><br>
+Tabs, environments, saved tokens and dark mode on every Swagger UI page. No import, no setup.<br>
+<sub>Made by <a href="https://github.com/emrecpp">emrecpp</a></sub>
+</p>
 
-### 🔒 **JWT Token Management**
-- **Save JWT Tokens**: Input and store JWT bearer tokens securely.
-- **Apply to Swagger**: Set tokens in Swagger documentation with one click.
+<p align="center">
+<a href="https://chromewebstore.google.com/detail/cookify/mafdkfnimilggjneibkjfejlnhcecnjd"><img src="https://img.shields.io/badge/Chrome_Web_Store-Install_free-4285F4?logo=googlechrome&logoColor=white" alt="Install from the Chrome Web Store"></a>
+<a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license"></a>
+<img src="https://img.shields.io/badge/OpenAPI-2.0_%7C_3.x-85EA2D?logo=swagger&logoColor=black" alt="OpenAPI 2.0 and 3.x">
+</p>
 
-### 🎯 **Project Management**
-- **Organize by Projects**: Group cookies and tokens by project for better organization
-- **Multiple Projects**: Create and manage different projects for various applications
-- **Project Filtering**: Filter cookies and tokens by project
+<p align="center">
+<img src="screenshots/demo.gif" alt="Cookify on a Swagger UI page: scrolling endpoints, sending a request and opening the command palette">
+</p>
 
-### 🔄 **Profile Management**
-- **Export Profiles**: Save all your cookies and tokens into a single exportable file.
-- **Import Profiles**: Import your profiles into the extension on a different machine or browser.
+<p align="center">
+<a href="screenshots/demo.mp4">Watch the full demo (48 seconds)</a> · <a href="https://emrecpp.github.io/Cookify/">Website</a>
+</p>
 
-### ☁️ **Google Drive Sync**
-- **One-Click Sign-In**: Sign in directly with your Google account from the header to sync your Cookify profiles and settings without navigating through the Settings page.
-- **Automatic Sync on New Computers**: Sign in with the same Google account on a new computer to automatically restore your synced Cookify data.
-- **Safe Scope**: Cookify requests access only to its own hidden app-data area, not to the rest of your Google Drive files.
-- **Compare Before Choosing**: When local and cloud versions differ, compare both versions and choose which one to keep.
+If Cookify saves you time, a ⭐ helps other developers find it.
 
-### 📜 **Swagger Integration**
-- **Swagger Support**: Streamline your API testing by setting cookies and JWT tokens directly into Swagger documentation.
-- **One-Click Token Application**: Set your bearer token in Swagger docs with a single click.
+## Why Cookify?
 
-### 🚀 **Optimized for Developers**
-- Built with **React**, **TypeScript**, and **Vite** for blazing-fast performance.
-- Intuitive design with a developer-first approach.
+Swagger UI is on almost every API, but it wasn't built for working all day. Postman is, but you have to import your API and keep it up to date. Cookify turns the Swagger UI page you already have into a fast API client.
 
----
+- **Nothing to import**: Endpoints, schemas and examples come from the page, and API changes are marked.
+- **Nothing to set up on the server**: It works on any API you can open, including ones you don't own.
+- **Made for daily work**: Tabs, saved request bodies, and Development, Staging and Production with a token for each.
+- **Private by default**: No account and no analytics. Requests go straight from your browser to your API.
 
-## 🎥 Demo Videos
-Check out these short videos to see Cookify in action:
+## 🧭 Swagger View
 
-- **Cookie Management**
-<video src="https://github.com/user-attachments/assets/bd5238dc-8e9f-4638-9038-1929623f3af3" controls width="100%"></video>
+Cookify shows Swagger UI pages in its own view. **Classic view** in the header brings back the original page at any time.
 
+### Send requests
+- **Tabs**: Keep several endpoints open and switch with `Alt+1…9`.
+- **Forms and JSON editor**: Fields fit each parameter's type, and request bodies start from the schema's example.
+- **Validation**: Send points out missing or invalid values.
+- **Responses**: Read the response next to your request, with every documented response colored by status code.
+- **Templates and history**: Save requests and return to recent endpoints.
 
+<p align="center">
+<img src="screenshots/03-query-params.png" alt="Query parameters next to a JSON response" width="49%">
+<img src="screenshots/02-documented-responses.png" alt="Documented responses colored by status code" width="49%">
+</p>
 
-- **Swagger Integration**
-<video src="https://github.com/user-attachments/assets/556fab44-7374-4294-933c-7a982f7d3083" controls width="100%"></video>
+### Find anything fast
+- **Command palette**: `Ctrl+P` searches endpoints, tabs, APIs, environments and commands.
+- **Search and favorites**: `Ctrl+K` searches the list, and you can filter it by method or favorites.
+- **Code snippets**: Copy a request as cURL, fetch(), Python, axios, HTTPie or PowerShell.
+- **Postman export**: Export all endpoints or only your favorites as a collection.
 
+<p align="center">
+<img src="screenshots/05-command-palette.png" alt="Command palette" width="49%">
+<img src="screenshots/10-code-snippets.png" alt="Copy a request as a code snippet" width="49%">
+</p>
 
+### Work across APIs and environments
+- **Saved APIs and environments**: Move between Development, Staging and Production and keep your favorites, tabs and drafts.
+- **Sessions**: Log in with the API's OAuth2 password flow or pick a saved token. Each environment keeps its own.
+- **API changes**: New, changed and removed endpoints are marked in the list.
 
+<p align="center">
+<img src="screenshots/09-manage-apis.png" alt="APIs and environments table" width="70%">
+</p>
 
+## ✨ Popup Features
 
+<p align="center">
+<img src="screenshots/11-popup-cookies.png" alt="Saved cookies in the popup" width="32%">
+<img src="screenshots/12-popup-tokens.png" alt="Saved tokens in the popup" width="32%">
+<img src="screenshots/13-popup-settings.png" alt="Popup settings" width="32%">
+</p>
 
----
+- **Cookies**: Add, save and filter cookies, and apply them to a site with one click.
+- **JWT tokens**: Save tokens and apply them to Swagger with one click.
+- **Projects**: Group and filter cookies and tokens by project.
+- **Profiles**: Export everything to one compressed file, encrypted with AES-256 if you set a password, then merge or replace it on another machine.
+- **Google Drive sync**: Sign in on another computer and continue where you left off, including the endpoints you had open. Cookify can access only its own hidden app folder in your Drive.
 
+## Cookify, Swagger UI and Postman
 
-## 🛠️ Technologies
+| | Swagger UI | Postman | Cookify |
+|---|:---:|:---:|:---:|
+| Works on your docs page with no import | ✅ | ❌ | ✅ |
+| Follows API changes on its own | ✅ | ❌ | ✅ |
+| Several endpoints open in tabs | ❌ | ✅ | ✅ |
+| Environments (dev, staging, production) | ❌ | ✅ | ✅ |
+| Saved tokens per environment | ❌ | ✅ | ✅ |
+| Collections, test scripts and mock servers | ❌ | ✅ | ❌ |
 
-- **React**: For building a dynamic and responsive user interface.
-- **TypeScript**: For type-safe and maintainable code.
-- **Vite**: For a fast and modern development experience.
+Need full test suites and team workspaces? Postman is the better fit, and Cookify can export your endpoints as a Postman collection.
 
----
+## Works with
 
+Cookify runs on Swagger UI pages and reads both Swagger 2.0 and OpenAPI 3.x documents.
 
-## 🚀 Installation
+| Stack | Library | Usual address |
+|---|---|---|
+| **FastAPI** | Built in | `/docs` |
+| **NestJS** | `@nestjs/swagger` | `/api` |
+| **Express** | `swagger-ui-express` | `/api-docs` |
+| **ASP.NET Core** | Swashbuckle | `/swagger` |
+| **Spring Boot** | springdoc-openapi | `/swagger-ui/index.html` |
+| **Anything else** | Swagger UI | Any page that runs it |
 
-1. **Clone the Repository**:
-   ```
-   git clone https://github.com/emrecpp/Cookify.git
-   cd Cookify
-   ```
+If Cookify can't find the API document on a page, the original Swagger UI stays as it is.
 
-2. **Install Dependencies**:
-   ```
-   npm install
-   ```
+## ❓ FAQ
 
-3. **Run in Development Mode**:
-   ```
-   npm run dev
-   ```
+**Is Cookify a Postman alternative?**
+For calling and checking an API that has Swagger docs, yes. It doesn't replace Postman's collections, test scripts or mock servers.
 
-4. **Load the Extension in Chrome**:
-   - Open Chrome and navigate to `chrome://extensions/`.
-   - Enable **Developer Mode**.
-   - Click **Load Unpacked** and select the `dist` folder from the project.
+**Does it change my API or my server?**
+No. Cookify runs only in your browser, so there's nothing to install on the server.
 
-### Google Drive OAuth setup
+**How do I get dark mode in Swagger UI?**
+Install Cookify. Its view is dark by default on every Swagger UI page, and you can switch to light from the header.
+
+**Can I go back to the original Swagger UI?**
+Yes. **Classic view** in the header brings it back for that page, and **Cookify view** returns.
+
+**Does it work with Redoc or Scalar?**
+Not yet. Cookify works on pages that run Swagger UI.
+
+**Where is my data stored?**
+In your browser. Google Drive sync is optional and uses a private app folder in your own Drive. See the [Privacy Policy](https://emrecpp.github.io/Cookify/privacy/).
+
+## 🚀 Development
+
+Built with React, TypeScript and Vite.
+
+```
+git clone https://github.com/emrecpp/Cookify.git
+cd Cookify
+npm install
+npm run dev
+```
+
+Then open `chrome://extensions/`, enable **Developer Mode**, click **Load Unpacked** and select the `dist` folder.
+
+<details>
+<summary>Google Drive OAuth setup</summary>
 
 Google Drive sync is optional and disabled unless the user connects an account from Settings. To enable the Connect button in a build:
 
@@ -120,22 +165,14 @@ Google Drive sync is optional and disabled unless the user connects an account f
 
 Cookify requests only `https://www.googleapis.com/auth/drive.appdata`. This hidden area is accessible to Cookify but does not grant access to the user's other Drive files. OAuth client IDs are public identifiers; never add a client secret to the extension.
 
----
-
+</details>
 
 ## 🤝 Contributing
 
-If you'd like to contribute, please:
-1. Fork the repository.
-2. Create a new branch for your feature or bug fix.
-3. Submit a pull request with a detailed description of your changes.
+Fork the repository, create a branch and open a pull request that describes your changes.
 
----
+## 📜 Author and license
 
-## 📜 License
+Cookify is created and maintained by Emre Demircan ([emrecpp](https://github.com/emrecpp)). The official sources are [this repository](https://github.com/emrecpp/Cookify) and the [Chrome Web Store listing](https://chromewebstore.google.com/detail/cookify/mafdkfnimilggjneibkjfejlnhcecnjd).
 
-This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for more details.
-
----
-
-**Cookify** is here to make your development workflow faster, smoother, and more efficient. Try it out today and take control of your cookies and tokens like never before! 🚀🍪
+Licensed under the [MIT License](LICENSE). Copies and forks must keep the copyright notice: © 2025 Emre Demircan ([emrecpp](https://github.com/emrecpp)).

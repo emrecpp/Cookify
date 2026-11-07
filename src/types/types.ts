@@ -44,6 +44,17 @@ export interface SyncSnapshot {
     cookies: CookieData[]
     swaggers: SwaggerData[]
     settings: Settings
+    /** Data of the Cookify Swagger view (saved APIs, their state, preferences); see lib/cloud-data.ts. */
+    swaggerUi?: SwaggerUiData
+}
+
+export interface SwaggerUiData {
+    /** Stored value of the Swagger view preferences. */
+    prefs?: Record<string, unknown>
+    /** Stored value of the saved APIs list ({apis, version}). */
+    apis?: { apis: unknown[]; version?: number }
+    /** Stored API states, keyed by their storage key without the "cookifySwaggerApi:" prefix. */
+    states: Record<string, Record<string, unknown>>
 }
 
 export type SyncEntity = CookieData | SwaggerData

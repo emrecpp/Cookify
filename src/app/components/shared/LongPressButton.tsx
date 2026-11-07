@@ -64,7 +64,7 @@ export function LongPressButton({
         animationRef.current = requestAnimationFrame(animateProgress);
     }, [longPressTime, threshold, onLongPress]);
 
-    const handlePressStart = useCallback((e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
+    const handlePressStart = useCallback(() => {
         if (disabled) return;
 
         setIsPressed(true);
@@ -117,7 +117,7 @@ export function LongPressButton({
                 onClick(e as React.MouseEvent<HTMLDivElement>);
             }
         }
-    }, [isPressed, isProgressing, onClick, onFailed, longPressTime, progress, threshold]);
+    }, [isPressed, isProgressing, onClick, onFailed, progress, threshold]);
 
     useEffect(() => {
         return () => {

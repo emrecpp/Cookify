@@ -1,23 +1,6 @@
-import {FormType} from "@/types/types";
 import ProjectFilter from "./ProjectFilter";
 
-const GLOBAL_PROJECT_KEY = "cookify_selected_global_project";
+/** Search box and project picker above the cookie and token lists (both read the global context). */
+export const GlobalFilter = () => <ProjectFilter longPressTime={1500}/>;
 
-
-export interface GlobalFilterProps<T> {
-    items: T[];
-    type: FormType;
-}
-
-export const GlobalFilter = ({items, type}: GlobalFilterProps<any>) => {
-    return (
-        <ProjectFilter
-            items={items}
-            type={type}
-            storageKey={GLOBAL_PROJECT_KEY}
-            longPressTime={1500}
-        />
-    )
-}
-
-export default GlobalFilter; 
+export default GlobalFilter;

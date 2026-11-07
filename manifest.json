@@ -1,10 +1,15 @@
 {
     "manifest_version": 3,
-    "name": "Cookify",
-    "description": "Simplify cookie and JWT token management with one-click actions. Save time and boost productivity!",
-    "version": "1.2.2",
+    "name": "Cookify - Swagger UI API Client, JWT & Cookie Manager",
+    "description": "Postman-like API client for any Swagger UI page. Dark mode, tabs, environments, JWT and cookie manager. No import, no setup.",
+    "version": "2.0.2",
+    "homepage_url": "https://github.com/emrecpp/Cookify",
     "permissions": [
         "cookies",
+        "storage",
+        "unlimitedStorage",
+        "alarms",
+        "scripting",
         "activeTab",
         "identity",
         "identity.email"
@@ -38,15 +43,27 @@
             "128": "icon/128.png"
         }
     },
+    "background": {
+        "service_worker": "src/background.ts",
+        "type": "module"
+    },
     "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "css": [
+                "swagger-preload.css"
+            ],
+            "run_at": "document_start"
+        },
         {
             "matches": [
                 "<all_urls>"
             ],
             "js": [
                 "/src/runtime/router.ts"
-            ],
-            "media": []
+            ]
         },
         {
             "matches": [

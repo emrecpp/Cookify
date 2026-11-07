@@ -1,7 +1,10 @@
 "use client"
-import {useApplyCookie} from "@/hooks/useCookie.tsx";
+import {applyCookie} from "@/lib/apply-cookie.tsx";
 import {useGoogleDriveSync} from "@/hooks/useGoogleDriveSync.ts";
-import {useApplySwagger} from "@/hooks/useSwagger.ts";
+import {applySwaggerToken} from "@/lib/apply-swagger.ts";
+import {DATA_KEY, PopupData} from "@/lib/cloud-data.ts";
+import {stableJson} from "@/lib/values.ts";
+import {loadPopupData, savePopupData} from "@/lib/popup-storage.ts";
 import {normalizeSnapshot, prepareCookiesForSave, prepareSwaggersForSave} from "@/lib/sync.ts";
 import {sortByOrder} from "@/lib/utils.ts";
 import {
@@ -12,42 +15,15 @@ import {
     isCookieData,
     Settings,
     SwaggerData,
-    SyncSnapshot,
 } from "@/types/types.ts";
 import React, {createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState} from 'react';
 import toast from 'react-hot-toast';
 
 // Constants
-const STORAGE_KEY = 'Cookify' as const;
-const GLOBAL_PROJECT_KEY = 'cookify_selected_global_project' as const;
 const GOOGLE_DRIVE_HEADER_VISIBILITY_KEY = 'CookifyShowGoogleDriveHeader' as const;
 
 function normalizeActiveProject(value: unknown): string | null {
     return typeof value === "string" && value.length > 0 ? value : null;
-}
-
-function readStoredActiveProject(): string | null {
-    try {
-        const rawData = localStorage.getItem(STORAGE_KEY);
-        if (rawData) {
-            const data = JSON.parse(rawData) as StorageData;
-            if (data.settings && Object.prototype.hasOwnProperty.call(data.settings, "activeProject")) {
-                return normalizeActiveProject(data.settings.activeProject);
-            }
-        }
-    } catch {
-        // Fall back to the legacy standalone selection below.
-    }
-
-    return normalizeActiveProject(localStorage.getItem(GLOBAL_PROJECT_KEY));
-}
-
-function storeActiveProject(projectName: string | null): void {
-    if (projectName) {
-        localStorage.setItem(GLOBAL_PROJECT_KEY, projectName);
-    } else {
-        localStorage.removeItem(GLOBAL_PROJECT_KEY);
-    }
 }
 
 // Enums
@@ -84,9 +60,10 @@ interface StorageData {
 type DataType = CookieData | SwaggerData;
 type DataArray<T> = T extends CookieData ? CookieData[] : SwaggerData[];
 
-// Storage Utilities
+// Storage Utilities: popup data lives in chrome.storage.local (DATA_KEY), cached here once loaded.
 class StorageManager {
     private static instance: StorageManager;
+    private data: StorageData | null = null;
 
     static getInstance(): StorageManager {
         if (!StorageManager.instance) {
@@ -95,30 +72,30 @@ class StorageManager {
         return StorageManager.instance;
     }
 
+    async load(): Promise<StorageData> {
+        this.data = await loadPopupData() as StorageData;
+        return this.data;
+    }
+
     getData(): StorageData {
-        try {
-            const data = localStorage.getItem(STORAGE_KEY);
-            return data ? JSON.parse(data) : {};
-        } catch (error) {
-            console.error('Failed to parse data from localStorage:', error.message);
-            toast.error('Failed to load data!');
-            return {};
-        }
+        return this.data ?? {};
+    }
+
+    /** Takes data written by someone else (Google Drive sync, import); false when it is what we have. */
+    receive(data: StorageData): boolean {
+        if (stableJson(data) === stableJson(this.data)) return false;
+        this.data = data;
+        return true;
     }
 
     saveData(data: Partial<StorageData>): void {
-        try {
-            const currentData = this.getData();
-            const updatedData = {...currentData, ...data};
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
-        } catch (error) {
-            console.error('Failed to save data to localStorage:', error.message);
+        // Nothing is written before the stored data is loaded (it would overwrite it with defaults).
+        if (!this.data) return;
+        this.data = {...this.data, ...data};
+        savePopupData(this.data as PopupData).catch((error) => {
+            console.error('Failed to save data:', (error as Error).message);
             toast.error('Failed to save data!');
-        }
-    }
-
-    clearGlobalProject(): void {
-        localStorage.removeItem(GLOBAL_PROJECT_KEY);
+        });
     }
 }
 
@@ -168,11 +145,10 @@ interface GlobalContextState {
     showGoogleDriveInHeader: boolean;
     setShowGoogleDriveInHeader(show: boolean): void;
 
-    searchTerm?: string;
-    setSearchTerm?: React.Dispatch<React.SetStateAction<string>>;
+    searchTerm: string;
+    setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
     clearSearchTerm(): void;
 
-    handleImport(importedData?: any): void;
     isInitialized: boolean;
 
     googleDriveSync: GoogleDriveSyncStatus;
@@ -197,54 +173,54 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
     const [editingCookie, setEditingCookie] = useState<CookieData | null>(null);
     const [editingSwagger, setEditingSwagger] = useState<SwaggerData | null>(null);
     const [animationDirection, setAnimationDirection] = useState<1 | -1>(1);
-    const [activeProject, setActiveProjectState] = useState<string | null>(readStoredActiveProject);
+    const [activeProject, setActiveProjectState] = useState<string | null>(null);
     const [showGoogleDriveInHeader, setShowGoogleDriveInHeaderState] = useState(
         () => localStorage.getItem(GOOGLE_DRIVE_HEADER_VISIBILITY_KEY) !== "false",
     );
     const [projects, setProjects] = useState<string[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [isInitialized, setIsInitialized] = useState(false);
-    const [settings, setSettings] = useState<ExtendedSettings>(() => {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            try {
-                const data = JSON.parse(saved);
-                return {
-                    ...DEFAULT_SETTINGS,
-                    projects: [],
-                    ...data.settings,
-                    activeProject: readStoredActiveProject(),
-                };
-            } catch {
-                return {...DEFAULT_SETTINGS, projects: []};
-            }
-        }
-        return {...DEFAULT_SETTINGS, projects: []};
-    });
+    const [settings, setSettings] = useState<ExtendedSettings>({...DEFAULT_SETTINGS, projects: []});
 
     // Storage Manager Instance
     const storageManager = useMemo(() => StorageManager.getInstance(), []);
 
-    // Initialize data from localStorage
-    useEffect(() => {
-        const data = storageManager.getData();
+    const applyData = useCallback((data: StorageData) => {
         const normalized = normalizeSnapshot({
             cookies: data.cookies,
             swaggers: data.swaggers,
-            settings: {
-                ...DEFAULT_SETTINGS,
-                ...data.settings,
-                activeProject: readStoredActiveProject(),
-            },
+            settings: {...DEFAULT_SETTINGS, ...data.settings},
         });
         setCookiesState(sortByOrder(normalized.cookies));
         setSwaggersState(sortByOrder(normalized.swaggers));
         setSettings(normalized.settings);
         setActiveProjectState(normalized.settings.activeProject);
-        storeActiveProject(normalized.settings.activeProject);
-        storageManager.saveData(normalized);
-        setIsInitialized(true);
-    }, [storageManager]);
+        return normalized;
+    }, []);
+
+    // Load the stored data, then follow changes from Google Drive sync or an import.
+    useEffect(() => {
+        let active = true;
+        void storageManager.load().then((data) => {
+            if (!active) return;
+            const normalized = applyData(data);
+            storageManager.saveData(normalized);
+            setIsInitialized(true);
+        }).catch((error) => {
+            console.error('Failed to load data:', (error as Error).message);
+            toast.error('Failed to load data!');
+        });
+        const onChange = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
+            if (area !== "local" || !changes[DATA_KEY]) return;
+            const next = (changes[DATA_KEY].newValue ?? {}) as StorageData;
+            if (storageManager.receive(next)) applyData(next);
+        };
+        chrome.storage.onChanged.addListener(onChange);
+        return () => {
+            active = false;
+            chrome.storage.onChanged.removeListener(onChange);
+        };
+    }, [storageManager, applyData]);
 
     // Settings Management
     const updateSettings = useCallback((newSettings: Partial<ExtendedSettings>) => {
@@ -258,7 +234,6 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
     const setActiveProject = useCallback((projectName: string | null) => {
         const normalizedProject = normalizeActiveProject(projectName);
         setActiveProjectState(normalizedProject);
-        storeActiveProject(normalizedProject);
         setSettings(previous => {
             if (previous.activeProject === normalizedProject) return previous;
             const updated = {
@@ -457,70 +432,20 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
     const handleApply = useCallback(async (data: DataType) => {
         try {
             if (isCookieData(data)) {
-                await useApplyCookie(data);
+                await applyCookie(data);
             } else {
-                await useApplySwagger(data);
+                await applySwaggerToken(data);
             }
         } catch (error) {
-            console.error('Apply operation failed:', error.message);
+            console.error('Apply operation failed:', (error as Error).message);
             toast.error('Failed to apply configuration!');
         }
     }, []);
 
-    // Import Management
-    const handleImport = useCallback((importedData: any) => {
-        try {
-            if (importedData.cookies) setCookies(importedData.cookies);
-            if (importedData.swaggers) setSwaggers(importedData.swaggers);
-            if (importedData.settings) {
-                const hasActiveProject = Object.prototype.hasOwnProperty.call(importedData.settings, "activeProject");
-                const importedActiveProject = normalizeActiveProject(importedData.settings.activeProject);
-                updateSettings({
-                    ...importedData.settings,
-                    ...(hasActiveProject ? {activeProject: importedActiveProject} : {}),
-                });
-                if (hasActiveProject) {
-                    setActiveProject(importedActiveProject);
-                }
-            }
-
-            toast.success('Data imported successfully!');
-        } catch (error) {
-            console.error('Import failed:', error.message);
-            toast.error('Failed to import data!');
-        }
-    }, [setActiveProject, setCookies, setSwaggers, updateSettings]);
-
     // Search Management
     const clearSearchTerm = useCallback(() => setSearchTerm(""), []);
 
-    const syncSnapshot = useMemo<SyncSnapshot>(() => ({
-        cookies,
-        swaggers,
-        settings,
-    }), [cookies, settings, swaggers]);
-
-    const applySyncedSnapshot = useCallback((snapshot: SyncSnapshot) => {
-        const normalized = normalizeSnapshot(snapshot);
-        const sortedCookies = sortByOrder(normalized.cookies);
-        const sortedSwaggers = sortByOrder(normalized.swaggers);
-        setCookiesState(sortedCookies);
-        setSwaggersState(sortedSwaggers);
-        setSettings(normalized.settings);
-        setActiveProjectState(normalized.settings.activeProject);
-        storeActiveProject(normalized.settings.activeProject);
-        storageManager.saveData({
-            cookies: sortedCookies,
-            swaggers: sortedSwaggers,
-            settings: normalized.settings,
-        });
-    }, [storageManager]);
-
-    const driveSync = useGoogleDriveSync({
-        snapshot: syncSnapshot,
-        isInitialized,
-        applySnapshot: applySyncedSnapshot,
-    });
+    const driveSync = useGoogleDriveSync({isInitialized});
 
     // Context Value
     const contextValue = useMemo(() => ({
@@ -563,7 +488,6 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
         searchTerm,
         setSearchTerm,
         clearSearchTerm,
-        handleImport,
         isInitialized,
 
         googleDriveSync: driveSync.status,
@@ -579,7 +503,7 @@ export const GlobalContextProvider: React.FC<GlobalContextProps> = ({children}) 
         animationDirection, projects, getAllProjects, addProject, handleDeleteProject,
         settings, updateSettings, activeProject, setActiveProject,
         showGoogleDriveInHeader, setShowGoogleDriveInHeader,
-        searchTerm, clearSearchTerm, handleImport,
+        searchTerm, clearSearchTerm,
         isInitialized, driveSync
     ]);
 

@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy Policy | Cookify</title>
+<meta name="description" content="How Cookify handles your data: no servers, no accounts and no analytics. What stays in your browser, what goes to Google Drive and how to delete it.">
+<meta name="author" content="Emre Demircan (emrecpp)">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#131417">
+<link rel="canonical" href="https://emrecpp.github.io/Cookify/privacy/">
+<link rel="icon" href="../icon/32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="../icon/128.png">
+<link rel="stylesheet" href="../style.css">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Cookify">
+<meta property="og:title" content="Privacy Policy | Cookify">
+<meta property="og:description" content="How Cookify handles your data: no servers, no accounts and no analytics. What stays in your browser, what goes to Google Drive and how to delete it.">
+<meta property="og:url" content="https://emrecpp.github.io/Cookify/privacy/">
+<meta property="og:image" content="https://emrecpp.github.io/Cookify/screenshots/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+<body>
+<header class="top">
+<div class="wrap top-in">
+<a class="brand" href="../"><img src="../icon/32.png" alt="" width="24" height="24">Cookify</a>
+<nav aria-label="Main">
+<a href="../#features">Features</a>
+<a href="../#compare">Compare</a>
+<a href="../#works-with">Works with</a>
+<a href="../#faq">FAQ</a>
+</nav>
+<a class="btn is-quiet top-gh" href="https://github.com/emrecpp/Cookify"><svg class="gh" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>GitHub</a>
+<a class="btn is-primary" href="https://chromewebstore.google.com/detail/cookify/mafdkfnimilggjneibkjfejlnhcecnjd">Add to Chrome</a>
+</div>
+</header>
+<main>
+<article class="doc">
+<div class="wrap narrow">
+<nav class="crumbs" aria-label="Breadcrumb"><a href="../">Cookify</a> / Privacy Policy</nav>
+<h1>Privacy Policy</h1>
+<p class="note">Effective November 6, 2026</p>
+<p class="lede">Cookify has no servers, no accounts and no analytics, and its developer doesn't receive your data. Your data stays in your browser unless you send it somewhere yourself: to an API, to your own Google Drive or to an export file.</p>
+
+<h2>What Cookify stores</h2>
+<p>Cookify keeps the following in your browser's extension storage. It doesn't add its own encryption to this storage.</p>
+<div class="table"><table><thead><tr><th>Data</th><th>What it is</th></tr></thead><tbody>
+<tr><th scope="row">Cookies and tokens</th><td>The cookies and JWT tokens you save in Cookify.</td></tr>
+<tr><th scope="row">Saved logins</th><td>The login request Cookify remembers so it can renew a token. It can include the username and password you sent to your API.</td></tr>
+<tr><th scope="row">API workspace</th><td>Saved APIs and environment addresses, favorites, open tabs, request drafts, templates, recent requests and preferences.</td></tr>
+<tr><th scope="row">API documents</th><td>Cached copies of the OpenAPI documents of the Swagger UI pages you open.</td></tr>
+<tr><th scope="row">Google account</th><td>Your email address and profile picture, only if you connect Google Drive sync.</td></tr>
+</tbody></table></div>
+
+<h2>How Cookify uses web pages</h2>
+<p>Cookify's scripts run on the pages you open so they can detect Swagger UI. This happens in your browser. Cookify keeps data only for Swagger UI pages, and it doesn't record your browsing history.</p>
+<p>Cookify doesn't read the cookies in your browser. It only sets or removes a cookie when you choose to apply or delete one.</p>
+
+<h2>When data leaves your browser</h2>
+<ul class="plain">
+<li><strong>Your APIs:</strong> When you send a request, it goes directly from your browser to the address you chose, with the values and token you set for it.</li>
+<li><strong>Google Drive (optional):</strong> If you connect sync, Cookify stores a copy of your cookies, tokens, saved logins and API workspace in a private app folder in your own Google Drive. Cookify doesn't add its own encryption to this copy, so it's protected by your Google account. Google handles it under the <a href="https://policies.google.com/privacy">Google Privacy Policy</a>.</li>
+<li><strong>Export files:</strong> An export holds your data, including tokens, cookie values and saved logins, and you decide where to keep it. With a password, the file is encrypted with AES-256. Without one, anyone who has the file can read it.</li>
+</ul>
+
+<h2>Google user data</h2>
+<p>When you connect sync, Cookify asks Google for access to its own app folder in your Drive (<code>drive.appdata</code>) and for your basic profile (<code>openid</code>, <code>email</code>, <code>profile</code>). It can't see your other Drive files.</p>
+<p>Cookify uses this data only to show which account is connected and to save and read your sync data. It isn't sent to the developer or anyone else, and it isn't used for advertising.</p>
+<p>Cookify's use and transfer of information received from Google APIs adheres to the <a href="https://developers.google.com/terms/api-services-user-data-policy">Google API Services User Data Policy</a>, including the Limited Use requirements.</p>
+
+<h2>What Cookify doesn't do</h2>
+<ul class="plain">
+<li>It doesn't sell or share your data.</li>
+<li>It doesn't show ads.</li>
+<li>It doesn't use analytics or tracking.</li>
+<li>It doesn't send your data to any server run by the developer.</li>
+</ul>
+
+<h2>Keeping and deleting your data</h2>
+<ul class="plain">
+<li><strong>In your browser:</strong> Your data stays until you delete it. Removing the extension deletes what it stored in your browser.</li>
+<li><strong>In Google Drive:</strong> Disconnecting stops sync but doesn't delete the copy. To delete it, open Google Drive on a computer, go to Settings &gt; Manage apps, open the Options menu next to Cookify and delete its hidden app data.</li>
+<li><strong>Export files:</strong> Delete them like any other file.</li>
+</ul>
+
+<h2>Changes</h2>
+<p>If this policy changes, the new version will be published on this page with a new effective date.</p>
+
+<h2>Contact</h2>
+<p>Cookify is made by Emre Demircan (<a href="https://github.com/emrecpp">emrecpp</a>). For privacy questions, <a href="https://github.com/emrecpp/Cookify/issues">open an issue on GitHub</a>. Issues are public, so don't include tokens or other private data.</p>
+</div>
+</article>
+</main>
+<footer class="foot">
+<div class="wrap foot-in">
+<div><strong>Cookify</strong> is made by <a href="https://github.com/emrecpp">Emre Demircan (emrecpp)</a>. Free and open source under the MIT License.</div>
+<div class="foot-links">
+<a href="https://github.com/emrecpp/Cookify"><svg class="gh" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>github.com/emrecpp/Cookify</a>
+<a href="https://chromewebstore.google.com/detail/cookify/mafdkfnimilggjneibkjfejlnhcecnjd">Chrome Web Store</a>
+<a href="../privacy/">Privacy Policy</a>
+</div>
+<div class="foot-links">
+<a href="../fastapi/">FastAPI</a><a href="../nestjs/">NestJS</a><a href="../express/">Express</a><a href="../aspnet-core/">ASP.NET Core</a><a href="../spring-boot/">Spring Boot</a><a href="../swagger-ui-dark-mode/">Swagger UI dark mode</a><a href="../postman-alternative/">Postman alternative</a>
+</div>
+</div>
+</footer>
+</body>
+</html>

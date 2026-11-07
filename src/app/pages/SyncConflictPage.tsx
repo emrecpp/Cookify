@@ -8,7 +8,7 @@ import {
     SyncConflict,
     SyncEntity,
 } from "@/types/types";
-import { diffChars, type Change } from "diff";
+import { diffChars } from "diff";
 import { Check, Clock3, Laptop, Save, ShieldAlert, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -95,7 +95,7 @@ function getDiffFields(conflict: SyncConflict): DiffField[] {
 }
 
 function DiffValue({ parts, side, changed, multiline }: {
-    parts: Change[];
+    parts: { value: string; added?: boolean; removed?: boolean }[];
     side: "local" | "cloud";
     changed: boolean;
     multiline?: boolean;
@@ -114,7 +114,7 @@ function DiffValue({ parts, side, changed, multiline }: {
                 )}>{side === "local" ? "−" : "+"}</span>
                 <pre className={cn(
                     "min-w-0 flex-1 whitespace-pre-wrap break-all font-sans",
-                    multiline && "max-h-72 overflow-auto font-mono text-xs leading-5",
+                    multiline && "max-h-72 overflow-auto [scrollbar-gutter:stable] font-mono text-xs leading-5",
                 )}>
                     {parts.map((part, index) => {
                         if (side === "local" && part.added) return null;
@@ -145,8 +145,8 @@ function ConflictDiff({ conflict, resolution, onResolve }: {
     const alias = conflict.local?.alias || conflict.cloud?.alias || "Unnamed profile";
 
     return (
-        <section className="overflow-hidden rounded-lg border bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b bg-slate-50 px-4 py-3">
+        <section className="overflow-hidden rounded-lg border bg-background shadow-sm">
+            <div className="flex items-center justify-between border-b bg-muted/50 px-4 py-3">
                 <div>
                     <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{conflict.type}</span>
                     <h2 className="font-semibold">{alias}</h2>
@@ -155,7 +155,7 @@ function ConflictDiff({ conflict, resolution, onResolve }: {
             </div>
 
             <div className="grid grid-cols-[140px_minmax(0,1fr)_minmax(0,1fr)] border-b">
-                <div className="bg-slate-50" />
+                <div className="bg-muted/50" />
                 <div className="border-l p-3">
                     <Button
                         type="button"
@@ -183,7 +183,7 @@ function ConflictDiff({ conflict, resolution, onResolve }: {
                 const parts = changed ? diffChars(field.local, field.cloud) : [{ value: field.local }];
                 return (
                     <div className="grid grid-cols-[140px_minmax(0,1fr)_minmax(0,1fr)] border-b last:border-b-0" key={field.label}>
-                        <div className="bg-slate-50 px-4 py-2 text-xs font-medium text-muted-foreground">{field.label}</div>
+                        <div className="bg-muted/50 px-4 py-2 text-xs font-medium text-muted-foreground">{field.label}</div>
                         <DiffValue parts={parts} side="local" changed={changed} multiline={field.multiline} />
                         <DiffValue parts={parts} side="cloud" changed={changed} multiline={field.multiline} />
                     </div>
@@ -219,8 +219,8 @@ export function SyncConflictPage() {
 
     if (conflicts.length === 0) {
         return (
-            <main className="grid min-h-screen place-items-center bg-slate-50 p-8">
-                <div className="rounded-lg border bg-white p-8 text-center shadow-sm">
+            <main className="grid min-h-screen place-items-center bg-muted/50 p-8">
+                <div className="rounded-lg border bg-background p-8 text-center shadow-sm">
                     <Check className="mx-auto mb-3 h-10 w-10 text-green-600" />
                     <h1 className="text-xl font-semibold">No sync conflicts</h1>
                     <Button className="mt-5" variant="outline" onClick={() => window.close()}><X /> Close tab</Button>
@@ -230,9 +230,9 @@ export function SyncConflictPage() {
     }
 
     return (
-        <main className="min-h-screen bg-slate-100">
+        <main className="min-h-screen bg-muted">
             {googleDriveSync.showProgress && <div className="google-drive-progress fixed inset-x-0 top-0 z-[100] h-1 overflow-hidden bg-muted" role="progressbar" />}
-            <header className="sticky top-0 z-40 border-b bg-white/95 shadow-sm backdrop-blur">
+            <header className="sticky top-0 z-40 border-b bg-background/95 shadow-sm backdrop-blur">
                 <div className="mx-auto flex max-w-[1500px] items-center gap-4 px-6 py-4">
                     <ShieldAlert className="h-7 w-7 text-amber-500" />
                     <div className="mr-auto">
