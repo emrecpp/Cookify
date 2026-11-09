@@ -1,7 +1,7 @@
 {
     "name": "cookify",
     "private": true,
-    "version": "2.0.2",
+    "version": "2.0.3",
     "description": "Postman-like API client for any Swagger UI page.",
     "author": "Emre Demircan (https://github.com/emrecpp)",
     "license": "MIT",
