@@ -11,6 +11,15 @@ export interface MenuSideButton {
     onClick: () => void;
 }
 
+/** An underlined link at the end of a row (e.g. an environment of an API); it acts on its own. */
+export interface MenuLink {
+    label: string;
+    title?: string;
+    /** The one in use: shown without underline and does nothing. */
+    active?: boolean;
+    onClick: () => void;
+}
+
 export interface MenuItem {
     label: string;
     /** Shown before the label, e.g. its position in the list. */
@@ -18,6 +27,8 @@ export interface MenuItem {
     /** The item that is in use. */
     active?: boolean;
     side?: MenuSideButton[];
+    /** Links shown on the right instead of the hint. */
+    links?: MenuLink[];
     /** Keyboard hint shown on the right. */
     hint?: string;
     danger?: boolean;
@@ -139,6 +150,21 @@ export function MenuHost() {
                             </span>
                             {item.hint && <span className="cf-menu-hint">{item.hint}</span>}
                         </button>
+                        {item.links?.length ? (
+                            <span className="cf-menu-links">
+                                {item.links.map((link, n) => (
+                                    <button key={n} className={`cf-menu-link ${link.active ? "is-active" : ""}`} title={link.title} aria-label={link.title ?? link.label}
+                                            aria-current={link.active || undefined} onMouseEnter={() => setCursor(i)}
+                                            onClick={() => {
+                                                if (link.active) return;
+                                                closeMenu();
+                                                link.onClick();
+                                            }}>
+                                        {link.label}
+                                    </button>
+                                ))}
+                            </span>
+                        ) : null}
                         {item.side?.map((button) => (
                             <button key={button.title} className="cf-menu-side" title={button.title} aria-label={button.title} disabled={button.disabled}
                                     onMouseEnter={() => setCursor(i)} onClick={button.onClick}>

@@ -3,7 +3,8 @@
 // a Swagger docs page. Switching environment opens that page. The environments of an API share its
 // favorites, tabs and drafts; token and login stay per environment (see initApiState).
 // Shared with the Cookify popup through chrome.storage.
-import {EnvKind, Environment, flushApiState, guessKind, KIND_LABEL, KIND_SHORT, newId, removeApiStates, storageGet, storageSet} from "./state";
+import {EnvKind, Environment, flushApiState, guessKind, KIND_LABEL, KIND_SHORT, newId, notify, removeApiStates, storageGet, storageSet} from "./state";
+import {proxyFetch} from "@/lib/proxy";
 import {originOf} from "@/lib/values";
 import {createStore} from "./store";
 
@@ -98,6 +99,19 @@ export function findEnv(apis: SavedApi[], docsUrl: string): { api: SavedApi; env
 
 export function newEnv(kind: EnvKind, docsUrl: string, name?: string): ApiEnv {
     return {id: newId(), kind, name: name?.trim() || KIND_LABEL[kind], docsUrl};
+}
+
+/**
+ * The name of an environment after its type changed. A name the user did not choose (empty, the type's
+ * label, or "Production (host)" as given to a second environment of a type) follows the new type.
+ */
+export function renameForKind(name: string, from: EnvKind, to: EnvKind) {
+    const trimmed = name.trim();
+    if (!trimmed) return name;
+    const label = KIND_LABEL[from];
+    if (trimmed === label) return KIND_LABEL[to];
+    if (trimmed.startsWith(`${label} (`) && trimmed.endsWith(")")) return KIND_LABEL[to] + trimmed.slice(label.length);
+    return name;
 }
 
 /** The environment types of an API, e.g. "Dev · Prod ×2". */
@@ -205,12 +219,51 @@ export const apisActions = {
     },
 };
 
-/** Opens a docs page in this tab, saving the state first so the other environment sees it. */
+/** How long a server may take to answer before it counts as not responding. */
+const PROBE_TIMEOUT = 6000;
+
+/**
+ * Whether a server answers at this address. Any HTTP response counts (even 404: the server is up and
+ * findEnv copes with a moved docs page); only a failed connection or no answer in time does not.
+ */
+export async function isReachable(url: string, timeout = PROBE_TIMEOUT): Promise<boolean> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeout);
+    try {
+        const response = await proxyFetch({method: "GET", url, credentials: "omit"}, controller.signal);
+        return response.status > 0;
+    } catch (error) {
+        // The background worker could not be reached (extension reloaded): don't stand in the way.
+        return !controller.signal.aborted && (error as Error).name !== "AbortError";
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+let opening = "";
+
+/**
+ * Opens a docs page in this tab, saving the state first so the other environment sees it. The server is
+ * checked first: when it is down (e.g. the local server is not running) the user stays on this page.
+ */
 export async function openDocs(docsUrl: string) {
     // Saved addresses also arrive through sync and import files: only ever open them as web pages.
-    if (docsUrl === currentDocsUrl() || !/^https?:\/\//i.test(docsUrl)) return;
-    await flushApiState();
-    location.href = docsUrl;
+    if (docsUrl === currentDocsUrl() || !/^https?:\/\//i.test(docsUrl) || opening === docsUrl) return;
+    opening = docsUrl;
+    const slow = setTimeout(() => notify(`Connecting to ${hostOf(docsUrl)}…`), 400);
+    try {
+        const up = await isReachable(docsUrl);
+        clearTimeout(slow);
+        if (!up) {
+            notify(`${hostOf(docsUrl)} is not responding. Is the server running?`, "err");
+            return;
+        }
+        await flushApiState();
+        location.href = docsUrl;
+    } finally {
+        clearTimeout(slow);
+        opening = "";
+    }
 }
 
 /** Switches to another API, at the environment opened last there. */

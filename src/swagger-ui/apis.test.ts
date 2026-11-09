@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {apisActions, apisStore, envsFromRecords, envSummary, findEnv, migrate, normalizeDocsUrl, SavedApi} from "./apis";
+import {apisActions, apisStore, envsFromRecords, envSummary, findEnv, migrate, normalizeDocsUrl, renameForKind, SavedApi} from "./apis";
 
 describe("normalizeDocsUrl", () => {
     it("adds the scheme and FastAPI's /docs path when only a host is typed", () => {
@@ -76,5 +76,17 @@ describe("the list of APIs", () => {
         apisActions.move("c", -1);
         apisActions.move("b", 1);
         expect(order()).toEqual(["c", "a", "b"]);
+    });
+});
+
+describe("renameForKind", () => {
+    it("lets a name the user did not choose follow the type", () => {
+        expect(renameForKind("Staging", "staging", "production")).toBe("Production");
+        expect(renameForKind("Production (api.example.com)", "production", "staging")).toBe("Staging (api.example.com)");
+        expect(renameForKind("", "local", "production")).toBe("");
+    });
+    it("keeps a name the user typed", () => {
+        expect(renameForKind("EU cluster", "staging", "production")).toBe("EU cluster");
+        expect(renameForKind("Staging old", "staging", "production")).toBe("Staging old");
     });
 });

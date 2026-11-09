@@ -1,11 +1,11 @@
 import {ArrowDown, ArrowUp, ChevronDown, ChevronUp} from "lucide-react";
 import {useEffect, useMemo, useState} from "react";
-import {ApiEnv, apisActions, apisStore, currentDocsUrl, envsFromRecords, envSummary, findEnv, hostOf, newEnv, normalizeDocsUrl, openDocs, SavedApi, shortUrl, suggestName, switchApi} from "../apis";
+import {ApiEnv, apisActions, apisStore, currentDocsUrl, envsFromRecords, findEnv, hostOf, newEnv, normalizeDocsUrl, openDocs, renameForKind, SavedApi, shortUrl, suggestName, switchApi} from "../apis";
 import {useSpec} from "../context";
 import {actions, apiStore, attachToApi, EnvKind, KIND_LABEL, KIND_SHORT, newId, notify} from "../state";
 import {createStore, useStore} from "../store";
 import {askText} from "./Dialogs";
-import {MenuItem, openMenu, updateMenu} from "./Menu";
+import {MenuItem, MenuLink, openMenu, updateMenu} from "./Menu";
 
 // ---------------------------------------------------------------------------
 // Dialog state
@@ -36,6 +36,18 @@ const KINDS = Object.keys(KIND_LABEL) as EnvKind[];
 /** Name of a new environment: its type, plus the host when the API already has one of that type. */
 function envName(api: SavedApi | undefined, kind: EnvKind, docsUrl: string) {
     return api?.envs.some((e) => e.kind === kind) ? `${KIND_LABEL[kind]} (${hostOf(docsUrl)})` : KIND_LABEL[kind];
+}
+
+/**
+ * The environments of an API as links in the API menu ("Dev · Prod"): one click opens that environment.
+ * Types that occur more than once are numbered (Prod 1, Prod 2).
+ */
+function envLinks(api: SavedApi, currentEnvId?: string): MenuLink[] {
+    return api.envs.map((env) => {
+        const same = api.envs.filter((e) => e.kind === env.kind);
+        const label = same.length > 1 ? `${KIND_SHORT[env.kind]} ${same.indexOf(env) + 1}` : KIND_SHORT[env.kind];
+        return {label, title: `${api.name} · ${env.name} (${hostOf(env.docsUrl)})`, active: env.id === currentEnvId, onClick: () => void openDocs(env.docsUrl)};
+    });
 }
 
 /** First environment type the API does not have yet (Development for a new API). */
@@ -97,7 +109,7 @@ export function ApiSwitcher() {
                 prefix: `${index + 1})`,
                 label: api.name,
                 active: api.id === page?.api.id,
-                hint: envSummary(api),
+                links: envLinks(api, page?.env.id),
                 onSelect: () => switchApi(api),
                 side: apis.length > 1 ? [
                     {icon: <ArrowUp size={13}/>, title: "Move up", disabled: index === 0, onClick: () => move(api.id, -1)},
@@ -420,7 +432,10 @@ function ApiTree({onlyApiId, add}: { onlyApiId?: string; add?: "api" | "env" }) 
                                                    onChange={(e) => patchEnv(api.id, env.id, {name: e.target.value})}/>
                                         </span>
                                         <select className={`cf-select-inline is-env-${env.kind}`} value={env.kind} aria-label="Type"
-                                                onChange={(e) => patchEnv(api.id, env.id, {kind: e.target.value as EnvKind})}>
+                                                onChange={(e) => {
+                                                    const kind = e.target.value as EnvKind;
+                                                    patchEnv(api.id, env.id, {kind, name: renameForKind(env.name, env.kind, kind)});
+                                                }}>
                                             {KINDS.map((k) => <option key={k} value={k}>{KIND_LABEL[k]}</option>)}
                                         </select>
                                         <input className="cf-input is-mono" value={env.input} spellCheck={false} aria-label="Swagger URL"

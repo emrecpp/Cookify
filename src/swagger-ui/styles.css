@@ -804,6 +804,14 @@ button.cf-flag:hover { background: color-mix(in srgb, currentColor 14%, transpar
 .cf-menu-item:disabled { opacity: 0.4; }
 .cf-menu-hint { margin-left: auto; font-size: 12px; color: var(--faint); }
 .cf-menu-item.is-cursor .cf-menu-hint { color: inherit; opacity: 0.75; }
+.cf-menu-links { flex: none; display: flex; align-items: center; gap: 8px; padding: 0 12px 0 4px; font-size: 12px; }
+.cf-menu-row:has(.cf-menu-side) .cf-menu-links { padding-right: 6px; }
+.cf-menu-link { color: var(--muted); text-decoration: underline; text-underline-offset: 2px; text-decoration-color: color-mix(in srgb, currentColor 45%, transparent); }
+.cf-menu-link:hover:not(:disabled) { color: var(--accent); text-decoration-color: currentColor; }
+.cf-menu-link.is-active { color: var(--accent); font-weight: 600; text-decoration: none; cursor: default; }
+.cf-menu-row:has(.cf-menu-item.is-cursor:not(:disabled):not(.is-danger)) .cf-menu-link { color: inherit; }
+.cf-menu-row:has(.cf-menu-item.is-cursor:not(:disabled):not(.is-danger)) .cf-menu-links { color: var(--selected-text); }
+.cf-menu-row:has(.cf-menu-item.is-cursor:not(:disabled):not(.is-danger)) .cf-menu-link:hover { text-decoration-thickness: 2px; }
 .cf-menu-sep { height: 1px; margin: 3px 0; background: var(--border); }
 
 /* send */
