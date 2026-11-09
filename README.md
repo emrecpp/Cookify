@@ -154,14 +154,15 @@ Google Drive sync is optional and disabled unless the user connects an account f
 1. Enable the Google Drive API in a Google Cloud project.
 2. Create an OAuth 2.0 client for a Chrome extension and bind it to the Cookify extension ID. The published ID is `mafdkfnimilggjneibkjfejlnhcecnjd`; unpacked development builds may use a different stable ID.
 3. Create a Web application OAuth client for account switching and add `https://<extension-id>.chromiumapp.org/google-oauth` to its authorized redirect URIs.
-4. Copy `.env.example` to a local `.env.development` or `.env.production` file. It holds the public client IDs of the published extension; for a build with another extension ID, put your own there:
+4. The committed `.env.development` and `.env.production` files hold the public client IDs of the Cookify extension (client IDs are not secrets). For a build with another extension ID, put your own there, or in a git-ignored `.env.development.local` / `.env.production.local`:
 
    ```env
    VITE_GOOGLE_OAUTH_CLIENT_ID=your-chrome-extension-client-id.apps.googleusercontent.com
    VITE_GOOGLE_OAUTH_WEB_CLIENT_ID=your-web-client-id.apps.googleusercontent.com
    ```
 
-5. Run `npm run build` and load `dist` in Chrome.
+   A Chrome extension client only works for the one extension ID it is bound to, so the two files hold different client IDs: `.env.production` the one bound to the Chrome Web Store ID (`npm run build`, the zip that is uploaded), `.env.development` the one bound to your unpacked extension's ID (`npm run dev`, `npm run dev-watch`, `npm run build:dev`).
+5. Run `npm run build:dev` and load `dist` in Chrome as an unpacked extension (or `npm run build` for the Web Store package).
 
 Cookify requests only `https://www.googleapis.com/auth/drive.appdata`. This hidden area is accessible to Cookify but does not grant access to the user's other Drive files. OAuth client IDs are public identifiers; never add a client secret to the extension.
 

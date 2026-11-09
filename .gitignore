@@ -11,10 +11,13 @@ node_modules
 dist
 dist-ssr
 *.local
-.env.development
-.env.production
+# .env.development / .env.production only hold public OAuth client IDs, so they are committed.
+# Local overrides (.env, .env.*.local) stay out of git.
+.env
 .env.*
 !.env.example
+!.env.development
+!.env.production
 
 # Editor directories and files
 .vscode/*
