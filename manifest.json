@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "Cookify - Swagger UI API Client, JWT & Cookie Manager",
     "description": "Postman-like API client for any Swagger UI page. Dark mode, tabs, environments, JWT and cookie manager. No import, no setup.",
-    "version": "2.0.3",
+    "version": "2.0.4",
     "homepage_url": "https://github.com/emrecpp/Cookify",
     "permissions": [
         "cookies",
