@@ -1,5 +1,6 @@
 import {originOf, stableJson} from "@/lib/values";
 import {createStore} from "./store";
+import {DEFAULT_FONT_SIZE, DEFAULT_PALETTE, DEFAULT_RADIUS, fontSizeOf, FontSizeId, PaletteId, RadiusId} from "./palettes";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -112,6 +113,14 @@ export type Theme = "dark" | "light";
 export interface Prefs {
     enabled: boolean;
     theme: Theme;
+    /** Color palette (each has a dark and a light variant). */
+    palette: PaletteId;
+    /** Corner radius of the view. */
+    radius: RadiusId;
+    /** Text size of the view; choosing one also sets codeFont. */
+    fontSize: FontSizeId;
+    /** Types of JSON fields (uuid, date, enum…) shown below them in bodies and responses. */
+    typeHints: boolean;
     /** Spec urls the user switched back to the classic Swagger UI. */
     classic: string[];
     /** Sidebar width in px (renamed from sidebarWidth when the layout got more compact). */
@@ -188,11 +197,11 @@ export function isLocalHost(hostname: string): boolean {
     return host === "localhost" || host.endsWith(".localhost") || /^127(\.\d{1,3}){3}$/.test(host) || host === "[::1]";
 }
 
-export const CODE_FONT_DEFAULT = 13;
+export const CODE_FONT_DEFAULT = 14;   // the code size of the default text size (see FONT_SIZES)
 export const CODE_FONT_MIN = 9;
 export const CODE_FONT_MAX = 28;
 
-export const DEFAULT_PREFS: Prefs = {enabled: true, theme: "dark", classic: [], sideWidth: 320, listLabel: "path", codeFont: CODE_FONT_DEFAULT, splitRatio: 0.5, descHeight: 0};
+export const DEFAULT_PREFS: Prefs = {enabled: true, theme: "dark", palette: DEFAULT_PALETTE, radius: DEFAULT_RADIUS, fontSize: DEFAULT_FONT_SIZE, typeHints: true, classic: [], sideWidth: 320, listLabel: "path", codeFont: CODE_FONT_DEFAULT, splitRatio: 0.5, descHeight: 0};
 
 const DEFAULT_API: ApiState = {
     favorites: [],
@@ -254,9 +263,21 @@ export const sessionStore = createStore<Session>({
     toast: null,
 });
 
-export async function loadPrefs(): Promise<Prefs> {
-    const stored = await storageGet<Partial<Prefs>>(PREFS_KEY);
+/** The code size every version before the text size setting started with (and never zoomed stayed at). */
+const OLD_CODE_FONT_DEFAULT = 13;
+
+/**
+ * Stored preferences filled up with the defaults. Saved before the text size setting existed and never zoomed: the
+ * code text moves to the new default size (one step larger), a zoomed size stays as it is.
+ */
+export function withDefaultPrefs(stored: Partial<Prefs> | undefined): Prefs {
     const prefs = {...DEFAULT_PREFS, ...stored};
+    if (stored && stored.fontSize === undefined && stored.codeFont === OLD_CODE_FONT_DEFAULT) prefs.codeFont = CODE_FONT_DEFAULT;
+    return prefs;
+}
+
+export async function loadPrefs(): Promise<Prefs> {
+    const prefs = withDefaultPrefs(await storageGet<Partial<Prefs>>(PREFS_KEY));
     prefsStore.set(prefs);
     return prefs;
 }
@@ -268,13 +289,28 @@ export function updatePrefs(patch: Partial<Prefs>) {
 
 const saveCodeFont = debounce(() => void storageSet({[PREFS_KEY]: prefsStore.get()}), 300);
 
-/** Ctrl + wheel / Ctrl + 0 in a code view: one size for every editor, remembered across pages and reloads. */
+/** Size of the code text that goes with the chosen text size (what Ctrl+0 returns to). */
+const presetCodeFont = () => fontSizeOf(prefsStore.get().fontSize).code;
+
+/**
+ * Ctrl + wheel / Ctrl + 0 in a code view: one size for every editor, remembered across pages and reloads (and synced
+ * like every preference). Choosing a text size in Appearance sets it too: whichever was done last stays.
+ */
 export function setCodeFont(size: number) {
     const next = Math.round(Math.min(CODE_FONT_MAX, Math.max(CODE_FONT_MIN, size)));
     if (next === prefsStore.get().codeFont) return;
     prefsStore.set({codeFont: next});
     saveCodeFont();
-    notify(`Code text ${Math.round((next / CODE_FONT_DEFAULT) * 100)}% · Ctrl+0 resets`, "info");
+    notify(`Code text ${Math.round((next / presetCodeFont()) * 100)}% · Ctrl+0 resets`, "info");
+}
+
+export function resetCodeFont() {
+    setCodeFont(presetCodeFont());
+}
+
+/** Text size of the whole view; the code text follows it (until it is zoomed again with Ctrl + wheel). */
+export function setFontSize(fontSize: FontSizeId) {
+    updatePrefs({fontSize, codeFont: fontSizeOf(fontSize).code});
 }
 
 // ---------------------------------------------------------------------------
@@ -741,6 +777,18 @@ export const actions = {
         sessionStore.set((s) => ({...s, files: {...s.files, [key]: {...s.files[key], [field]: files}}}));
     },
 };
+
+const sendListeners = new Set<(key: string) => void>();
+
+/** Asks the open view of endpoint `key` to send its request, as its Send button would (the run button in the sidebar). */
+export function requestSend(key: string) {
+    sendListeners.forEach((listener) => listener(key));
+}
+
+export function onSendRequest(listener: (key: string) => void): () => void {
+    sendListeners.add(listener);
+    return () => sendListeners.delete(listener);
+}
 
 let toastId = 0;
 let toastTimer: ReturnType<typeof setTimeout> | undefined;

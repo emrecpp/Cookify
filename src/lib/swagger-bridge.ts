@@ -1,10 +1,10 @@
 // Swagger UI preferences read and changed from the popup (the Swagger pages follow them through chrome.storage).
-import {DEFAULT_PREFS, Prefs, PREFS_KEY} from "@/swagger-ui/state";
+import {DEFAULT_PREFS, Prefs, PREFS_KEY, withDefaultPrefs} from "@/swagger-ui/state";
 
 export async function getSwaggerUiPrefs(): Promise<Prefs> {
     try {
         const result = await chrome.storage.local.get(PREFS_KEY);
-        return {...DEFAULT_PREFS, ...(result[PREFS_KEY] as Partial<Prefs> | undefined)};
+        return withDefaultPrefs(result[PREFS_KEY] as Partial<Prefs> | undefined);
     } catch {
         return DEFAULT_PREFS;
     }

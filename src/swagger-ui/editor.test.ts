@@ -1,8 +1,8 @@
 import {describe, expect, it} from "vitest";
 import {json} from "@codemirror/lang-json";
-import {ensureSyntaxTree} from "@codemirror/language";
+import {ensureSyntaxTree, syntaxTree} from "@codemirror/language";
 import {EditorState} from "@codemirror/state";
-import {copyTargetAt, findMatches, foldText, jsonPathAt, jsonValueAt, lineOfPath, valueRangeAt} from "./editor";
+import {copyTargetAt, enumEditAt, enumProblem, enumTarget, findMatches, foldText, jsonPathAt, jsonValueAt, lineOfPath, quotedRanges, valueRangeAt} from "./editor";
 import {toPython} from "./snippets";
 
 function state(doc: string) {
@@ -90,5 +90,78 @@ describe("copy from the response", () => {
         const n = valueRangeAt(s, doc.indexOf("31.5") + 3)!;
         expect(doc.slice(n.from, n.to)).toBe("31.5");
         expect(valueRangeAt(s, doc.indexOf("{"))).toBeNull();
+    });
+});
+
+describe("enum picker targets", () => {
+    const doc = `{\n  "type": "ERROR_REPORT",\n  "subject": "x",\n  "list": ["OOPS"]\n}`;
+    const choices = (path: (string | number)[]) => {
+        const key = path.join(".");
+        if (key === "type") return ["ERROR_REPORT", "SUGGESTION"];
+        if (key === "list.0") return ["A", "B"];
+        return null;
+    };
+    const at = (needle: string) => {
+        const s = state(doc);
+        const pos = doc.indexOf(needle) + 1;
+        return enumTarget(s, syntaxTree(s).resolveInner(pos, 1), choices);
+    };
+    it("finds an enum value with its choices", () => {
+        const target = at('"ERROR_REPORT"');
+        expect(target?.choices).toEqual(["ERROR_REPORT", "SUGGESTION"]);
+        expect(target?.current).toBe("ERROR_REPORT");
+        expect(target?.valid).toBe(true);
+        expect(doc.slice(target!.from, target!.to)).toBe('"ERROR_REPORT"');
+    });
+    it("flags a value that is not allowed and skips free values", () => {
+        expect(at('"OOPS"')?.valid).toBe(false);
+        expect(at('"x"')).toBeNull();
+        expect(at('"type"')).toBeNull(); // the key itself
+    });
+});
+
+describe("enum values being typed", () => {
+    const choices = (path: (string | number)[]) => (path.join(".") === "item.type" ? ["ERROR_REPORT", "OTHER"] : null);
+    it("filters by the text typed so far in a complete value", () => {
+        const doc = `{"item": {"type": "ERROR_REPORT"}}`;
+        const pos = doc.indexOf("ERR") + 3;
+        const edit = enumEditAt(state(doc), pos, choices)!;
+        expect(doc.slice(edit.typedFrom, pos)).toBe("ERR");
+        expect(doc.slice(edit.from, edit.to)).toBe('"ERROR_REPORT"');
+    });
+    it("finds a value that is not closed yet", () => {
+        const doc = `{"item": {"type": "OT\n}}`;
+        const pos = doc.indexOf("OT") + 2;
+        const edit = enumEditAt(state(doc), pos, choices)!;
+        expect(edit.choices).toEqual(["ERROR_REPORT", "OTHER"]);
+        expect(doc.slice(edit.typedFrom, pos)).toBe("OT");
+        expect(doc.slice(edit.from, edit.to)).toBe('"OT');
+    });
+    it("ignores keys and other properties", () => {
+        const doc = `{"item": {"type": "OTHER", "subject": "x"}}`;
+        expect(enumEditAt(state(doc), doc.indexOf('"type"') + 2, choices)).toBeNull();
+        expect(enumEditAt(state(doc), doc.indexOf('"x"') + 1, choices)).toBeNull();
+    });
+});
+
+describe("quoted values in texts", () => {
+    const words = (text: string) => quotedRanges(text).map((r) => text.slice(r.from, r.to));
+    it("finds the quoted values of a validation message", () => {
+        expect(words("Input should be 'ERROR_REPORT', 'FEATURE_REQUEST' or 'OTHER'")).toEqual(["'ERROR_REPORT'", "'FEATURE_REQUEST'", "'OTHER'"]);
+        expect(words("'A', 'B'")).toEqual(["'A'", "'B'"]);
+    });
+    it("leaves apostrophes and quoted phrases alone", () => {
+        expect(words("it's the users' names")).toEqual([]);
+        expect(words("field 'two words' missing")).toEqual([]);
+    });
+});
+
+describe("why an enum value is not allowed", () => {
+    const choices = ["ERROR_REPORT", "FEATURE_REQUEST", "OTHER"];
+    it("explains null, a wrong case and a wrong type", () => {
+        expect(enumProblem("null", choices)).toBe("null is not allowed here. Allowed values: ERROR_REPORT, FEATURE_REQUEST, OTHER.");
+        expect(enumProblem('"other"', choices)).toBe('"other" is not an allowed value (the case differs). Did you mean "OTHER"?');
+        expect(enumProblem("5", choices)).toBe("5 is a number, but this field takes one of: ERROR_REPORT, FEATURE_REQUEST, OTHER.");
+        expect(enumProblem('"BUG"', choices)).toBe('"BUG" is not an allowed value. Allowed values: ERROR_REPORT, FEATURE_REQUEST, OTHER.');
     });
 });

@@ -1,7 +1,7 @@
-import {ArrowUpToLine, ChevronRight} from "lucide-react";
+import {ArrowUpToLine, ChevronRight, Play} from "lucide-react";
 import {memo, ReactNode, RefObject, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState} from "react";
 import {HttpMethod, Operation, ParsedSpec} from "../openapi";
-import {actions, apiStore, notify, prefsStore, sessionStore, updatePrefs} from "../state";
+import {actions, apiStore, notify, prefsStore, requestSend, sessionStore, updatePrefs} from "../state";
 import {useStore} from "../store";
 import {buildRequest, defaultDraft} from "../request";
 import {acknowledgeSpecChanges, specDiffStore} from "../session";
@@ -60,6 +60,7 @@ interface ItemProps {
 const EndpointItem = memo(function EndpointItem(props: ItemProps) {
     const {op, rowId, selected, cursor, favorite, draggableFav, showSummary, badge, pattern, onOpen, onDragStart, onDropOn, onMenu, kind} = props;
     const status = useStore(sessionStore, (s) => s.responses[op.key]?.status);
+    const loading = useStore(sessionStore, (s) => !!s.loading[op.key]);
     const label = showSummary && op.summary
         ? <span className="cf-item-name">{highlight(op.summary, pattern)}</span>
         : <span className="cf-item-path"><PathText path={op.path} pattern={pattern}/></span>;
@@ -95,6 +96,20 @@ const EndpointItem = memo(function EndpointItem(props: ItemProps) {
             {label}
             {badge && <span className={`cf-badge is-${badge}`}>{badge}</span>}
             {status !== undefined && <span className={`cf-dot ${statusClass(status)}`} title={`Last response: ${status || "error"}`}/>}
+            {selected && (
+                <button
+                    className="cf-run"
+                    title={loading ? "Sending…" : "Send (Ctrl+Enter)"}
+                    disabled={loading}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        requestSend(op.key);
+                    }}
+                    onDoubleClick={(e) => e.stopPropagation()}
+                >
+                    <Play size={11} fill="currentColor"/>
+                </button>
+            )}
             <button
                 className={`cf-star ${favorite ? "is-on" : ""}`}
                 title={favorite ? "Remove from favorites" : "Add to favorites"}

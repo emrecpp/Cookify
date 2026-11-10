@@ -160,6 +160,204 @@ export function collectObject(spec: Schema, schema: unknown): { properties: Reco
     return out;
 }
 
+/**
+ * The schema of the value at a JSON path (["items", 0, "type"]) inside `schema`, with its $ref resolved but a
+ * nullable wrapper kept; undefined when the path leaves the schema.
+ */
+export function schemaAtPath(spec: Schema, schema: unknown, path: (string | number)[]): Schema | undefined {
+    return deref(spec, rawSchemaAtPath(spec, schema, path));
+}
+
+/** Like schemaAtPath, but the schema as the document writes it ($ref not resolved), so its name can be shown. */
+export function rawSchemaAtPath(spec: Schema, schema: unknown, path: (string | number)[]): unknown {
+    let found: unknown = schema;
+    for (const part of path) {
+        const current = unwrapNullable(spec, found);
+        if (!current) return undefined;
+        let next: unknown;
+        if (typeof part === "number") {
+            next = Array.isArray(current.prefixItems) && current.prefixItems[part] ? current.prefixItems[part] : current.items;
+        } else {
+            // a union of objects: the first variant that has the property
+            const variants = [current, ...((current.anyOf ?? current.oneOf ?? []) as Schema[])];
+            for (const variant of variants) {
+                const {properties} = collectObject(spec, variant);
+                if (properties[part]) {
+                    next = properties[part];
+                    break;
+                }
+            }
+            if (next === undefined && current.additionalProperties && typeof current.additionalProperties === "object") next = current.additionalProperties;
+        }
+        if (next === undefined) return undefined;
+        found = next;
+    }
+    return found;
+}
+
+/** Number formats say nothing a number does not: no hint for them. */
+const PLAIN_FORMATS = new Set(["int32", "int64", "float", "double"]);
+const HINT_VALUES = 8;
+
+/** The type shown with a JSON field: its type label and, for an enum, the allowed values. */
+export interface FieldHint {
+    type: string;
+    values?: string;
+}
+
+/**
+ * What to show with a JSON field whose type says more than string / number / boolean: its type (with the schema
+ * name when it has one, e.g. "FeedbackType" or "string<uuid> | null") and, for an enum, the allowed values.
+ * Null for plain types, objects and unknown fields.
+ */
+export function fieldHint(spec: Schema, raw: unknown): FieldHint | null {
+    const resolved = unwrapNullable(spec, raw);
+    if (!resolved) return null;
+    const isArray = primaryType(resolved) === "array";
+    const inner = isArray ? unwrapNullable(spec, resolved.items) : resolved;
+    if (!inner) return null;
+    const choices = enumChoices(spec, isArray ? resolved.items : raw);
+    const format = typeof inner.format === "string" && !PLAIN_FORMATS.has(inner.format) ? inner.format : "";
+    if (!choices && !format) return null;
+    const type = typeLabel(spec, raw);
+    if (!choices) return {type};
+    const labels = choices.map((c) => (typeof c === "string" ? c : JSON.stringify(c)));
+    const values = labels.length > HINT_VALUES ? `${labels.slice(0, HINT_VALUES).join(" | ")} | … ${labels.length - HINT_VALUES} more` : labels.join(" | ");
+    return {type, values};
+}
+
+/** Whether any field of a schema, nested ones included, gets a type hint (so the setting for them is worth showing). */
+export function schemaHasHints(spec: Schema, schema: unknown): boolean {
+    const seen = new Set<string>();
+    let budget = 2_000;   // wide schemas nested in each other: stop looking rather than freeze
+    const visit = (node: unknown, depth: number): boolean => {
+        if (!node || typeof node !== "object" || depth > 12 || --budget < 0) return false;
+        const ref = (node as Schema).$ref;
+        if (typeof ref === "string") {
+            if (seen.has(ref)) return false;
+            seen.add(ref);
+        }
+        const resolved = unwrapNullable(spec, node);
+        if (!resolved) return false;
+        if (primaryType(resolved) === "array") return visit(resolved.items, depth + 1);
+        const {properties} = collectObject(spec, resolved);
+        return Object.values(properties).some((prop) => fieldHint(spec, prop) !== null || visit(prop, depth + 1));
+    };
+    return visit(schema, 0);
+}
+
+/** The JSON type of a value, telling integers from other numbers. */
+export function jsonType(value: unknown): string {
+    if (value === null) return "null";
+    if (Array.isArray(value)) return "array";
+    if (typeof value === "number") return Number.isInteger(value) ? "integer" : "number";
+    return typeof value;
+}
+
+/** The JSON types a schema accepts; null when it accepts anything (no type given, or a union too loose to tell). */
+export function acceptedTypes(spec: Schema, schema: unknown, depth = 0): Set<string> | null {
+    const s = deref(spec, schema);
+    if (!s || depth > 8) return null;
+    const variants = (s.anyOf ?? s.oneOf) as Schema[] | undefined;
+    if (Array.isArray(variants) && !s.type && !s.properties) {
+        const out = new Set<string>();
+        for (const variant of variants) {
+            const types = acceptedTypes(spec, variant, depth + 1);
+            if (!types) return null;
+            types.forEach((t) => out.add(t));
+        }
+        if (s.nullable) out.add("null");
+        return out;
+    }
+    let types = schemaTypes(s);
+    if (!types.length && Array.isArray(s.enum)) types = [...new Set(s.enum.map(jsonType))];
+    if (!types.length && Array.isArray(s.allOf) && s.allOf.length === 1) return acceptedTypes(spec, s.allOf[0], depth + 1);
+    if (!types.length) return null;
+    const out = new Set(types);
+    if (s.nullable) out.add("null");
+    return out;
+}
+
+const FORMAT_CHECKS: Record<string, RegExp> = {
+    uuid: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+    "date-time": /^\d{4}-\d{2}-\d{2}[Tt ]\d{2}:\d{2}(:\d{2}(\.\d+)?)?([Zz]|[+-]\d{2}:?\d{2})?$/,
+    date: /^\d{4}-\d{2}-\d{2}$/,
+    email: /^[^@\s]+@[^@\s]+\.[^@\s]+$/,
+};
+
+/**
+ * What is wrong with a value for its schema, in a few words for a note at the end of its line ("expected string,
+ * got integer", "null not allowed", "not a valid uuid"); null when it fits, or when the field is not in the schema.
+ */
+export function valueProblem(spec: Schema, schema: unknown, value: unknown): string | null {
+    if (schema === undefined) return null;
+    const got = jsonType(value);
+    const types = acceptedTypes(spec, schema);
+    if (types && !types.has(got) && !(got === "integer" && types.has("number"))) {
+        if (got === "null") return "null not allowed";
+        const expected = [...types].filter((t) => t !== "null");
+        return `expected ${(expected.length ? expected : [...types]).join(" or ")}, got ${got}`;
+    }
+    const choices = enumChoices(spec, schema);
+    if (choices && !choices.some((c) => JSON.stringify(c) === JSON.stringify(value))) return value === null ? "null not allowed" : "not an allowed value";
+    const format = unwrapNullable(spec, schema)?.format;
+    if (typeof value === "string" && typeof format === "string" && FORMAT_CHECKS[format] && !FORMAT_CHECKS[format].test(value)) return `not a valid ${format}`;
+    return null;
+}
+
+/** What the JSON editors and viewers ask a schema about the field at a JSON path. */
+export interface SchemaLookups {
+    /** The values allowed there (enum), or null. */
+    choices: (path: (string | number)[]) => unknown[] | null;
+    /** The type to show with the field, or null when it needs none. */
+    hint: (path: (string | number)[]) => FieldHint | null;
+    /** What is wrong with `value` there (see valueProblem), or null. */
+    problem: (path: (string | number)[], value: unknown) => string | null;
+}
+
+/**
+ * Lookups into one schema (a request body, a documented response), each path worked out once: an editor asks for
+ * every field again on each key press. Undefined without a schema.
+ */
+export function schemaLookups(spec: Schema, schema: unknown): SchemaLookups | undefined {
+    if (!schema) return undefined;
+    const cached = <T>(compute: (path: (string | number)[]) => T) => {
+        const cache = new Map<string, T>();
+        return (path: (string | number)[]) => {
+            const key = JSON.stringify(path);
+            if (!cache.has(key)) cache.set(key, compute(path));
+            return cache.get(key) as T;
+        };
+    };
+    const fieldSchema = cached((path) => rawSchemaAtPath(spec, schema, path));
+    return {
+        choices: cached((path) => enumChoices(spec, schemaAtPath(spec, schema, path))),
+        hint: cached((path) => fieldHint(spec, fieldSchema(path))),
+        problem: (path, value) => valueProblem(spec, fieldSchema(path), value),
+    };
+}
+
+/** The documented response for a status: the exact code, then its range ("4XX"), then "default". */
+export function documentedResponse(responses: ResponseInfo[], status: number): ResponseInfo | undefined {
+    if (!status) return undefined;
+    const code = String(status);
+    return responses.find((r) => r.status === code)
+        ?? responses.find((r) => r.status.toUpperCase() === `${code[0]}XX`)
+        ?? responses.find((r) => r.status === "default");
+}
+
+/** The values a schema allows when it lists them (its `enum`, plus null when nullable); null for anything else. */
+export function enumChoices(spec: Schema, schema: unknown): unknown[] | null {
+    const resolved = unwrapNullable(spec, schema);
+    if (!resolved || !Array.isArray(resolved.enum) || !resolved.enum.length) return null;
+    const raw = deref(spec, schema);
+    const variants = (raw?.anyOf ?? raw?.oneOf) as Schema[] | undefined;
+    const nullable = Boolean(resolved.nullable) || schemaTypes(resolved).includes("null") || !!variants?.some((v) => isNullSchema(spec, v));
+    const choices = [...resolved.enum];
+    if (nullable && !choices.includes(null)) choices.push(null);
+    return choices;
+}
+
 export function typeLabel(spec: Schema, schema: unknown, depth = 0): string {
     const s = schema as Schema | undefined;
     if (!s || typeof s !== "object") return "any";

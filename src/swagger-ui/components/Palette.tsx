@@ -11,6 +11,7 @@ import {askText} from "./Dialogs";
 import {apisStore, currentDocsUrl, findEnv, hostOf, openDocs, switchApi} from "../apis";
 import {openAddApi, openApiManager, openEnvManager, openSaveApi} from "./ApiSwitcher";
 import {methodLabel} from "./Sidebar";
+import {PALETTES} from "../palettes";
 
 const paletteStore = createStore<{ open: boolean }>({open: false});
 
@@ -99,6 +100,9 @@ function PaletteBody({onClassic}: { onClassic: () => void }) {
         if (state.favorites.length) cmd("Export Postman collection (favorites)", () => downloadText(`${spec.title || "api"}-favorites.postman_collection.json`, postmanCollection(spec, state.favorites)));
         if (specDiffStore.get().diff) cmd("Mark new / changed endpoints as seen", acknowledgeSpecChanges);
         cmd(`Switch to ${prefsStore.get().theme === "dark" ? "light" : "dark"} theme`, () => updatePrefs({theme: prefsStore.get().theme === "dark" ? "light" : "dark"}));
+        for (const palette of PALETTES) {
+            if (palette.id !== prefsStore.get().palette) cmd(`Color palette: ${palette.label}`, () => updatePrefs({palette: palette.id}));
+        }
         cmd("Collapse all groups", () => actions.setCollapsed(spec.groups.map((g) => `tag:${g.tag}`)));
         cmd("Expand all groups", () => actions.setCollapsed([]));
         cmd("Clear recent", () => actions.clearHistory());

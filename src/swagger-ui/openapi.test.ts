@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {formFields, parseSpec, resolvePointer, sampleFromSchema, typeLabel} from "./openapi";
+import {documentedResponse, enumChoices, fieldHint, formFields, parseSpec, rawSchemaAtPath, resolvePointer, sampleFromSchema, schemaAtPath, schemaHasHints, schemaLookups, typeLabel, valueProblem} from "./openapi";
 import {buildRequest, defaultDraft, findTokenInResponse, toCurl} from "./request";
 
 const spec = {
@@ -134,5 +134,137 @@ describe("hostile documents", () => {
         const sample = sampleFromSchema({components: {schemas}}, {$ref: "#/components/schemas/L0"});
         expect(Date.now() - started).toBeLessThan(2000);
         expect(Object.keys(sample as object)).toHaveLength(10);
+    });
+});
+
+describe("enum choices in a body", () => {
+    const spec = {
+        components: {
+            schemas: {
+                Kind: {type: "string", enum: ["ERROR_REPORT", "SUGGESTION"]},
+                Item: {type: "object", properties: {level: {type: "integer", enum: [1, 2, 3]}}},
+                Body: {
+                    type: "object",
+                    properties: {
+                        type: {$ref: "#/components/schemas/Kind"},
+                        maybe: {anyOf: [{$ref: "#/components/schemas/Kind"}, {type: "null"}]},
+                        items: {type: "array", items: {$ref: "#/components/schemas/Item"}},
+                        tags: {type: "array", items: {type: "string", enum: ["a", "b"]}},
+                        subject: {type: "string"},
+                    },
+                },
+            },
+        },
+    };
+    const body = {$ref: "#/components/schemas/Body"};
+    const at = (path: (string | number)[]) => enumChoices(spec, schemaAtPath(spec, body, path));
+    it("lists the values of an enum property", () => {
+        expect(at(["type"])).toEqual(["ERROR_REPORT", "SUGGESTION"]);
+    });
+    it("adds null for a nullable enum", () => {
+        expect(at(["maybe"])).toEqual(["ERROR_REPORT", "SUGGESTION", null]);
+    });
+    it("follows arrays and nested objects", () => {
+        expect(at(["items", 0, "level"])).toEqual([1, 2, 3]);
+        expect(at(["tags", 3])).toEqual(["a", "b"]);
+    });
+    it("returns null for free values and unknown paths", () => {
+        expect(at(["subject"])).toBeNull();
+        expect(at(["tags"])).toBeNull();
+        expect(at(["missing"])).toBeNull();
+    });
+});
+
+describe("type hints above body fields", () => {
+    const spec = {
+        components: {
+            schemas: {
+                FeedbackType: {type: "string", enum: ["ERROR_REPORT", "FEATURE_REQUEST", "OTHER"]},
+                Body: {
+                    type: "object",
+                    properties: {
+                        id: {anyOf: [{type: "string", format: "uuid"}, {type: "null"}]},
+                        type: {$ref: "#/components/schemas/FeedbackType"},
+                        kinds: {type: "array", items: {$ref: "#/components/schemas/FeedbackType"}},
+                        when: {type: "string", format: "date-time"},
+                        subject: {type: "string"},
+                        count: {type: "integer", format: "int64"},
+                        many: {type: "string", enum: ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]},
+                    },
+                },
+            },
+        },
+    };
+    const body = {$ref: "#/components/schemas/Body"};
+    const hint = (key: string) => fieldHint(spec, rawSchemaAtPath(spec, body, [key]));
+    it("names enums and lists their values", () => {
+        expect(hint("type")).toEqual({type: "FeedbackType", values: "ERROR_REPORT | FEATURE_REQUEST | OTHER"});
+        expect(hint("kinds")).toEqual({type: "FeedbackType[]", values: "ERROR_REPORT | FEATURE_REQUEST | OTHER"});
+        expect(hint("many")?.values).toBe("a | b | c | d | e | f | g | h | … 2 more");
+    });
+    it("shows string formats, nullable too", () => {
+        expect(hint("id")).toEqual({type: "string<uuid> | null"});
+        expect(hint("when")).toEqual({type: "string<date-time>"});
+    });
+    it("leaves plain types alone", () => {
+        expect(hint("subject")).toBeNull();
+        expect(hint("count")).toBeNull();
+        expect(hint("missing")).toBeNull();
+    });
+});
+
+describe("documented responses", () => {
+    const responses = [{status: "200"}, {status: "4XX"}, {status: "default"}];
+    it("picks the exact code, then its range, then default", () => {
+        expect(documentedResponse(responses, 200)?.status).toBe("200");
+        expect(documentedResponse(responses, 422)?.status).toBe("4XX");
+        expect(documentedResponse(responses, 503)?.status).toBe("default");
+        expect(documentedResponse(responses, 0)).toBeUndefined();   // no response at all (network error)
+    });
+    it("looks up the fields of a schema once", () => {
+        const spec = {components: {schemas: {Kind: {type: "string", enum: ["A", "B"]}}}};
+        const lookups = schemaLookups(spec, {type: "object", properties: {kind: {$ref: "#/components/schemas/Kind"}}})!;
+        expect(lookups.choices(["kind"])).toEqual(["A", "B"]);
+        expect(lookups.hint(["kind"])).toEqual({type: "Kind", values: "A | B"});
+        expect(lookups.hint(["kind"])).toBe(lookups.hint(["kind"]));
+        expect(schemaLookups(spec, undefined)).toBeUndefined();
+    });
+});
+
+describe("schemas with field types", () => {
+    const spec = {components: {schemas: {Kind: {type: "string", enum: ["A"]}, Node: {type: "object", properties: {child: {$ref: "#/components/schemas/Node"}, name: {type: "string"}}}}}};
+    it("finds hinted fields, nested in objects and arrays too", () => {
+        expect(schemaHasHints(spec, {type: "object", properties: {kind: {$ref: "#/components/schemas/Kind"}}})).toBe(true);
+        expect(schemaHasHints(spec, {type: "array", items: {type: "object", properties: {at: {type: "string", format: "date-time"}}}})).toBe(true);
+        expect(schemaHasHints(spec, {type: "object", properties: {inner: {type: "object", properties: {id: {type: "string", format: "uuid"}}}}})).toBe(true);
+    });
+    it("says no for plain fields and survives recursive schemas", () => {
+        expect(schemaHasHints(spec, {type: "object", properties: {name: {type: "string"}, n: {type: "integer"}}})).toBe(false);
+        expect(schemaHasHints(spec, {$ref: "#/components/schemas/Node"})).toBe(false);
+    });
+});
+
+describe("values that do not fit their schema", () => {
+    const spec = {components: {schemas: {Kind: {type: "string", enum: ["A", "B"]}}}};
+    const nullableString = {anyOf: [{type: "string"}, {type: "null"}]};
+    it("names the expected and the given type", () => {
+        expect(valueProblem(spec, nullableString, 4)).toBe("expected string, got integer");
+        expect(valueProblem(spec, nullableString, null)).toBeNull();
+        expect(valueProblem(spec, {type: "string"}, null)).toBe("null not allowed");
+        expect(valueProblem(spec, {type: "integer"}, 1.5)).toBe("expected integer, got number");
+        expect(valueProblem(spec, {type: "number"}, 2)).toBeNull();
+        expect(valueProblem(spec, {type: "array", items: {}}, {})).toBe("expected array, got object");
+    });
+    it("checks enums and formats", () => {
+        expect(valueProblem(spec, {$ref: "#/components/schemas/Kind"}, "C")).toBe("not an allowed value");
+        expect(valueProblem(spec, {$ref: "#/components/schemas/Kind"}, null)).toBe("null not allowed");
+        expect(valueProblem(spec, {type: "string", format: "uuid"}, "3fa85f64-5717-4562-b3fc-2c963f66afa6")).toBeNull();
+        expect(valueProblem(spec, {type: "string", format: "uuid"}, "string")).toBe("not a valid uuid");
+        expect(valueProblem(spec, {type: "string", format: "date-time"}, "2026-11-10T12:00:00Z")).toBeNull();
+    });
+    it("leaves unknown fields and free schemas alone", () => {
+        expect(valueProblem(spec, undefined, 4)).toBeNull();
+        expect(valueProblem(spec, {}, 4)).toBeNull();
+        expect(valueProblem(spec, {anyOf: [{type: "string"}, {}]}, 4)).toBeNull();
     });
 });

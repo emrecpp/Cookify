@@ -1,4 +1,4 @@
-import {forwardRef, KeyboardEvent, ReactNode, useCallback, useEffect, useImperativeHandle, useRef, useState} from "react";
+import {forwardRef, KeyboardEvent, ReactNode, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState} from "react";
 import {defaultKeymap, history, historyKeymap, indentWithTab} from "@codemirror/commands";
 import {json} from "@codemirror/lang-json";
 import {bracketMatching, foldGutter, foldKeymap, syntaxHighlighting, unfoldAll} from "@codemirror/language";
@@ -10,6 +10,13 @@ import {
     collapseStep,
     copyOnClick,
     editorTheme,
+    EnumChoices,
+    fieldHintLines,
+    FieldHints,
+    ValueProblems,
+    valueProblems,
+    enumPicker,
+    EnumMenu,
     expandStep,
     findMatches,
     jsonHighlight,
@@ -18,12 +25,17 @@ import {
     lineOfPath,
     markedLines,
     Match,
+    quotedValues,
+    refreshEnums,
     searchMatches,
     setMarkedLines,
     showMatch,
 } from "../editor";
-import {notify, prefsStore, setCodeFont, CODE_FONT_DEFAULT} from "../state";
+import {notify, prefsStore, resetCodeFont, setCodeFont} from "../state";
+import {useStore} from "../store";
 import {copyText} from "../clipboard";
+import {openMenu} from "./Menu";
+import type {SchemaLookups} from "../openapi";
 
 export interface JsonCodeHandle {
     /** Folds the deepest open level; returns false when everything is folded. */
@@ -55,6 +67,12 @@ interface Props {
     externalTools?: boolean;
     /** Shown in the error color (the body of a 4xx / 5xx response). */
     error?: boolean;
+    /**
+     * The schema of the JSON (a request body, a documented response): fields whose type says more than string /
+     * number / boolean (uuid, date, enum…) show it below them; in an editor enum values are also framed as
+     * dropdowns that suggest their values while typed.
+     */
+    schema?: SchemaLookups;
 }
 
 /** Pasting that leaves the whole document as valid JSON pretty-prints it (one undo step); anything else pastes as is. */
@@ -85,10 +103,59 @@ function formatOnPaste(language: () => string): Extension {
     });
 }
 
-/** JSON highlighting; read-only viewers also get the Copy / Path buttons on a clicked line and value double click. */
-function languageExt(language: string, readOnly?: boolean): Extension {
+const valueLabel = (value: unknown) => (typeof value === "string" ? value : JSON.stringify(value));
+const sameValue = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+
+/** What a typed custom value means: text for a list of strings, otherwise JSON when it parses (5, true, null). */
+function customValue(text: string, choices: unknown[]): unknown {
+    if (choices.every((c) => typeof c === "string" || c === null) && text !== "null") return text;
+    try {
+        return JSON.parse(text);
+    } catch {
+        return text;
+    }
+}
+
+/**
+ * The list of an enum's values, in the menu of the rest of the app (arrow keys, Enter, Esc), opened on the current
+ * value; below them a box for a value outside the list (typing while the list is open goes there).
+ */
+const enumMenu: EnumMenu = (at, choices, current, pick, from) => {
+    const listed = choices.some((c) => sameValue(c, current));
+    openMenu({
+        x: at.x,
+        y: at.y,
+        startAtActive: true,
+        compact: true,
+        items: [
+            ...choices.map((choice) => ({label: valueLabel(choice), active: sameValue(choice, current), onSelect: () => pick(choice)})),
+            {
+                label: "Custom value",
+                input: {
+                    placeholder: "Custom value…",
+                    initial: listed || current === undefined ? "" : valueLabel(current),
+                    onSubmit: (text: string) => pick(customValue(text, choices)),
+                },
+                onSelect: () => undefined,
+            },
+        ],
+    }, from);
+};
+
+/** The schema questions the editor asks; stable for its lifetime (each asks the latest `schema` prop). */
+interface Lookups {
+    choices: EnumChoices;
+    hints: FieldHints;
+    problems: ValueProblems;
+}
+
+/**
+ * JSON highlighting and the type hints of the schema's fields; read-only viewers also get the Copy / Path buttons
+ * on a clicked line, value double click and 'quoted' values in texts marked, editors the enum picker.
+ */
+function languageExt(language: string, readOnly: boolean | undefined, {choices, hints, problems}: Lookups): Extension {
     if (language !== "json") return [];
-    return readOnly ? [json(), copyOnClick(copyText)] : json();
+    return [json(), fieldHintLines(hints, readOnly ? null : choices), ...(readOnly ? [copyOnClick(copyText), quotedValues] : [enumPicker(choices, enumMenu), valueProblems(problems, choices)])];
 }
 
 export function IconLabel({icon, children}: { icon: ReactNode; children: ReactNode }) {
@@ -102,6 +169,15 @@ export const JsonCode = forwardRef<JsonCodeHandle, Props>(function JsonCode(prop
     const callbacks = useRef(props);
     callbacks.current = props;
     const languageConf = useRef(new Compartment());
+    // stable for the editor's lifetime; always asks the latest prop
+    const choices = useRef<EnumChoices>((p) => callbacks.current.schema?.choices(p) ?? null).current;
+    // the type hints follow the setting under the request (on or off for every editor and viewer at once)
+    const typeHints = useStore(prefsStore, (s) => s.typeHints);
+    const showHints = useRef(typeHints);
+    showHints.current = typeHints;
+    const hints = useRef<FieldHints>((p) => (showHints.current ? callbacks.current.schema?.hint(p) ?? null : null)).current;
+    const problems = useRef<ValueProblems>((p, v) => callbacks.current.schema?.problem(p, v) ?? null).current;
+    const lookups = useMemo<Lookups>(() => ({choices, hints, problems}), [choices, hints, problems]);
     const [path, setPath] = useState("");
     const [selected, setSelected] = useState(0);
 
@@ -169,7 +245,7 @@ export const JsonCode = forwardRef<JsonCodeHandle, Props>(function JsonCode(prop
             markedLines,
             searchMatches,
             history(),
-            languageConf.current.of(languageExt(language, readOnly)),
+            languageConf.current.of(languageExt(language, readOnly, lookups)),
             Prec.highest(keymap.of([
                 {
                     key: "Mod-Enter", run: () => {
@@ -179,7 +255,7 @@ export const JsonCode = forwardRef<JsonCodeHandle, Props>(function JsonCode(prop
                 },
                 {
                     key: "Mod-0", run: () => {
-                        setCodeFont(CODE_FONT_DEFAULT);
+                        resetCodeFont();
                         return true;
                     },
                 },
@@ -237,8 +313,12 @@ export const JsonCode = forwardRef<JsonCodeHandle, Props>(function JsonCode(prop
     }, [value]);
 
     useEffect(() => {
-        viewRef.current?.dispatch({effects: languageConf.current.reconfigure(languageExt(language, readOnly))});
-    }, [language, readOnly]);
+        viewRef.current?.dispatch({effects: languageConf.current.reconfigure(languageExt(language, readOnly, lookups))});
+    }, [language, readOnly, lookups]);
+
+    useEffect(() => {
+        viewRef.current?.dispatch({effects: refreshEnums.of(null)});
+    }, [props.schema, typeHints]);
 
     useEffect(() => {
         const view = viewRef.current;

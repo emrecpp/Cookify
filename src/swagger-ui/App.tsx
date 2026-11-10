@@ -5,6 +5,8 @@ import {AuthMenu} from "./components/AuthMenu";
 import {ApiDialogsHost, ApiSwitcher, EnvSwitcher, usePage} from "./components/ApiSwitcher";
 import {DialogHost} from "./components/Dialogs";
 import {MenuHost} from "./components/Menu";
+import {AppearanceMenu} from "./components/Appearance";
+import {appearanceStyle, DEFAULT_PALETTE, isPaletteId} from "./palettes";
 import {openPalette, Palette} from "./components/Palette";
 import {detectSpecChanges} from "./session";
 import {EndpointView} from "./components/EndpointView";
@@ -63,6 +65,10 @@ export function App({spec, specUrl, onClassic, onReload}: Props) {
         }
     };
     const theme = useStore(prefsStore, (s) => s.theme);
+    const storedPalette = useStore(prefsStore, (s) => s.palette);
+    const palette = isPaletteId(storedPalette) ? storedPalette : DEFAULT_PALETTE;   // one removed in a later version
+    const radius = useStore(prefsStore, (s) => s.radius);
+    const fontSize = useStore(prefsStore, (s) => s.fontSize);
     const codeFont = useStore(prefsStore, (s) => s.codeFont);
     const sidebarWidth = useStore(prefsStore, (s) => s.sideWidth);
     const storedBaseUrl = useStore(apiStore, (s) => s.baseUrl);
@@ -126,7 +132,8 @@ export function App({spec, specUrl, onClassic, onReload}: Props) {
 
     return (
         <SpecContext.Provider value={contextValue}>
-            <div className="cf-root" data-theme={theme} style={{"--cf-code-font": `${codeFont}px`} as React.CSSProperties}>
+            <div className="cf-root" data-theme={theme} data-palette={palette}
+                 style={{...appearanceStyle({palette, radius, fontSize}, theme), "--cf-code-font": `${codeFont}px`} as React.CSSProperties}>
                 <header className={`cf-header ${envKind === "production" ? "is-prod" : ""}`}>
                     <span className="cf-logo" title="Cookify">C</span>
                     <ApiSwitcher/>
@@ -147,6 +154,7 @@ export function App({spec, specUrl, onClassic, onReload}: Props) {
                     <span className="cf-flex"/>
                     <button className="cf-btn cf-palette-btn" onClick={openPalette} title="Command palette">Commands <kbd>Ctrl+P</kbd></button>
                     <AuthMenu/>
+                    <AppearanceMenu/>
                     <button className="cf-btn cf-theme-btn" onClick={() => updatePrefs({theme: theme === "dark" ? "light" : "dark"})}>
                         {theme === "dark" ? "Light" : "Dark"}
                     </button>

@@ -11,12 +11,14 @@ import {
     primaryType,
     ResponseInfo,
     sampleFromSchema,
+    schemaHasHints,
+    schemaLookups,
     unwrapNullable,
 } from "../openapi";
 import {authProblem, buildRequest, cancelRequest, defaultDraft, exampleBody, removedFields, sendRequest, stringifyValue, tokenInfo, ValidationIssue, validationIssues} from "../request";
 import {relogin} from "../session";
 import {SNIPPETS} from "../snippets";
-import {actions, apiStore, Draft, notify, prefsStore, sessionStore, updatePrefs} from "../state";
+import {actions, apiStore, Draft, notify, onSendRequest, prefsStore, sessionStore, updatePrefs} from "../state";
 import {clamp, trackDrag} from "./Splitter";
 import {useStore} from "../store";
 import {copyText} from "../clipboard";
@@ -178,6 +180,7 @@ function ResponseDoc({response}: { response: ResponseInfo }) {
         const value = response.example !== undefined ? response.example : sampleFromSchema(spec.raw, response.schema);
         return JSON.stringify(value, null, 2);
     }, [open, response, spec.raw]);
+    const schema = useMemo(() => schemaLookups(spec.raw, response.schema), [response.schema, spec.raw]);
     return (
         <div className={`cf-doc ${open ? "is-open" : ""}`}>
             <button className="cf-doc-head" onClick={() => setOpen(!open)} disabled={!response.schema}>
@@ -192,7 +195,7 @@ function ResponseDoc({response}: { response: ResponseInfo }) {
                         <button className={mode === "example" ? "is-on" : ""} onClick={() => setMode("example")}>Example</button>
                         <button className={mode === "schema" ? "is-on" : ""} onClick={() => setMode("schema")}>Schema</button>
                     </div>
-                    {mode === "example" ? <JsonCode value={example} readOnly fill/> : <SchemaView spec={spec.raw} schema={response.schema}/>}
+                    {mode === "example" ? <JsonCode value={example} readOnly fill schema={schema}/> : <SchemaView spec={spec.raw} schema={response.schema}/>}
                 </div>
             )}
         </div>
@@ -244,6 +247,7 @@ export function EndpointView({op}: { op: Operation }) {
 
     const draft = useMemo(() => storedDraft ?? defaultDraft(spec, op, apiStore.get().paramMemory), [storedDraft, spec, op]);
     const [showSchema, setShowSchema] = useState(false);
+    const typeHints = useStore(prefsStore, (s) => s.typeHints);
     const [showErrors, setShowErrors] = useState(false);
     const requestPanel = useRef<HTMLDivElement>(null);
     const sent = useRef(false);
@@ -281,6 +285,12 @@ export function EndpointView({op}: { op: Operation }) {
     const isForm = isFormType(contentType);
     const removed = useMemo(() => (isJsonType(contentType) ? removedFields(draft.body ?? "", exampleBody(spec, op, contentType)) : []), [draft.body, contentType, spec, op]);
     const fields = useMemo(() => (isForm ? formFields(spec.raw, media?.schema) : []), [isForm, media, spec.raw]);
+    const bodySchema = useMemo(() => schemaLookups(spec.raw, media?.schema), [media, spec.raw]);
+    // the setting for field types only where there is a field to show one for: in the body or a documented response
+    const hasFieldTypes = useMemo(
+        () => [media?.schema, ...op.responses.map((r) => r.schema)].some((schema) => schema && schemaHasHints(spec.raw, schema)),
+        [media, op.responses, spec.raw],
+    );
 
     /** Puts the cursor in the first input marked invalid, once the render that marks it is on screen. */
     const focusInvalid = () => requestAnimationFrame(() => {
@@ -344,6 +354,13 @@ export function EndpointView({op}: { op: Operation }) {
         }
         setResponseTab("response");
     };
+
+    // the run button next to this endpoint in the sidebar
+    const sendRef = useRef(send);
+    sendRef.current = send;
+    useEffect(() => onSendRequest((key) => {
+        if (key === op.key) void sendRef.current();
+    }), [op.key]);
 
     const saveTemplate = async (initial?: string) => {
         const name = await askText({title: "Save as template", label: `Name for this set of inputs (${op.method.toUpperCase()} ${op.path})`, initial, confirm: "Save"});
@@ -553,11 +570,16 @@ export function EndpointView({op}: { op: Operation }) {
                                                 onChange={(name, value) => update({form: {...draft.form, [name]: value}})}/>
                                 ) : (
                                     <JsonCode value={draft.body ?? ""} language={isJsonType(contentType) ? "json" : "text"} invalid={!!built.jsonError || (showErrors && built.missing.includes("body"))}
-                                              marks={bodyMarks} maxHeight={520} minHeight={160}
+                                              marks={bodyMarks} maxHeight={520} minHeight={160} schema={bodySchema}
                                               onChange={(body) => update({body})} onSubmit={() => void send()}/>
                                 )}
                                 {built.jsonError && <div className="cf-inline-error">{built.jsonError}</div>}
-                                {showSchema && media?.schema && <SchemaView spec={spec.raw} schema={media.schema}/>}
+                                {showSchema && media?.schema && (
+                                    <div className="cf-body-schema">
+                                        <div className="cf-body-schema-title">Schema</div>
+                                        <SchemaView spec={spec.raw} schema={media.schema}/>
+                                    </div>
+                                )}
                             </Section>
                         )}
 
@@ -595,6 +617,15 @@ export function EndpointView({op}: { op: Operation }) {
                                 <div className="cf-placeholder">None{token && op.secured ? ". The Authorization header is added automatically." : "."}</div>
                             )}
                         </Section>
+
+                        {hasFieldTypes && (
+                            <div className="cf-request-foot">
+                                <label className="cf-check" title="Below fields whose type says more than string / number / boolean, e.g. a uuid, a date or an enum and its values">
+                                    <input type="checkbox" checked={typeHints} onChange={(e) => updatePrefs({typeHints: e.target.checked})}/>
+                                    Show field types (uuid, date, enum…) in bodies and responses
+                                </label>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -610,7 +641,7 @@ export function EndpointView({op}: { op: Operation }) {
                     </div>
                     <div className={`cf-panel-scroll ${responseTab === "response" && (response || loading) ? "is-fixed" : ""}`}>
                         {responseTab === "response" && (
-                            response ? <ResponseView opKey={op.key} response={response} loading={loading} onRetry={(t) => void send(t, 1)}/>
+                            response ? <ResponseView opKey={op.key} response={response} responses={op.responses} loading={loading} onRetry={(t) => void send(t, 1)}/>
                                 : loading ? <WaitingResponse/>
                                     : <div className="cf-placeholder is-row">No response yet. Press Send or Ctrl+Enter.</div>
                         )}

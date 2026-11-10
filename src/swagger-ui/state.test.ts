@@ -163,3 +163,13 @@ describe("pages that look like Swagger UI", () => {
         expect(api.state.sessionStore.get().savedTokens).toHaveLength(1);
     });
 });
+
+describe("stored preferences", () => {
+    it("move the code text of untouched older preferences to the new default size", async () => {
+        const {withDefaultPrefs, CODE_FONT_DEFAULT} = await import("./state");
+        expect(withDefaultPrefs({codeFont: 13}).codeFont).toBe(CODE_FONT_DEFAULT);   // saved before the text size setting, never zoomed
+        expect(withDefaultPrefs({codeFont: 17}).codeFont).toBe(17);                    // zoomed: kept
+        expect(withDefaultPrefs({codeFont: 13, fontSize: "sm"}).codeFont).toBe(13);   // chosen in Appearance: kept
+        expect(withDefaultPrefs(undefined).codeFont).toBe(CODE_FONT_DEFAULT);
+    });
+});

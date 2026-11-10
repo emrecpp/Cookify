@@ -3,6 +3,7 @@ import {ChevronsDownUp, ChevronsUpDown, CircleAlert, CircleCheck, Copy, CornerUp
 import {actions, notify, SentResponse} from "../state";
 import {useSpec} from "../context";
 import {prettyBody} from "../pretty";
+import {documentedResponse, ResponseInfo, schemaLookups} from "../openapi";
 import {authProblem, findTokenInResponse, formatBytes, tokenInfo} from "../request";
 import {rememberLogin} from "../session";
 import {AuthQuickPick} from "./AuthDialog";
@@ -25,10 +26,12 @@ export function StatusIcon({status, size = 15}: { status: number; size?: number 
 
 const SNAKE_DELAY = 250;
 
-export function ResponseView({opKey, response, loading, onRetry}: {
-    opKey: string; response: SentResponse; loading?: boolean; onRetry: (token: string) => void;
+export function ResponseView({opKey, response, responses, loading, onRetry}: {
+    opKey: string; response: SentResponse; responses: ResponseInfo[]; loading?: boolean; onRetry: (token: string) => void;
 }) {
     const {spec} = useSpec();
+    // the response documented for this status, so its fields show their types like the request body's
+    const schema = useMemo(() => schemaLookups(spec.raw, documentedResponse(responses, response.status)?.schema), [spec.raw, responses, response.status]);
     const [tab, setTab] = useState<"body" | "headers">("body");
     const code = useRef<JsonCodeHandle>(null);
     const pretty = useMemo(() => prettyBody(response.bodyText ?? "", response.contentType), [response.bodyText, response.contentType]);
@@ -105,7 +108,7 @@ export function ResponseView({opKey, response, loading, onRetry}: {
                 ) : (
                     pretty.text
                         ? <JsonCode ref={code} value={pretty.text} language={pretty.isJson ? "json" : "text"} readOnly lineNumbers fill externalTools
-                                    error={response.status >= 400}/>
+                                    error={response.status >= 400} schema={schema}/>
                         : <div className="cf-placeholder">(empty body)</div>
                 )
             )}

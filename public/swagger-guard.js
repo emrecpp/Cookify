@@ -41,12 +41,20 @@
     }
 
     const BOOT_CLASSES = ["cookify-boot", "cookify-boot-light", "cookify-boot-tabs"];
+    const BOOT_COLORS = ["bg", "surface", "bar", "input", "border", "accent"];
     if (boot && typeof boot === "object") {
         const root = document.documentElement;
         root.classList.add("cookify-boot");
         if (boot.theme === "light") root.classList.add("cookify-boot-light");
         if (boot.tabs === true) root.classList.add("cookify-boot-tabs");
         if (Number.isFinite(boot.side) && boot.side >= 150 && boot.side <= 1200) root.style.setProperty("--cookify-side", Math.round(boot.side) + "px");
+        // colors of the chosen color palette (none for the default one, whose colors swagger-preload.css has)
+        if (boot.colors && typeof boot.colors === "object") {
+            for (const name of BOOT_COLORS) {
+                const value = boot.colors[name];
+                if (typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value)) root.style.setProperty("--ck-" + name, value);
+            }
+        }
     }
 
     const SWAGGER_SRC = /swagger-ui(-bundle|-standalone-preset|-es-bundle)?(\.min)?\.js(\?|#|$)/i;
@@ -119,6 +127,7 @@
         releaseStyles();
         document.documentElement.classList.remove(...BOOT_CLASSES);
         document.documentElement.style.removeProperty("--cookify-side");
+        for (const name of BOOT_COLORS) document.documentElement.style.removeProperty("--ck-" + name);
         try {
             localStorage.removeItem(BOOT_KEY);
         } catch {

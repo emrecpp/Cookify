@@ -7,10 +7,11 @@ import {apisActions, apisStore, currentDocsUrl, envsFromRecords, findEnv, loadAp
 import {swaggerGuard} from "./detect";
 import {discoverSpec, DiscoveredSpec, refetchSpec} from "./discover";
 import {parseSpec, ParsedSpec} from "./openapi";
-import {actions, apiStore, DEFAULT_PREFS, flushApiState, initApiState, loadPrefs, notify, PREFS_KEY, Prefs, prefsStore, storageGet, storageSet, updatePrefs} from "./state";
+import {actions, apiStore, flushApiState, initApiState, loadPrefs, notify, PREFS_KEY, Prefs, prefsStore, storageGet, storageSet, updatePrefs, withDefaultPrefs} from "./state";
 import {createStore, useStore} from "./store";
 import cssText from "./styles.css?inline";
 import {setViewRoot} from "./view-root";
+import {appearanceStyle, bootColors} from "./palettes";
 
 const HIDE_STYLE_ID = "cookify-swagger-hide";
 const CACHE_PREFIX = "cookifySpecCache:";
@@ -40,7 +41,7 @@ let bootShown = false;
 
 /**
  * Read by the guard at document_start on the next visit: the skeleton is painted right away and matches the
- * view as it was left (theme, sidebar width, endpoint tabs open or the welcome screen), so nothing jumps.
+ * view as it was left (theme and color palette, sidebar width, endpoint tabs open or the welcome screen), so nothing jumps.
  */
 function rememberBoot(shown = bootShown) {
     bootShown = shown;
@@ -50,8 +51,8 @@ function rememberBoot(shown = bootShown) {
             localStorage.removeItem(key);
             return;
         }
-        const {theme, sideWidth} = prefsStore.get();
-        localStorage.setItem(key, JSON.stringify({theme, side: sideWidth, tabs: apiStore.get().tabs.length > 0}));
+        const {theme, palette, sideWidth} = prefsStore.get();
+        localStorage.setItem(key, JSON.stringify({theme, colors: bootColors(palette, theme), side: sideWidth, tabs: apiStore.get().tabs.length > 0}));
     } catch {
         // ignore
     }
@@ -149,6 +150,9 @@ function Root() {
     const enabled = useStore(prefsStore, (s) => s.enabled);
     const classicList = useStore(prefsStore, (s) => s.classic);
     const theme = useStore(prefsStore, (s) => s.theme);
+    const palette = useStore(prefsStore, (s) => s.palette);
+    const radius = useStore(prefsStore, (s) => s.radius);
+    const fontSize = useStore(prefsStore, (s) => s.fontSize);
     const classic = !enabled || classicList.includes(specUrl);
 
     useEffect(() => {
@@ -157,12 +161,12 @@ function Root() {
             rememberClassic(classic);
             rememberBoot(!classic);
         }
-    }, [classic, enabled, specUrl, theme]);
+    }, [classic, enabled, specUrl, theme, palette]);
 
     if (!enabled || !spec) return null;
     if (classic) {
         return (
-            <div className="cf-root is-floating" data-theme={theme}>
+            <div className="cf-root is-floating" data-theme={theme} style={appearanceStyle({palette, radius, fontSize}, theme) as React.CSSProperties}>
                 <button
                     className="cf-fab"
                     title="Open the Cookify view"
@@ -180,7 +184,7 @@ function listenForExtensionEvents() {
     try {
         // React to preference changes made in the popup or on another computer (enable/disable, theme).
         chrome.storage.onChanged.addListener((changes, area) => {
-            if (area === "local" && changes[PREFS_KEY]?.newValue) prefsStore.set({...DEFAULT_PREFS, ...(changes[PREFS_KEY].newValue as Partial<Prefs>)});
+            if (area === "local" && changes[PREFS_KEY]?.newValue) prefsStore.set(withDefaultPrefs(changes[PREFS_KEY].newValue as Partial<Prefs>));
         });
         // Continue on another computer: fetch what changed there (Google Drive sync, when it is on) when the page
         // opens and when it comes back to the front; save right away and upload when it goes to the back.
