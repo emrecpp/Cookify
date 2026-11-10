@@ -18,6 +18,17 @@ import {ParsedSpec} from "./openapi";
 import {actions, apiStore, prefsStore, sessionStore, updatePrefs} from "./state";
 import {useStore} from "./store";
 import {listenEverywhere} from "./view-root";
+// inlined: the view lives in the Swagger page, where a file of the extension would need to be exposed to the page
+import logoUrl from "../../public/icon/48.png?inline";
+
+/** The version of the extension, from its manifest (none outside the extension, e.g. in tests). */
+const EXTENSION_VERSION: string = (() => {
+    try {
+        return chrome.runtime.getManifest().version;
+    } catch {
+        return "";
+    }
+})();
 
 interface Props {
     spec: ParsedSpec;
@@ -55,6 +66,8 @@ function useResizer(initial: number) {
 
 export function App({spec, specUrl, onClassic, onReload}: Props) {
     const [reloading, setReloading] = useState(false);
+    // a page whose Content-Security-Policy blocks data: images gets the letter instead
+    const [logoShown, setLogoShown] = useState(true);
     const reload = async () => {
         if (reloading) return;
         setReloading(true);
@@ -135,10 +148,17 @@ export function App({spec, specUrl, onClassic, onReload}: Props) {
             <div className="cf-root" data-theme={theme} data-palette={palette}
                  style={{...appearanceStyle({palette, radius, fontSize}, theme), "--cf-code-font": `${codeFont}px`} as React.CSSProperties}>
                 <header className={`cf-header ${envKind === "production" ? "is-prod" : ""}`}>
-                    <span className="cf-logo" title="Cookify">C</span>
+                    {logoShown
+                        ? <img className="cf-logo" src={logoUrl} alt="" draggable={false} onError={() => setLogoShown(false)}/>
+                        : <span className="cf-logo is-text" aria-hidden>C</span>}
+                    <span className="cf-brand" title={EXTENSION_VERSION ? `Cookify ${EXTENSION_VERSION}` : "Cookify"}>
+                        <span className="cf-brand-name">Cookify</span>
+                        {EXTENSION_VERSION && <span className="cf-brand-version">v{EXTENSION_VERSION}</span>}
+                    </span>
                     <ApiSwitcher/>
-                    <span className="cf-meta is-version" title={spec.version ? `API version ${spec.version}` : undefined}>{spec.version ? `v${spec.version}` : ""}</span>
-                    <a className="cf-meta is-link is-spec" href={/^https?:\/\//i.test(specUrl) ? specUrl : undefined} target="_blank" rel="noreferrer" title="Open the OpenAPI document">
+                    {/* the version of the API itself (info.version) is only told on hover: the header has no room to spare */}
+                    <a className="cf-meta is-link is-spec" href={/^https?:\/\//i.test(specUrl) ? specUrl : undefined} target="_blank" rel="noreferrer"
+                       title={`${spec.version ? `API version ${spec.version} · ` : ""}Open the OpenAPI document`}>
                         {spec.raw.openapi ? `OpenAPI ${spec.raw.openapi}` : `Swagger ${spec.raw.swagger}`}
                     </a>
                     <button className="cf-icon-btn cf-reload" disabled={reloading}
@@ -155,9 +175,6 @@ export function App({spec, specUrl, onClassic, onReload}: Props) {
                     <button className="cf-btn cf-palette-btn" onClick={openPalette} title="Command palette">Commands <kbd>Ctrl+P</kbd></button>
                     <AuthMenu/>
                     <AppearanceMenu/>
-                    <button className="cf-btn cf-theme-btn" onClick={() => updatePrefs({theme: theme === "dark" ? "light" : "dark"})}>
-                        {theme === "dark" ? "Light" : "Dark"}
-                    </button>
                     <button className="cf-btn" onClick={onClassic} title="Show the original Swagger UI">Classic view</button>
                 </header>
 

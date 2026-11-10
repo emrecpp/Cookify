@@ -252,19 +252,13 @@
     border-bottom: 1px solid var(--border);
     flex: none;
 }
-.cf-logo {
-    display: inline-flex;
-    width: 20px;
-    height: 20px;
-    flex: none;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--r);
-    background: #e8a33a;
-    color: #1d1e21;
-    font-weight: 800;
-    font-size: calc(13px * var(--fs));
-}
+/* The Cookify icon, at the size of the skeleton's placeholder for it */
+.cf-logo { display: block; width: 20px; height: 20px; flex: none; object-fit: contain; -webkit-user-drag: none; }
+/* "Cookify" and the version of the extension next to the logo, on two lines; as wide as the skeleton keeps for it */
+.cf-brand { display: flex; flex-direction: column; justify-content: center; min-width: 56px; flex: none; line-height: 1.1; cursor: default; user-select: none; }
+.cf-brand-name { font-size: calc(13px * var(--fs)); font-weight: 700; color: var(--strong); letter-spacing: 0.01em; }
+.cf-brand-version { margin-top: 1px; font-family: var(--mono); font-size: calc(10px * var(--fs)); color: var(--faint); }
+.cf-logo.is-text { display: inline-flex; align-items: center; justify-content: center; border-radius: var(--r); background: #e8a33a; color: #1d1e21; font-weight: 800; font-size: calc(13px * var(--fs)); }
 .cf-title-text { font-weight: 700; color: var(--strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cf-meta { color: var(--muted); font-size: calc(13px * var(--fs)); white-space: nowrap; }
 .cf-meta.is-link:hover { color: var(--accent); text-decoration: underline; }
@@ -1174,7 +1168,6 @@ button.cf-flag:hover { background: color-mix(in srgb, currentColor 14%, transpar
    (the loading skeleton) in step with these sizes. */
 .cf-api-switch { width: 220px; max-width: none; flex: none; justify-content: space-between; }
 .cf-api-switch .cf-title-text { min-width: 0; }
-.cf-meta.is-version { width: 60px; flex: none; overflow: hidden; text-overflow: ellipsis; }
 .cf-meta.is-spec { width: 84px; flex: none; overflow: hidden; text-overflow: ellipsis; }
 /* As wide as its content (the whole server address), within 325-500px. */
 .cf-env { width: auto; min-width: 325px; max-width: 500px; flex: none; }
@@ -1183,7 +1176,6 @@ button.cf-flag:hover { background: color-mix(in srgb, currentColor 14%, transpar
 .cf-env-server { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; text-align: left; }
 .cf-session { width: 240px; max-width: none; flex: none; }
 .cf-session-exp, .cf-session-action { flex: none; margin-left: auto; }
-.cf-theme-btn { width: 56px; flex: none; }
 /* Appearance: a dot in the accent color of the palette, the label and a chevron; the panel below it */
 .cf-scheme-btn { width: 128px; flex: none; justify-content: flex-start; }
 .cf-scheme-chevron { margin-left: auto; color: var(--muted); flex: none; }
